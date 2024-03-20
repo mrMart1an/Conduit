@@ -1,0 +1,18 @@
+# Graphics backend feature selection
+option('vulkan_backend', type : 'feature', value : 'enabled')
+option('opengl_backend', type : 'feature', value : 'disabled')
+
+# Windowing backend
+option('glfw_windowing', type : 'feature', value : 'enabled')
+
+# Core logger compile time max debug level
+option(
+    'core_logger_level', 
+    type : 'combo',
+    choices : ['trace', 'debug', 'info', 'warning', 'error'],
+    value : 'trace'
+)
+
+# Test and examples build options
+option('build_tests', type : 'boolean', value : true)
+option('build_examples', type : 'boolean', value : true)
