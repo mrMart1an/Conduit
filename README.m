@@ -1,6 +1,6 @@
 # Conduit
 
-A pure C++ game engine
+A C++ game engine
 
 Works in progress...
 
