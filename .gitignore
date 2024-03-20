@@ -1,0 +1,14 @@
+build/
+.cache/
+.vs/
+
+run.sh
+runTest.sh
+buildDebug.sh
+buildRelease.sh
+
+subprojects/*
+!subprojects/glfw.wrap
+!subprojects/glm.wrap
+!subprojects/catch.wrap
+
