@@ -72,7 +72,15 @@ if (not glfw_enable.enabled())
 endif
 
 # Core logger level
-lvl_dict = {'trace': 0, 'debug': 1, 'info': 2, 'warning': 3, 'error': 4}
+lvl_dict = {
+    'trace': 0,
+    'debug': 1,
+    'info': 2,
+    'warning': 3,
+    'error': 4,
+    'fatal': 5
+}
+
 conf_data.set('CNDT_CORE_LOGGER_LEVEL', lvl_dict[core_logger_lvl])
 
 # Version number
