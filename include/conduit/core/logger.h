@@ -105,6 +105,10 @@ private:
 // then log it to stdout
 template <typename... Args>
 void Logger::Log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
+    // Immediately return it the logging level is too low 
+    if (lvl < m_log_level)
+        return;
+
     // Get the logging level string and the time string
     std::string level_str = LevelToString(lvl);
     std::string time_str = CurrentTimeString();

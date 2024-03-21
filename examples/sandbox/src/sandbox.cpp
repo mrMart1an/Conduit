@@ -3,7 +3,7 @@
 using namespace cndt::log;
 
 int main(void) {
-    
+
     app::trace("test {} {} {}", 3, 3.14, "conduit");
     app::debug("test {} {} {}", 3, 3.14, "conduit");
     app::info("test {} {} {}", 3, 3.14, "conduit");
@@ -11,7 +11,7 @@ int main(void) {
     app::error("test {} {} {}", 3, 3.14, "conduit");
     app::fatal("test {} {} {}", 3, 3.14, "conduit");
 
-    app::info("string only test");
+    app::trace("string only test");
     app::debug("string only test");
     app::info("string only test");
     app::warn("string only test");

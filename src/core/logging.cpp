@@ -19,12 +19,12 @@ static constexpr std::array<const char*, 12> log_level_str = {
     "FATAL",
 
     // ANSI Color text
-    "\033[1;37mTRACE\033[1;0m", 
-    "\033[1;34mDEBUG\033[1;0m", 
-    "\033[1;32mINFO\033[1;0m ",
-    "\033[1;33mWARN\033[1;0m ",
-    "\033[1;31mERROR\033[1;0m",
-    "\033[1;31mFATAL\033[1;0m",
+    "\033[1;36mTRACE\033[0m", 
+    "\033[1;34mDEBUG\033[0m", 
+    "\033[1;32mINFO\033[0m ",
+    "\033[1;33mWARN\033[0m ",
+    "\033[1;31mERROR\033[0m",
+    "\033[1;31mFATAL\033[0m",
 };
 static constexpr cndt::usize log_level_str_count = log_level_str.size() / 2;
 
