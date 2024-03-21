@@ -9,7 +9,7 @@ option('glfw_windowing', type : 'feature', value : 'enabled')
 option(
     'core_logger_level', 
     type : 'combo',
-    choices : ['trace', 'debug', 'info', 'warning', 'error'],
+    choices : ['trace', 'debug', 'info', 'warning', 'error', 'fatal'],
     value : 'trace'
 )
 

@@ -10,5 +10,5 @@ buildRelease.sh
 subprojects/*
 !subprojects/glfw.wrap
 !subprojects/glm.wrap
-!subprojects/catch.wrap
+!subprojects/catch2.wrap
 
