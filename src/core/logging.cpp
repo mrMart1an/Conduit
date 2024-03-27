@@ -5,9 +5,7 @@
 #include <string>
 
 #include "conduit/logging.h"
-#include "conduit/core/logger.h"
-
-#include "core/logging.h"
+#include "conduit/internal/logger.h"
 
 // Text representation of the log levels
 static constexpr std::array<const char*, 12> log_level_str = {
@@ -37,19 +35,21 @@ namespace cndt::log {
  * */
 
 // Application logger static global variables
-static Logger g_app_logger("app", LogLevel::Trace);
+static internal::Logger g_app_logger("app", LogLevel::Trace);
 // Application logger static global variables
-static Logger g_core_logger("core", LogLevel::Trace);
+static internal::Logger g_core_logger("core", LogLevel::Trace);
 
 // Return the default application logger
-Logger* app::getDefaultAppLogger() {
+internal::Logger* app::getDefaultAppLogger() {
     return &g_app_logger;
 }
 
 // Return the default conduit core logger
-Logger* core::getDefaultCoreLogger() {
+internal::Logger* core::getDefaultCoreLogger() {
     return &g_core_logger;
 }
+
+namespace internal {
 
 /*
  *
@@ -75,7 +75,7 @@ std::string Logger::LevelToString(LogLevel level) const {
     const usize color_str_offset = m_terminal_color ? log_level_str_count : 0;
     const usize str_index = static_cast<int>(level) + (color_str_offset); 
     
-    std::string level_str = log_level_str[str_index];
+    const char* level_str = log_level_str[str_index];
 
     return level_str;
 }
@@ -96,5 +96,7 @@ std::string Logger::CurrentTimeString() const {
     
     return time_str;
 }
+
+} // namespace internal
 
 } // namespace cndt::log
