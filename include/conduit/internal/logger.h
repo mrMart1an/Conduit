@@ -18,7 +18,8 @@ enum class LogLevel {
     Fatal,
 };
 
-// Conduit logger class
+namespace internal {
+
 class Logger {
 public:
     Logger(
@@ -125,7 +126,9 @@ void Logger::Log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
     std::format_args fmt_args = std::make_format_args(args...);
     std::cout << std::vformat(fmt_str, fmt_args) << std::endl;
 }
-    
+
+} // namespace internal
+
 } // namespace cndt::log
 
 #endif
