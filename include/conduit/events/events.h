@@ -12,12 +12,6 @@ struct KeyEvent {
     u16 mods;
 };
 
-struct KeyRepeatEvent { 
-    u16 key_code;
-    u16 scancode;
-    u16 mods;
-};
-
 } // namespace cndt
 
 #endif
