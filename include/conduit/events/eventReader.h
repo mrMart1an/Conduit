@@ -31,7 +31,7 @@ private:
     // Private type definition for simplicity
     typedef internal::EventBuffer<EventType> EventBuffer;
 
-    // Store the buffer index index reached by the reader for each buffer
+    // Store the buffer index reached by the reader in the current update
     usize m_current_buffer_index;
     usize m_old_buffer_index;
 
@@ -77,7 +77,7 @@ std::optional<EventType> EventReader<EventType>::NextEvent() {
     }
     
     // Get events starting from the oldest
-    EventType event = { 0 };
+    EventType event;
     
     if (old_buffer.size() > m_old_buffer_index) {
         event = old_buffer[m_old_buffer_index];
@@ -93,12 +93,6 @@ std::optional<EventType> EventReader<EventType>::NextEvent() {
 
     return event;
 }
-
-/*
- *
- *      Event reader iterator implementation
- *
- * */
 
 } // namespace cndt
 

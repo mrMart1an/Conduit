@@ -1,7 +1,5 @@
-
-#include <memory>
-
 #include "conduit/application.h"
+#include "core/application.h"
 
 #include "buildConfig.h"
 
@@ -9,9 +7,10 @@
 
 // Linux and windows entry point
 int main(void) {
-    std::unique_ptr<cndt::Application> app = cndt::getEntryClass();
-
-    app->StartMainLoop();
+    cndt::AppRunner app = cndt::getEntryClass();
+    
+    // Run the application
+    app.Run();
 
     return 0;
 }

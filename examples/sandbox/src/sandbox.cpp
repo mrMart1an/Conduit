@@ -1,11 +1,10 @@
 #include "conduit/defines.h"
 
 #include "conduit/application.h"
-#include "conduit/events/events.h"
 
 #include "conduit/events/eventReader.h"
 #include "conduit/events/eventWriter.h"
-
+#include "conduit/events/events.h"
 #include "conduit/logging.h"
 
 using namespace cndt;
@@ -16,7 +15,7 @@ void testEvent();
 // Declare the application class
 class Sandbox : public cndt::Application {
 public:
-    Sandbox() {
+    void Startup() override {
         trace("test {} {} {}", 3, 3.14, "conduit");
         debug("test {} {} {}", 3, 3.14, "conduit");
         info("test {} {} {}", 3, 3.14, "conduit");
@@ -24,30 +23,23 @@ public:
         error("test {} {} {}", 3, 3.14, "conduit");
         fatal("test {} {} {}", 3, 3.14, "conduit");
 
+        EventWriter writer = m_event_bus.GetEventWriter();
+        KeyEvent event;
+        event.key_code = 12;
+        writer.Send(event);
 
-        EventBus bus;
-        EventWriter writer = bus.GetEventWriter();
-        EventReader reader = bus.GetEventReader<KeyEvent>();
-        
-        KeyEvent key;
-        key.key_code = 42;
-        writer.Send(key);
-        bus.Update();
-        key.key_code = 83;
-        writer.Send(key);
-        key.key_code = 16;
-        writer.Send(key);
+        EventReader<KeyEvent> reader = m_event_bus.GetEventReader<KeyEvent>();
+        KeyEvent recv = reader.NextEvent().value();
 
-        
-        auto event = reader.NextEvent(); 
-        while (event.has_value()) {
-            info("key event: {}", event.value().key_code);
-            event = reader.NextEvent(); 
-        }
+        info("bus test: {}", recv.key_code);
     }
     
     void Update(f32 delta_time) override {
         trace("updating: {}", delta_time); 
+    }
+
+    void Shutdown() override {
+        
     }
 };
 
