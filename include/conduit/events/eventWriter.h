@@ -1,6 +1,8 @@
 #ifndef CNDT_EVENT_WRITER_H
 #define CNDT_EVENT_WRITER_H
 
+#include "conduit/logging.h"
+
 #include "conduit/internal/events/eventRegister.h"
 
 #include <memory>

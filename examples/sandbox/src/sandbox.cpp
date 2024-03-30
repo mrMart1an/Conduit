@@ -32,6 +32,7 @@ public:
         m_event_bus.AddCallback<WindowResize>(winCall);
         
         EventWriter writer = m_event_bus.GetEventWriter();
+        EventReader reader = m_event_bus.GetEventReader<KeyEvent>();
         
         WindowResize resize;
         KeyEvent event;
@@ -43,6 +44,10 @@ public:
 
         m_event_bus.Update();
         
+        for (auto& event : reader) {
+            info("reader key event: {}", event.key_code);
+        }
+
         resize.height = 20; resize.width = 32;
         writer.Send(resize);
         resize.height = 2320; resize.width = 334322;
