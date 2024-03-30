@@ -2,6 +2,7 @@
 #define CNDT_EVENT_READER_H
 
 #include "conduit/defines.h"
+#include "conduit/logging.h"
 
 #include "conduit/internal/events/eventBuffer.h"
 
@@ -15,18 +16,36 @@ namespace cndt {
  *
  * */
 
+// Event reader iterator definition
+template <class EventType>
+class EventIterator;
+
 // Read component from the event bus that generated it
 template<class EventType>
-class EventReader {
+class EventReader 
+{
+    friend class EventIterator<EventType>;
+
     // Private type definition for readability
     using EventBufferPtr = std::weak_ptr<internal::EventBuffer<EventType>>;
+
+public:
+    // Event reader iterator 
+    using Iterator = EventIterator<EventType>;   
     
 public:
     EventReader(EventBufferPtr buffer);
+
+    // Return an iterator pointing to the first event,
+    // obtaining the iterator and incrementing it will consume events
+    Iterator begin() { return Iterator(this, false); }
+
+    // Return an iterator pointing to the end of the events queue
+    Iterator end() { return Iterator(this, true); }
     
+private:
     // Return the next event on the bus with the same type of the event reader 
     // this function never return the same event
-    // TEMPORARY (Iterator in the future)
     const EventType* NextEvent(); 
     
 private:
@@ -39,6 +58,62 @@ private:
 
     // Store the buffer event for the event reader type
     EventBufferPtr m_buffer_p;
+};
+
+// Event reader iterator definition
+template<class EventType>
+class EventIterator 
+{
+public:
+    using iterator_category = std::input_iterator_tag;
+    using difference_type   = std::ptrdiff_t;
+    
+    using value_type        = EventType;
+    using pointer           = const EventType*;
+    using reference         = const EventType&;
+    
+    // Constructor the iterator from an event reader 
+    EventIterator(EventReader<EventType> *reader_p, bool end) 
+        : m_reader_p(reader_p), m_event_p(nullptr) 
+    {
+        if (!end) {
+            m_event_p = m_reader_p->NextEvent();
+        }
+    }
+
+    // Prefix increment
+    EventIterator& operator++() 
+    { 
+        m_event_p = m_reader_p->NextEvent(); 
+        return *this;
+    } 
+    // Postfix increment
+    EventIterator operator++(int) 
+    { 
+        EventIterator tmp = *this;
+        m_event_p = m_reader_p->NextEvent(); 
+        return tmp;
+    }        
+    
+    reference operator*() const { return *m_event_p; }
+    pointer operator->() const { return m_event_p; }
+    
+    friend bool operator== (const EventIterator& a, const EventIterator& b) 
+    {
+        return a.m_event_p == b.m_event_p; 
+    };
+    friend bool operator!= (const EventIterator& a, const EventIterator& b) 
+    {
+        return a.m_event_p != b.m_event_p; 
+    };     
+    
+private:
+    // Store a reference to the parent event reader
+    EventReader<EventType> *m_reader_p;
+    
+    // Point to the pointer to the current event
+    pointer m_event_p;
+
 };
 
 /*
@@ -61,7 +136,8 @@ EventReader<EventType>::EventReader(
 // Return the next event on the bus with the same type of the event reader 
 // this function never return the same event
 template<class EventType>
-const EventType* EventReader<EventType>::NextEvent() {
+const EventType* EventReader<EventType>::NextEvent() 
+{
     if (auto buffer_p = m_buffer_p.lock()) {
         auto& new_buffer = buffer_p->GetCurrentEvents(); 
         auto& old_buffer = buffer_p->GetOldEvents(); 
@@ -98,7 +174,7 @@ const EventType* EventReader<EventType>::NextEvent() {
     // Return nullopt if no events are available
     return nullptr;
 }
-
+    
 } // namespace cndt
 
 #endif
