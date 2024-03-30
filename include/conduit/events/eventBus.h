@@ -1,19 +1,16 @@
 #ifndef CNDT_EVENT_BUS_H
 #define CNDT_EVENT_BUS_H
 
+#include "conduit/events/eventReader.h"
+#include "conduit/events/eventWriter.h"
+
 #include "conduit/internal/events/callbackRegister.h"
-#include "conduit/internal/events/eventBuffer.h"
 #include "conduit/internal/events/eventRegister.h"
 
 #include <functional>
 #include <memory>
 
 namespace cndt {
-
-class EventWriter;
-
-template<class EventType>
-class EventReader;
 
 /*
  *
@@ -29,6 +26,10 @@ class EventBus {
     
     // Store an id to a event type
     using EventTypeId = u64;
+    
+    // Callback function type
+    template <class EventType>
+    using CallbackFn = std::function<void(const EventType*)>;
     
 public:
     EventBus();
@@ -46,7 +47,7 @@ public:
 
     // Add callbacks to the bus
     template<class EventType>
-    void AddCallback(std::function<void(const EventType*)> callback_fn);
+    void AddCallback(CallbackFn<EventType> callback_fn);
 
 private:
     // Store event buffers
@@ -73,11 +74,10 @@ EventReader<EventType> EventBus::GetEventReader() {
 // Add callbacks to the bus
 template<class EventType>
 void EventBus::AddCallback(
-    std::function<void(const EventType*)> callback_fn
+    EventBus::CallbackFn<EventType> callback_fn
 ) {
     auto event_buffer_p = m_event_register->GetEventBuffer<EventType>();
-
-    m_callback_register.AddCallback(event_buffer_p, callback_fn);
+    m_callback_register.AddCallback<EventType>(event_buffer_p, callback_fn);
 }
 
 } // namespace cndt

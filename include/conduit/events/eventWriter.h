@@ -1,14 +1,11 @@
 #ifndef CNDT_EVENT_WRITER_H
 #define CNDT_EVENT_WRITER_H
 
-#include "conduit/events/eventBus.h"
 #include "conduit/internal/events/eventRegister.h"
 
 #include <memory>
 
 namespace cndt {
-
-class EventBus;
 
 /*
  *
@@ -46,6 +43,9 @@ void EventWriter::Send(const EventType& event) {
         
         // Add the event to the end of the buffer
         event_buffer.lock()->Append(event);
+    } else {
+        // If the event register was deleted log a error message
+        log::core::error("EventWriter::Send -> event register was deleted}");
     }
 }
 

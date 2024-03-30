@@ -2,7 +2,6 @@
 #define CNDT_EVENT_BUFFER_H
 
 #include "conduit/defines.h"
-#include "conduit/logging.h"
 
 #include <vector>
 
@@ -17,7 +16,7 @@ class EventReader;
 namespace cndt::internal {
 
 // Event buffer starting capacity
-constexpr usize default_buffer_size = 10;
+constexpr usize event_buffer_default_size = 10;
 
 /*
  *
@@ -33,9 +32,6 @@ class EventBufferBase {
 public:
     EventBufferBase() = default;
     virtual ~EventBufferBase() = default;
-
-    // Clear the event buffer 
-    virtual void Clear() = 0;
 
     // Swap buffers and clear old events
     virtual void Update() = 0;
@@ -55,10 +51,7 @@ template <class EventType>
 class EventBuffer : public EventBufferBase {
 public:
     EventBuffer();
-    ~EventBuffer();
 
-    // Clear the event buffer 
-    void Clear() override;
     // Swap buffers and clear old events
     void Update() override;
     
@@ -86,23 +79,9 @@ private:
 // Event buffer constructor
 template <class EventType>
 EventBuffer<EventType>::EventBuffer() {
-    log::core::trace("Event buffer constructor");
-
     // Reserve the buffer default size
-    m_events_odd.reserve(default_buffer_size);
-    m_events_even.reserve(default_buffer_size);
-}
-template <class EventType>
-EventBuffer<EventType>::~EventBuffer() {
-    log::core::trace("Event buffer destroyed");
-}
-
-// Clear the event buffer 
-template <class EventType>
-void EventBuffer<EventType>::Clear() {
-    // Clear both buffers
-    m_events_even.clear();
-    m_events_odd.clear();
+    m_events_odd.reserve(event_buffer_default_size);
+    m_events_even.reserve(event_buffer_default_size);
 }
 
 // Swap buffers and clear old events
