@@ -78,8 +78,10 @@ EventRegister::EventTypeId EventRegister::GetEventTypeId()
 template<class EventType>
 void EventRegister::AddEventType() 
 {
-    // Check if the component already exist 
-    bool type_exist = GetEventTypeId<EventType>() < m_event_buffers.size();
+    // Static variable initialize to false the first time the function
+    // is called, this variable is set to true after adding 
+    // the type to the register
+    static bool type_exist = false;
 
     if (!type_exist) {
         // Generate the two buffers for odd and even updates
@@ -87,6 +89,9 @@ void EventRegister::AddEventType()
 
         // push them to the end of the vector
         m_event_buffers.push_back(std::move(buffer));
+        
+        // Set type exist to true for the given type
+        type_exist = true;
     }
 }
 
