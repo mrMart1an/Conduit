@@ -1,31 +1,30 @@
-#include "conduit/defines.h"
-
 #include "conduit/events/eventBus.h"
 #include "conduit/events/eventWriter.h"
 
+#include <memory>
+
 namespace cndt {
 
-// Default starting capacity of the buffers storage vectors
-constexpr usize default_buffers_size = 30;
-
 // Construct the event bus
-EventBus::EventBus() : m_type_id_last(0) {
-    // Reserve space for the default events
-    m_event_buffers.reserve(default_buffers_size);
-}
+EventBus::EventBus() :
+    m_event_register(std::make_shared<internal::EventRegister>()) 
+{ }
+
 EventBus::~EventBus() { }
 
 // Return an event writer
 EventWriter EventBus::GetEventWriter() {
-    return EventWriter(this);
+    return EventWriter(m_event_register);
 }
 
 // Swap the event buffers and run all the callbacks
 void EventBus::Update() {
-    // Update the event buffers
-    for (auto &buffer : m_event_buffers) {
-        buffer->Update();
-    }
+    // Executing all the callbacks before swapping buffer
+    // in event register update
+    m_callback_register.ExecuteCallback();
+    
+    // Update the event register
+    m_event_register->Update();
 }
 
 } // namespace cndt
