@@ -1,6 +1,8 @@
 # Event systems source files
 event_src = [
-    'events/eventSystem.cpp'
+    'events/eventSystem.cpp',
+    'events/eventCallback.cpp',
+    'events/eventRegister.cpp'
 ]
 
 # Engine core source files

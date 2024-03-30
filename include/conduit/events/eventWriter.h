@@ -1,8 +1,10 @@
 #ifndef CNDT_EVENT_WRITER_H
 #define CNDT_EVENT_WRITER_H
 
-#include "conduit/internal/events/eventBuffer.h"
 #include "conduit/events/eventBus.h"
+#include "conduit/internal/events/eventRegister.h"
+
+#include <memory>
 
 namespace cndt {
 
@@ -17,7 +19,9 @@ class EventBus;
 // Write event to the event bus that generated it 
 class EventWriter {
 public:   
-    EventWriter(EventBus *bus) : m_bus(bus) {};
+    EventWriter(std::shared_ptr<internal::EventRegister> event_register) 
+        : m_event_register(event_register) 
+    { };
     
     // Send an event to the event bus that generated the writer
     template<class EventType>
@@ -25,7 +29,7 @@ public:
 
 private:
     // Reference to the event bus that generated the event writer
-    EventBus *m_bus;
+    std::weak_ptr<internal::EventRegister> m_event_register;
 };
 
 /*
@@ -37,10 +41,12 @@ private:
 template<class EventType>
 void EventWriter::Send(const EventType& event) {
     // Get a reference to the type event buffers
-    auto event_buffer = m_bus->GetEventBuffer<EventType>(); 
-
-    // Add the event to the end of the buffer
-    event_buffer->Append(event);
+    if (auto event_register = m_event_register.lock()) {
+        auto event_buffer = event_register->GetEventBuffer<EventType>(); 
+        
+        // Add the event to the end of the buffer
+        event_buffer.lock()->Append(event);
+    }
 }
 
 } // namespace cndt

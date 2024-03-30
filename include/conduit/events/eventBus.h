@@ -1,8 +1,11 @@
 #ifndef CNDT_EVENT_BUS_H
 #define CNDT_EVENT_BUS_H
 
+#include "conduit/internal/events/callbackRegister.h"
 #include "conduit/internal/events/eventBuffer.h"
+#include "conduit/internal/events/eventRegister.h"
 
+#include <functional>
 #include <memory>
 
 namespace cndt {
@@ -20,8 +23,12 @@ class EventReader;
 
 // Double buffered event bus
 class EventBus {
-    // Event writer friend class
-    friend class EventWriter;
+    // Private type definition for readability
+    template <class EventType>
+    using EventBufferPtr = std::shared_ptr<internal::EventBuffer<EventType>>;
+    
+    // Store an id to a event type
+    using EventTypeId = u64;
     
 public:
     EventBus();
@@ -37,29 +44,16 @@ public:
     template<class EventType>
     EventReader<EventType> GetEventReader();
 
-private:
-    // Store an id to a event type
-    typedef u64 EventTypeId;
-    
-    // Return an unique id for each event type added to this bus
+    // Add callbacks to the bus
     template<class EventType>
-    EventTypeId GetEventTypeId();     
-
-    // Add the event type to the bus if it doesn't already exist
-    template<class EventType>
-    void AddEventType();
-
-    // Get an event buffer for the specific type
-    // if the event doesn't exist create it
-    template<class EventType>
-    internal::EventBuffer<EventType>* GetEventBuffer();
+    void AddCallback(std::function<void(const EventType*)> callback_fn);
 
 private:
     // Store event buffers
-    std::vector<std::shared_ptr<internal::EventBufferBase>> m_event_buffers;
+    std::shared_ptr<internal::EventRegister> m_event_register;
 
-    // Count the number of events types stored in the bus
-    EventTypeId m_type_id_last;
+    // Store the event callbacks
+    internal::CallbackRegister m_callback_register;
 };
 
 /*
@@ -71,42 +65,19 @@ private:
 // Return an event reader for this bus
 template<class EventType>
 EventReader<EventType> EventBus::GetEventReader() {
-    return EventReader<EventType>( GetEventBuffer<EventType>() );
-}
-
-// Return an unique id for each event type added to this bus
-template<class EventType>
-EventBus::EventTypeId EventBus::GetEventTypeId() {
-    static EventTypeId type_id = m_type_id_last++;
-    return type_id;
-}
-
-// Add the event type to the bus if it doesn't already exist
-template<class EventType>
-void EventBus::AddEventType() {
-    // Check if the component exist only for the first time
-    bool type_exist = GetEventTypeId<EventType>() < m_event_buffers.size();
-
-    if (!type_exist) {
-        // Generate the two buffers for odd and even updates
-        auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
-
-        // push them to the end of the vector
-        m_event_buffers.push_back(std::move(buffer));
-    }
-}
-
-// Get an event buffer for the specific type
-// if the event doesn't exist create it
-template<class EventType>
-internal::EventBuffer<EventType>* EventBus::GetEventBuffer() {
-    // Create the buffer if it doesn't already exist and get the type id
-    AddEventType<EventType>();
-    EventTypeId type_id = GetEventTypeId<EventType>();
-
-    return static_cast<internal::EventBuffer<EventType>*>(
-        m_event_buffers[type_id].get()
+    return EventReader<EventType>( 
+        m_event_register->GetEventBuffer<EventType>() 
     );
+}
+
+// Add callbacks to the bus
+template<class EventType>
+void EventBus::AddCallback(
+    std::function<void(const EventType*)> callback_fn
+) {
+    auto event_buffer_p = m_event_register->GetEventBuffer<EventType>();
+
+    m_callback_register.AddCallback(event_buffer_p, callback_fn);
 }
 
 } // namespace cndt

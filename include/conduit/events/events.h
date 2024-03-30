@@ -12,6 +12,11 @@ struct KeyEvent {
     u16 mods;
 };
 
+struct WindowResize { 
+    u32 width;
+    u32 height;
+};
+
 } // namespace cndt
 
 #endif
