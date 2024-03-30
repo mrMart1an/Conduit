@@ -3,6 +3,7 @@
 #define CNDT_CALLBACK_BUFFER_H
 
 #include "conduit/internal/events/eventBuffer.h"
+#include "conduit/logging.h"
 
 #include <functional>
 #include <memory>
@@ -89,6 +90,12 @@ void CallbackBuffer<EventType>::CallAll()
                 callback_fn(&event);
             }
         }
+    } else {
+        // If the event buffer was deleted log a error message
+        log::core::error(
+            "CallbackBuffer::CallAll -> event buffer was deleted; Type: {}",
+            typeid(EventType).name()
+        );
     }
 }
 

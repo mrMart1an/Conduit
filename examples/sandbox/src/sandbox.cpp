@@ -2,7 +2,6 @@
 
 #include "conduit/application.h"
 
-#include "conduit/events/eventReader.h"
 #include "conduit/events/eventWriter.h"
 #include "conduit/events/events.h"
 #include "conduit/logging.h"

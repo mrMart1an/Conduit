@@ -2,14 +2,12 @@
 #define CNDT_EVENT_READER_H
 
 #include "conduit/defines.h"
+
 #include "conduit/internal/events/eventBuffer.h"
-#include "conduit/events/eventBus.h"
 
 #include <memory>
 
 namespace cndt {
-
-class EventBus;
 
 /*
  *
@@ -89,6 +87,12 @@ const EventType* EventReader<EventType>::NextEvent() {
             m_current_buffer_index += 1;
             return &new_buffer[m_current_buffer_index - 1];
         }
+    } else {
+        // If the event buffer was deleted log a error message
+        log::core::error(
+            "EventReader::NextEvent -> event buffer was deleted; Type: {}",
+            typeid(EventType).name()
+        );
     }
             
     // Return nullopt if no events are available
