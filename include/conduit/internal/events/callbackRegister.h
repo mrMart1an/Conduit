@@ -4,10 +4,8 @@
 #include "conduit/internal/events/eventBuffer.h"
 #include "conduit/internal/events/callbackBuffer.h"
 
-#include <algorithm>
 #include <functional>
 #include <memory>
-#include <utility>
 #include <vector>
 
 namespace cndt::internal {
