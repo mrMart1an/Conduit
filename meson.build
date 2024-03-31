@@ -117,6 +117,9 @@ private_inc = include_directories('src')
 # Define a variable 'engine_source' containing all the engine source files
 subdir('src')
 
+# Define the library pre-compiled header file
+pch_file = 'pch/stdlibPch.h'
+
 # Define target dependencies 
 cglm_dep = dependency('glm', fallback: ['glm', 'glm_dep'], static : true)
 glfw_dep = dependency(
@@ -132,6 +135,7 @@ vulkan_dep = dependency('vulkan', required: vulkan_enable)
 engine_lib = static_library(
     meson.project_name(), 
     [engine_source, buitin_shaders],
+    cpp_pch : pch_file,
     include_directories : [public_inc, private_inc, config_inc],
     dependencies : [glfw_dep, cglm_dep, vulkan_dep],
     install : true
