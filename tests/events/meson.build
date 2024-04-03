@@ -2,7 +2,9 @@
 callback_test = executable(
     'callback_test',
     'callbacks.cpp',
-    dependencies : [engine_lib_test_dep, gtest_dep]
+    dependencies : [engine_lib_test_dep, gtest_dep],
+
+    cpp_pch : '../pch/testPch.h'
 )
 test('callback_test', callback_test)
 

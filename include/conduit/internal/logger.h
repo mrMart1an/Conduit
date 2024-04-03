@@ -31,18 +31,18 @@ public:
 
     // Configuration functions
     
-    // Set the status of the terminal color
-    inline void SetColor(bool enable_color) {
+    // Set the status of the terminal color output
+    inline void setColor(bool enable_color) {
         m_terminal_color = enable_color;
     }
     
     // Change the maximum logging level
-    inline void SetLoggingLevel(LogLevel log_lvl) {
+    inline void setLoggingLevel(LogLevel log_lvl) {
         m_log_level = log_lvl;
     }
 
     // Change the time formatting string
-    inline void SetTimeFormatting(std::string time_fmt_str) {
+    inline void setTimeFormatting(std::string time_fmt_str) {
         m_time_fmt = time_fmt_str;
     }
     
@@ -50,44 +50,44 @@ public:
      
     // Take a string and format it with the provided arguments
     template <typename... Args>
-    void Log(LogLevel lvl, std::string_view fmt_str, Args... args) const;
+    void log(LogLevel lvl, std::string_view fmt_str, Args... args) const;
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level trace
     template <typename... Args>
-    void Trace(Args... args) const { Log(LogLevel::Trace, args...); };
+    void trace(Args... args) const { log(LogLevel::Trace, args...); };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level debug
     template <typename... Args>
-    void Debug(Args... args) const { Log(LogLevel::Debug, args...); };
+    void debug(Args... args) const { log(LogLevel::Debug, args...); };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level info
     template <typename... Args>
-    void Info(Args... args) const { Log(LogLevel::Info, args...); };
+    void info(Args... args) const { log(LogLevel::Info, args...); };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level warning
     template <typename... Args>
-    void Warn(Args... args) const { Log(LogLevel::Warning, args...); };
+    void warn(Args... args) const { log(LogLevel::Warning, args...); };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level error
     template <typename... Args>
-    void Error(Args... args) const { Log(LogLevel::Error, args...); };
+    void error(Args... args) const { log(LogLevel::Error, args...); };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level fatal
     template <typename... Args>
-    void Fatal(Args... args) const { Log(LogLevel::Fatal, args...); };
+    void fatal(Args... args) const { log(LogLevel::Fatal, args...); };
     
 private:
     // Return a string representation of the given logging level 
-    std::string LevelToString(LogLevel level) const;
+    std::string levelToString(LogLevel level) const;
 
     // Return a string containing the formatted current time
-    std::string CurrentTimeString() const;
+    std::string currentTimeString() const;
     
 private:
     // The name of the logger used in the header
@@ -105,14 +105,14 @@ private:
 // Take a string and format it with the provided arguments, 
 // then log it to stdout
 template <typename... Args>
-void Logger::Log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
+void Logger::log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
     // Immediately return it the logging level is too low 
     if (lvl < m_log_level)
         return;
 
     // Get the logging level string and the time string
-    std::string level_str = LevelToString(lvl);
-    std::string time_str = CurrentTimeString();
+    std::string level_str = levelToString(lvl);
+    std::string time_str = currentTimeString();
 
     // Print the log header
     std::cout << std::format(

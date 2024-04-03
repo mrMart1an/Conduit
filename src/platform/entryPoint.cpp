@@ -10,7 +10,7 @@ int main(void) {
     cndt::AppRunner app = cndt::getEntryClass();
     
     // Run the application
-    app.Run();
+    app.run();
 
     return 0;
 }
