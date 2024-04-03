@@ -1,5 +1,5 @@
-#ifndef CNDT_ASSERT_H
-#define CNDT_ASSERT_H
+#ifndef CNDT_APPLICATION_H
+#define CNDT_APPLICATION_H
 
 #include "conduit/defines.h"
 
@@ -8,9 +8,6 @@
 #include <memory>
 
 namespace cndt {
-
-// Run the application
-class AppRunner;
 
 // Base application class 
 class Application {
@@ -58,6 +55,6 @@ std::unique_ptr<Application> getEntryClass();
 #define CNDT_ENTRY_CLASS(Type)                                  \
     std::unique_ptr<cndt::Application> cndt::getEntryClass() {  \
         return std::make_unique<Type>();                        \
-    }                                                            
+    }  
 
 #endif

@@ -21,13 +21,6 @@ void winCall(const WindowResize* event) {
 class Sandbox : public cndt::Application {
 public:
     void Startup() override {
-        trace("test {} {} {}", 3, 3.14, "conduit");
-        debug("test {} {} {}", 3, 3.14, "conduit");
-        info("test {} {} {}", 3, 3.14, "conduit");
-        warn("test {} {} {}", 3, 3.14, "conduit");
-        error("test {} {} {}", 3, 3.14, "conduit");
-        fatal("test {} {} {}", 3, 3.14, "conduit");
-
         m_event_bus.AddCallback<KeyEvent>(keyCall);
         m_event_bus.AddCallback<WindowResize>(winCall);
         
