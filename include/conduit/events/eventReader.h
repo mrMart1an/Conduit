@@ -26,7 +26,7 @@ class EventReader
 {
     friend class EventIterator<EventType>;
 
-    // Private type definition for readability
+    // Private event buffer type definition for readability
     using EventBufferPtr = std::weak_ptr<internal::EventBuffer<EventType>>;
 
 public:
@@ -46,7 +46,7 @@ public:
 private:
     // Return the next event on the bus with the same type of the event reader 
     // this function never return the same event
-    const EventType* NextEvent(); 
+    const EventType* nextEvent(); 
     
 private:
     // Store the buffer index reached by the reader in the current update
@@ -77,21 +77,21 @@ public:
         : m_reader_p(reader_p), m_event_p(nullptr) 
     {
         if (!end) {
-            m_event_p = m_reader_p->NextEvent();
+            m_event_p = m_reader_p->nextEvent();
         }
     }
 
     // Prefix increment
     EventIterator& operator++() 
     { 
-        m_event_p = m_reader_p->NextEvent(); 
+        m_event_p = m_reader_p->nextEvent(); 
         return *this;
     } 
     // Postfix increment
     EventIterator operator++(int) 
     { 
         EventIterator tmp = *this;
-        m_event_p = m_reader_p->NextEvent(); 
+        m_event_p = m_reader_p->nextEvent(); 
         return tmp;
     }        
     
@@ -136,11 +136,11 @@ EventReader<EventType>::EventReader(
 // Return the next event on the bus with the same type of the event reader 
 // this function never return the same event
 template<class EventType>
-const EventType* EventReader<EventType>::NextEvent() 
+const EventType* EventReader<EventType>::nextEvent() 
 {
     if (auto buffer_p = m_buffer_p.lock()) {
-        auto& new_buffer = buffer_p->GetCurrentEvents(); 
-        auto& old_buffer = buffer_p->GetOldEvents(); 
+        auto& new_buffer = buffer_p->getCurrentEvents(); 
+        auto& old_buffer = buffer_p->getOldEvents(); 
     
         // Calculate the new index if the update counts don't match
         u64 delta_update = buffer_p->m_update_count - m_last_buffer_update;

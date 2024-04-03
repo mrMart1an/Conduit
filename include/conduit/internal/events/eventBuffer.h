@@ -34,11 +34,11 @@ public:
     virtual ~EventBufferBase() = default;
 
     // Swap buffers and clear old events
-    virtual void Update() = 0;
+    virtual void update() = 0;
 
 protected:
     // Return true if the current update is odd
-    inline bool UpdateIsOdd() { return m_update_count % 2; };
+    inline bool updateIsOdd() { return m_update_count % 2; };
 
 protected:
     // Update counter, used by the bus to swap between buffers 
@@ -53,15 +53,15 @@ public:
     EventBuffer();
 
     // Swap buffers and clear old events
-    void Update() override;
+    void update() override;
     
     // Append an event to the buffer
-    void Append(const EventType& event);
+    void append(const EventType& event);
 
-    // Return a reference to the events in the current update vectors
-    std::vector<EventType>& GetCurrentEvents();
-    // Return a reference to the events in the last update vectors
-    std::vector<EventType>& GetOldEvents();
+    // Return a reference to the events current update vectors
+    std::vector<EventType>& getCurrentEvents();
+    // Return a reference to the events last update vectors
+    std::vector<EventType>& getOldEvents();
     
 private:
     // Store the events during odd updates
@@ -79,16 +79,16 @@ private:
 // Event buffer constructor
 template <class EventType>
 EventBuffer<EventType>::EventBuffer() {
-    // Reserve the buffer default size
+    // Reserve the buffer with the default size
     m_events_odd.reserve(event_buffer_default_size);
     m_events_even.reserve(event_buffer_default_size);
 }
 
 // Swap buffers and clear old events
 template <class EventType>
-void EventBuffer<EventType>::Update() {
+void EventBuffer<EventType>::update() {
     // Clear the buffer for the next update
-    GetOldEvents().clear();
+    getOldEvents().clear();
 
     // Increase the event buffers
     m_update_count += 1;
@@ -96,20 +96,20 @@ void EventBuffer<EventType>::Update() {
 
 // Append an event to the buffer
 template <class EventType>
-void EventBuffer<EventType>::Append(const EventType& event) {
-    GetCurrentEvents().push_back(event);
+void EventBuffer<EventType>::append(const EventType& event) {
+    getCurrentEvents().push_back(event);
 }
 
 // Return a reference to the events in the current update vectors
 template <class EventType>
-std::vector<EventType>& EventBuffer<EventType>::GetCurrentEvents() {
-    return UpdateIsOdd() ? m_events_odd : m_events_even;
+std::vector<EventType>& EventBuffer<EventType>::getCurrentEvents() {
+    return updateIsOdd() ? m_events_odd : m_events_even;
 }
 
 // Return a reference to the events in the last update vectors
 template <class EventType>
-std::vector<EventType>& EventBuffer<EventType>::GetOldEvents() {
-    return UpdateIsOdd() ? m_events_even : m_events_odd;
+std::vector<EventType>& EventBuffer<EventType>::getOldEvents() {
+    return updateIsOdd() ? m_events_even : m_events_odd;
 }
 
 } // namespace cndt::internal

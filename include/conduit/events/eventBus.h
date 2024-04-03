@@ -24,30 +24,30 @@ class EventBus {
     template <class EventType>
     using EventBufferPtr = std::shared_ptr<internal::EventBuffer<EventType>>;
     
-    // Store an id to a event type
-    using EventTypeId = u64;
-    
     // Callback function type
     template <class EventType>
     using CallbackFn = std::function<void(const EventType*)>;
+        
+    // Store an id to a event type
+    using EventTypeId = u64;
     
 public:
     EventBus();
     ~EventBus();
     
     // Swap the event buffers and run all the callbacks
-    void Update();
+    void update();
     
     // Return an event writer for this bus
-    EventWriter GetEventWriter();
+    EventWriter getEventWriter();
 
     // Return an event reader for this bus
     template<class EventType>
-    EventReader<EventType> GetEventReader();
+    EventReader<EventType> getEventReader();
 
     // Add callbacks to the bus
     template<class EventType>
-    void AddCallback(CallbackFn<EventType> callback_fn);
+    void addCallback(CallbackFn<EventType> callback_fn);
 
 private:
     // Store event buffers
@@ -65,19 +65,19 @@ private:
 
 // Return an event reader for this bus
 template<class EventType>
-EventReader<EventType> EventBus::GetEventReader() {
+EventReader<EventType> EventBus::getEventReader() {
     return EventReader<EventType>( 
-        m_event_register->GetEventBuffer<EventType>() 
+        m_event_register->getEventBuffer<EventType>() 
     );
 }
 
 // Add callbacks to the bus
 template<class EventType>
-void EventBus::AddCallback(
+void EventBus::addCallback(
     EventBus::CallbackFn<EventType> callback_fn
 ) {
-    auto event_buffer_p = m_event_register->GetEventBuffer<EventType>();
-    m_callback_register.AddCallback<EventType>(event_buffer_p, callback_fn);
+    auto event_buffer_p = m_event_register->getEventBuffer<EventType>();
+    m_callback_register.addCallback<EventType>(event_buffer_p, callback_fn);
 }
 
 } // namespace cndt

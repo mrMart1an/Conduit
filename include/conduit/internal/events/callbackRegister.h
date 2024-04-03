@@ -25,12 +25,12 @@ class CallbackRegister {
     using EventBufferPtr = std::weak_ptr<EventBuffer<EventType>>;
     
 public:
-    // Execute all the callbacks in the register
-    void ExecuteCallback();
+    // Execute all the callbacks in the register for all the event types
+    void executeCallback();
 
-    // Add a callback to the callback register
+    // Add a callback function to the callback register
     template<class EventType>
-    void AddCallback(
+    void addCallback(
         EventBufferPtr<EventType> event_buffer_p,
         CallbackFn<EventType> callback_fn
     );
@@ -38,11 +38,11 @@ public:
 private:
     // Return an unique id for each event type added to this register
     template<class EventType>
-    EventTypeId GetEventTypeId();     
+    EventTypeId getEventTypeId();     
     
     // Add the event type to the register if it doesn't already exist
     template<class EventType>
-    void AddEventType(EventBufferPtr<EventType> event_buffer_p);
+    void addEventType(EventBufferPtr<EventType> event_buffer_p);
     
 private:
     // Event buffer vector
@@ -60,13 +60,13 @@ private:
  
 // Add a callback to the callback register
 template<class EventType>
-void CallbackRegister::AddCallback(
+void CallbackRegister::addCallback(
     CallbackRegister::EventBufferPtr<EventType> event_buffer_p,
     CallbackRegister::CallbackFn<EventType> callback_fn
 ) {
     // Create the buffer if it doesn't already exist and get the type id
-    AddEventType<EventType>(std::move(event_buffer_p));
-    EventTypeId type_id = GetEventTypeId<EventType>();
+    addEventType<EventType>(std::move(event_buffer_p));
+    EventTypeId type_id = getEventTypeId<EventType>();
     
     // Get a raw pointer to the callback buffer
     auto buffer = static_cast<CallbackBuffer<EventType>*>(
@@ -74,12 +74,12 @@ void CallbackRegister::AddCallback(
     );
 
     // Add the callback
-    buffer->AddCallback(callback_fn);
+    buffer->addCallback(callback_fn);
 }
 
 // Return an unique id for each event type added to this register
 template<class EventType>
-CallbackRegister::EventTypeId CallbackRegister::GetEventTypeId() 
+CallbackRegister::EventTypeId CallbackRegister::getEventTypeId() 
 {
     static EventTypeId type_id = m_type_id_last++;
     return type_id;
@@ -87,7 +87,7 @@ CallbackRegister::EventTypeId CallbackRegister::GetEventTypeId()
 
 // Add the event type to the register if it doesn't already exist
 template<class EventType>
-void CallbackRegister::AddEventType(
+void CallbackRegister::addEventType(
     CallbackRegister::EventBufferPtr<EventType> event_buffer_p
 ) {
     // Static variable initialize to false the first time the function
