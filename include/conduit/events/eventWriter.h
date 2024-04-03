@@ -24,10 +24,10 @@ public:
     
     // Send an event to the event bus that generated the writer
     template<class EventType>
-    void Send(const EventType& event);
+    void send(const EventType& event);
 
 private:
-    // Reference to the event bus that generated the event writer
+    // Reference to the event register that generated the event writer
     std::weak_ptr<internal::EventRegister> m_event_register;
 };
 
@@ -38,13 +38,15 @@ private:
  * */
 
 template<class EventType>
-void EventWriter::Send(const EventType& event) {
+void EventWriter::send(const EventType& event) {
     // Get a reference to the type event buffers
     if (auto event_register = m_event_register.lock()) {
-        auto event_buffer = event_register->GetEventBuffer<EventType>(); 
+        auto event_buffer = event_register->getEventBuffer<EventType>(); 
         
         // Add the event to the end of the buffer
-        event_buffer.lock()->Append(event);
+        // (this shouldn't fail because m_event_register exist)
+        event_buffer.lock()->append(event);
+        
     } else {
         // If the event register was deleted log a error message
         log::core::error("EventWriter::Send -> event register was deleted}");

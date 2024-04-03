@@ -13,9 +13,9 @@ EventRegister::EventRegister()
 }
 
 // Swap and clear the event buffers
-void EventRegister::Update() {
+void EventRegister::update() {
     for (auto& buffer : m_event_buffers) {
-        buffer->Update();
+        buffer->update();
     }
 }
 

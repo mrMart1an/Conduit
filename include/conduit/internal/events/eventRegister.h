@@ -22,21 +22,21 @@ public:
     EventRegister();
     
     // Swap and clear the event buffers
-    void Update();
+    void update();
     
     // Get an event buffer for the specific type
     // if the event doesn't exist create it
     template<class EventType>
-    std::weak_ptr<EventBuffer<EventType>> GetEventBuffer();
+    std::weak_ptr<EventBuffer<EventType>> getEventBuffer();
 
 private:
     // Return an unique id for each event type added to this register
     template<class EventType>
-    EventTypeId GetEventTypeId();     
+    EventTypeId getEventTypeId();     
     
     // Add the event type to the register if it doesn't already exist
     template<class EventType>
-    void AddEventType();
+    void addEventType();
     
 private:
     // Store event buffers
@@ -55,11 +55,11 @@ private:
 // Get an event buffer for the specific type
 // if the event doesn't exist create it
 template<class EventType>
-std::weak_ptr<EventBuffer<EventType>> EventRegister::GetEventBuffer() 
+std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer() 
 {
     // Create the buffer if it doesn't already exist and get the type id
-    AddEventType<EventType>();
-    EventTypeId type_id = GetEventTypeId<EventType>();
+    addEventType<EventType>();
+    EventTypeId type_id = getEventTypeId<EventType>();
 
     return std::static_pointer_cast<internal::EventBuffer<EventType>>(
         m_event_buffers.at(type_id)
@@ -68,7 +68,7 @@ std::weak_ptr<EventBuffer<EventType>> EventRegister::GetEventBuffer()
 
 // Return an unique id for each event type added to this bus
 template<class EventType>
-EventRegister::EventTypeId EventRegister::GetEventTypeId() 
+EventRegister::EventTypeId EventRegister::getEventTypeId() 
 {
     static EventTypeId type_id = m_type_id_last++;
     return type_id;
@@ -76,7 +76,7 @@ EventRegister::EventTypeId EventRegister::GetEventTypeId()
 
 // Add the event type to the bus if it doesn't already exist
 template<class EventType>
-void EventRegister::AddEventType() 
+void EventRegister::addEventType() 
 {
     // Static variable initialize to false the first time the function
     // is called, this variable is set to true after adding 

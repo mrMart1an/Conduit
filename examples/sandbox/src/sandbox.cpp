@@ -21,34 +21,34 @@ void winCall(const WindowResize* event) {
 class Sandbox : public cndt::Application {
 public:
     void Startup() override {
-        m_event_bus.AddCallback<KeyEvent>(keyCall);
-        m_event_bus.AddCallback<WindowResize>(winCall);
+        m_event_bus.addCallback<KeyEvent>(keyCall);
+        m_event_bus.addCallback<WindowResize>(winCall);
         
-        EventWriter writer = m_event_bus.GetEventWriter();
-        EventReader reader = m_event_bus.GetEventReader<KeyEvent>();
+        EventWriter writer = m_event_bus.getEventWriter();
+        EventReader reader = m_event_bus.getEventReader<KeyEvent>();
         
         WindowResize resize;
         KeyEvent event;
         
         event.key_code = 12;
-        writer.Send(event);
+        writer.send(event);
         event.key_code = 62;
-        writer.Send(event);
+        writer.send(event);
 
-        m_event_bus.Update();
+        m_event_bus.update();
         
         for (auto& event : reader) {
             info("reader key event: {}", event.key_code);
         }
 
         resize.height = 20; resize.width = 32;
-        writer.Send(resize);
+        writer.send(resize);
         resize.height = 2320; resize.width = 334322;
-        writer.Send(resize);
+        writer.send(resize);
         resize.height = 42; resize.width = 69;
-        writer.Send(resize);
+        writer.send(resize);
 
-        m_event_bus.Update();
+        m_event_bus.update();
 
     }
     

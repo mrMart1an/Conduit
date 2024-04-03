@@ -3,11 +3,11 @@
 namespace cndt::internal {
 
 // Execute all the callbacks in the register
-void CallbackRegister::ExecuteCallback() 
+void CallbackRegister::executeCallback() 
 {
     // Execute the callback in all the callback buffers
     for (auto& buffer : m_callback_buffers) {
-        buffer->CallAll();
+        buffer->callAll();
     }
 }
 
