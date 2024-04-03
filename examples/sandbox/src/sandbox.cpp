@@ -20,7 +20,7 @@ void winCall(const WindowResize* event) {
 // Declare the application class
 class Sandbox : public cndt::Application {
 public:
-    void Startup() override {
+    void startup() override {
         m_event_bus.addCallback<KeyEvent>(keyCall);
         m_event_bus.addCallback<WindowResize>(winCall);
         
@@ -52,11 +52,11 @@ public:
 
     }
     
-    void Update(f32 delta_time) override {
+    void update(f32 delta_time) override {
         trace("updating: {}", delta_time); 
     }
 
-    void Shutdown() override {
+    void shutdown() override {
         
     }
 };

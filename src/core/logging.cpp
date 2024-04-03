@@ -71,7 +71,7 @@ Logger::Logger(
 { }
 
 // Return a string representation of the logging level 
-std::string Logger::LevelToString(LogLevel level) const {
+std::string Logger::levelToString(LogLevel level) const {
     const usize color_str_offset = m_terminal_color ? log_level_str_count : 0;
     const usize str_index = static_cast<int>(level) + (color_str_offset); 
     
@@ -81,7 +81,7 @@ std::string Logger::LevelToString(LogLevel level) const {
 }
 
 // Return a string containing the formatted current time
-std::string Logger::CurrentTimeString() const {
+std::string Logger::currentTimeString() const {
     char time_str[128];
 
     time_t now = time(NULL);

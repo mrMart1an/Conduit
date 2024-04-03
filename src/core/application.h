@@ -14,7 +14,7 @@ public:
     AppRunner(std::unique_ptr<Application> application);
 
     // Start the application
-    void Run();
+    void run();
 private:
     // Store the application class in a unique pointer
     std::unique_ptr<Application> m_application_p;

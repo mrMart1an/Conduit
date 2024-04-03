@@ -19,26 +19,26 @@ public:
 
     // Application startup function,
     // called after engine initialization and before stating the main loop
-    virtual void Startup() = 0;
+    virtual void startup() = 0;
 
     // Application update function, 
     // called once per frame to update the scene
-    virtual void Update(f32 delta_time) = 0;
+    virtual void update(f32 delta_time) = 0;
 
     // Application shutdown function,
     // called before the engine shutdown
-    virtual void Shutdown() = 0;
+    virtual void shutdown() = 0;
 
 protected:
     // Start the main application loop
     // this function shouldn't be called by the client
-    void StartMainLoop();
+    void startMainLoop();
 
     // Engine startup function
-    void EngineStatup();
+    void engineStatup();
 
     // Engine shutdown function
-    void EngineShutdown();
+    void engineShutdown();
 
 protected:
     // Application event bus

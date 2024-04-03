@@ -20,17 +20,17 @@ Application::Application() :
 Application::~Application() { };
 
 // Start application main loop
-void Application::StartMainLoop() {
-    Update(0);
+void Application::startMainLoop() {
+    update(0);
 }
 
 // Engine startup function
-void Application::EngineStatup() {
+void Application::engineStatup() {
     
 }
 
 // Engine shutdown function
-void Application::EngineShutdown() {
+void Application::engineShutdown() {
     
 }
 
@@ -46,17 +46,17 @@ AppRunner::AppRunner(std::unique_ptr<Application> application)
 { }
 
 // Run the application
-void AppRunner::Run() {
+void AppRunner::run() {
     // Initialize the engine and setup the application
-    m_application_p->EngineStatup();
-    m_application_p->Startup();
+    m_application_p->engineStatup();
+    m_application_p->startup();
 
     // Start the application main loop
-    m_application_p->StartMainLoop();
+    m_application_p->startMainLoop();
     
     // Quit the application and shutdown the engine
-    m_application_p->Shutdown();
-    m_application_p->EngineShutdown();
+    m_application_p->shutdown();
+    m_application_p->engineShutdown();
 }
 
 } // namespace cndt

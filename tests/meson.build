@@ -7,7 +7,7 @@ gtest_dep = dependency(
 # Engine dependency with private headers for testing
 engine_lib_test_dep = declare_dependency(
     include_directories : [public_inc, private_inc],
-    link_with : engine_lib
+    link_with : engine_lib,
 )
 
 # If unity is not found don't compile the tests
