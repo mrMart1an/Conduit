@@ -1,12 +1,13 @@
 #ifndef CNDT_APPLICATION_CORE_H
 #define CNDT_APPLICATION_CORE_H
 
-#include "conduit/application.h"
-
 #include <memory>
 
 namespace cndt {
-// Define the app runner
+
+class Application;
+
+// Run and own an application
 class AppRunner {
 public:
     // Take ownership of the application and construct an event reader
@@ -15,10 +16,10 @@ public:
     // Start the application
     void Run();
 private:
+    // Store the application class in a unique pointer
     std::unique_ptr<Application> m_application_p;
 };
 
-}
-
+} // namespace cndt
 
 #endif

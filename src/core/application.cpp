@@ -1,7 +1,7 @@
 #include "conduit/application.h"
 #include "core/application.h"
+
 #include <memory>
-#include <utility>
 
 namespace cndt {
 

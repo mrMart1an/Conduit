@@ -38,7 +38,7 @@ public:
 
 protected:
     // Return true if the current update is odd
-    bool UpdateIsOdd() { return m_update_count % 2; };
+    inline bool UpdateIsOdd() { return m_update_count % 2; };
 
 protected:
     // Update counter, used by the bus to swap between buffers 
