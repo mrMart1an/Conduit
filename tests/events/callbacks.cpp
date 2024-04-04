@@ -183,18 +183,19 @@ TEST(callback_test, multi_update) {
     
     // Write some events to the buffer
     writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
+    writer.send<IntEvent>(IntEvent(test_int));
+    writer.send<ArrayEvent>(ArrayEvent(test_array));
     
+    writer.send<EmptyEvent>(EmptyEvent());
     writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
+    writer.send<ArrayEvent>(ArrayEvent(test_array));
     
+    writer.send<EmptyEvent>(EmptyEvent());
+    writer.send<IntEvent>(IntEvent(test_int));
     writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
+    
+    writer.send<EmptyEvent>(EmptyEvent());
+    writer.send<IntEvent>(IntEvent(test_int));
     writer.send<ArrayEvent>(ArrayEvent(test_array));
 
     ASSERT_EQ(empty_count, 3);
