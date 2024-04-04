@@ -17,11 +17,11 @@ namespace cndt {
  * */
 
 // Event reader iterator definition
-template <class EventType>
+template <typename EventType>
 class EventIterator;
 
 // Read component from the event bus that generated it
-template<class EventType>
+template<typename EventType>
 class EventReader 
 {
     friend class EventIterator<EventType>;
@@ -43,10 +43,16 @@ public:
     // Return an iterator pointing to the end of the events queue
     Iterator end() { return Iterator(this, true); }
     
+    // Return the number of not read events
+    u64 availableEvent();
+    
 private:
     // Return the next event on the bus with the same type of the event reader 
     // this function never return the same event
     const EventType* nextEvent(); 
+
+    // Update the event buffer index and the last buffer update
+    void updateIndex(u64 buffer_update);
     
 private:
     // Store the buffer index reached by the reader in the current update
@@ -123,7 +129,7 @@ private:
  * */
 
 // Reader constructor
-template<class EventType>
+template<typename EventType>
 EventReader<EventType>::EventReader(
     EventBufferPtr buffer
 ) : 
@@ -133,26 +139,33 @@ EventReader<EventType>::EventReader(
     m_buffer_p(buffer) 
 { }
 
+// Update the event buffer index and the last buffer update
+template<typename EventType>
+void EventReader<EventType>::updateIndex(u64 buffer_update) {
+    // Calculate the new index if the update counts don't match
+    u64 delta_update = buffer_update - m_last_buffer_update;
+    m_last_buffer_update = buffer_update;
+    
+    if (delta_update > 1) {
+        m_old_buffer_index = 0;
+        m_current_buffer_index = 0;
+    } else if (delta_update == 1) {
+        m_old_buffer_index = m_current_buffer_index;
+        m_current_buffer_index = 0;
+    }
+}
+
 // Return the next event on the bus with the same type of the event reader 
 // this function never return the same event
-template<class EventType>
+template<typename EventType>
 const EventType* EventReader<EventType>::nextEvent() 
 {
     if (auto buffer_p = m_buffer_p.lock()) {
+        // Update the buffer index
+        updateIndex(buffer_p->m_update_count);
+        
         auto& new_buffer = buffer_p->getCurrentEvents(); 
         auto& old_buffer = buffer_p->getOldEvents(); 
-    
-        // Calculate the new index if the update counts don't match
-        u64 delta_update = buffer_p->m_update_count - m_last_buffer_update;
-        m_last_buffer_update = buffer_p->m_update_count;
-        
-        if (delta_update > 1) {
-            m_old_buffer_index = 0;
-            m_current_buffer_index = 0;
-        } else if (delta_update == 1) {
-            m_old_buffer_index = m_current_buffer_index;
-            m_current_buffer_index = 0;
-        }
         
         // Get events starting from the oldest
         if (old_buffer.size() > m_old_buffer_index) {
@@ -173,6 +186,24 @@ const EventType* EventReader<EventType>::nextEvent()
             
     // Return nullopt if no events are available
     return nullptr;
+}
+
+// Return the number of not read events
+template <typename EventType>
+u64 EventReader<EventType>::availableEvent() {
+    if (auto buffer_p = m_buffer_p.lock()) {
+        // Update the buffer index
+        updateIndex(buffer_p->m_update_count);
+        
+        // Calculate the events count for each buffer and add them together
+        auto& new_buffer = buffer_p->getCurrentEvents(); 
+        auto& old_buffer = buffer_p->getOldEvents(); 
+        
+        u64 old_count = old_buffer.size() - m_old_buffer_index;
+        u64 new_count = new_buffer.size() - m_current_buffer_index;
+
+        return old_count + new_count;
+    }
 }
     
 } // namespace cndt
