@@ -21,10 +21,11 @@ void winCall(const WindowResize* event) {
 class Sandbox : public cndt::Application {
 public:
     void startup() override {
-        m_event_bus.addCallback<KeyEvent>(keyCall);
-        m_event_bus.addCallback<WindowResize>(winCall);
-        
         EventWriter writer = m_event_bus.getEventWriter();
+        
+        m_event_bus.addCallback<WindowResize>(winCall);
+        m_event_bus.addCallback<KeyEvent>(keyCall);
+        
         EventReader reader = m_event_bus.getEventReader<KeyEvent>();
         
         WindowResize resize;
