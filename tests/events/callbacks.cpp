@@ -92,7 +92,7 @@ void array_callback_check(const ArrayEvent* event) {
 
 /*
  *
- *      Define callback functions
+ *      Define test functions
  *
  * */
 
