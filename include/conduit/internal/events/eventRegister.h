@@ -2,6 +2,7 @@
 #define CNDT_EVENT_REGISTER_H
 
 #include "conduit/internal/events/eventBuffer.h"
+#include "conduit/internal/events/typeRegister.h"
 
 #include <memory>
 
@@ -15,9 +16,6 @@ class EventRegister {
     
     using  EventBufferBase = internal::EventBufferBase;
 
-    // Store an id to a event type
-    using EventTypeId = u64;
-    
 public:
     EventRegister();
     
@@ -30,10 +28,6 @@ public:
     std::weak_ptr<EventBuffer<EventType>> getEventBuffer();
 
 private:
-    // Return an unique id for each event type added to this register
-    template<class EventType>
-    EventTypeId getEventTypeId();     
-    
     // Add the event type to the register if it doesn't already exist
     template<class EventType>
     void addEventType();
@@ -41,9 +35,6 @@ private:
 private:
     // Store event buffers
     std::vector<std::shared_ptr<EventBufferBase>> m_event_buffers;
-    
-    // Count the number of events types stored in the register
-    EventTypeId m_type_id_last;
 };
 
 /*
@@ -59,39 +50,32 @@ std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer()
 {
     // Create the buffer if it doesn't already exist and get the type id
     addEventType<EventType>();
-    EventTypeId type_id = getEventTypeId<EventType>();
+    auto type_id = EventTypeRegister::getTypeId<EventType>();
 
+    // Cast the buffer shared pointer to a weak pointer
     return std::static_pointer_cast<internal::EventBuffer<EventType>>(
         m_event_buffers.at(type_id)
     );
-}
-
-// Return an unique id for each event type added to this bus
-template<class EventType>
-EventRegister::EventTypeId EventRegister::getEventTypeId() 
-{
-    static EventTypeId type_id = m_type_id_last++;
-    return type_id;
 }
 
 // Add the event type to the bus if it doesn't already exist
 template<class EventType>
 void EventRegister::addEventType() 
 {
-    // Static variable initialize to false the first time the function
-    // is called, this variable is set to true after adding 
-    // the type to the register
-    static bool type_exist = false;
-
+    // Get the unique event id
+    auto type_id = EventTypeRegister::getTypeId<EventType>();
+    
+    // Check if resizing the event buffer is necessary 
+    if (m_event_buffers.size() <= type_id) 
+        m_event_buffers.resize(type_id + 1);
+    
+    // Create the buffer if it doesn't already exist
+    bool type_exist = m_event_buffers[type_id] != nullptr;
+    
     if (!type_exist) {
-        // Generate the two buffers for odd and even updates
         auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
 
-        // push them to the end of the vector
-        m_event_buffers.push_back(std::move(buffer));
-        
-        // Set type exist to true for the given type
-        type_exist = true;
+        m_event_buffers[type_id] = std::move(buffer);
     }
 }
 

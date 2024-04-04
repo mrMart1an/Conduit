@@ -7,13 +7,13 @@ namespace cndt::internal {
 constexpr usize default_buffers_size = 30;
 
 EventRegister::EventRegister()
-    : m_type_id_last(0)
 { 
     m_event_buffers.reserve(default_buffers_size);
 }
 
 // Swap and clear the event buffers
-void EventRegister::update() {
+void EventRegister::update() 
+{
     for (auto& buffer : m_event_buffers) {
         buffer->update();
     }
