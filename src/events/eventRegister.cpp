@@ -8,6 +8,7 @@ constexpr usize default_buffers_size = 30;
 
 EventRegister::EventRegister()
 { 
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_event_buffers.reserve(default_buffers_size);
 }
 
