@@ -24,14 +24,14 @@ private:
     // Return an unique id for the given event type
     template <typename EventType>
     static TypeId getTypeId() {
-        static std::atomic<TypeId> id = getNextTypeId();
+        static std::atomic<TypeId> id(getNextTypeId());
         return id;
     }
     
     // Return an unique id to initialize the event type id 
     // static variable of the child event struct
     static TypeId getNextTypeId() {
-        static std::atomic<TypeId> m_last_id = 0;
+        static std::atomic<TypeId> m_last_id(0);
         return m_last_id++;
     }
 };

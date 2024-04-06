@@ -86,13 +86,12 @@ void CallbackBuffer<EventType>::callAll()
 {
     // Get the current event buffer
     if (auto event_buffer = m_event_buffer_p.lock()) {
-        std::vector<EventType>& current_events = 
-            event_buffer->getCurrentEvents();
+        auto current_events = event_buffer->getCurrentEvents();
 
         // Run all the callbacks on the buffer
         for (auto& callback_fn : m_callback_buffer) {
             //  Run the callback for all the new events
-            for (auto& event : current_events) {
+            for (auto& event : *current_events) {
                 callback_fn(&event);
             }
         }

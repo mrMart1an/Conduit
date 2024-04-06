@@ -44,12 +44,12 @@ void EventWriter::send(const EventType& event) {
         auto event_buffer = event_register->getEventBuffer<EventType>(); 
         
         // Add the event to the end of the buffer
-        // (this shouldn't fail because m_event_register exist)
+        // (this shouldn't fail because m_event_register will always exist)
         event_buffer.lock()->append(event);
         
     } else {
         // If the event register was deleted log a error message
-        log::core::error("EventWriter::Send -> event register was deleted}");
+        log::core::error("EventWriter::Send -> event register was deleted");
     }
 }
 
