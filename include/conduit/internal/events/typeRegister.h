@@ -7,20 +7,11 @@
 
 namespace cndt::internal {
 
-class EventRegister;
-class CallbackRegister;
-
 // Track event type and event types ids
 class EventTypeRegister {
-    friend class EventRegister;
-    friend class CallbackRegister;
-
+public:
     using TypeId = u64;
     
-private:
-    // Make the class non constructable
-    EventTypeRegister() = delete;
-
     // Return an unique id for the given event type
     template <typename EventType>
     static TypeId getTypeId() {
@@ -28,6 +19,10 @@ private:
         return id;
     }
     
+private:
+    // Make the class non constructable
+    EventTypeRegister() = delete;
+
     // Return an unique id to initialize the event type id 
     // static variable of the child event struct
     static TypeId getNextTypeId() {
