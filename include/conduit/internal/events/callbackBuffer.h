@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace cndt::internal {
@@ -48,6 +49,8 @@ public:
     void callAll() override;
 
 private:
+    std::mutex m_mutex;
+
     // Callback function buffer
     std::vector<CallbackFn> m_callback_buffer;
     
@@ -68,6 +71,7 @@ CallbackBuffer<EventType>::CallbackBuffer(
 ) 
     : m_event_buffer_p(event_buffer)
 { 
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_callback_buffer.reserve(callback_buffer_default_size);
 }
 
@@ -76,6 +80,8 @@ template <class EventType>
 void CallbackBuffer<EventType>::addCallback(
     CallbackBuffer::CallbackFn callback_fn
 ) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    
     // Add the callback function to the buffer
     m_callback_buffer.push_back(callback_fn);
 }
@@ -89,6 +95,8 @@ void CallbackBuffer<EventType>::callAll()
         auto current_events = event_buffer->getCurrentEvents();
 
         // Run all the callbacks on the buffer
+        std::unique_lock<std::mutex> lock(m_mutex);
+        
         for (auto& callback_fn : m_callback_buffer) {
             //  Run the callback for all the new events
             for (auto& event : *current_events) {
