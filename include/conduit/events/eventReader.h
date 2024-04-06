@@ -7,6 +7,7 @@
 #include "conduit/internal/events/eventBuffer.h"
 
 #include <memory>
+#include <optional>
 
 namespace cndt {
 
@@ -44,7 +45,7 @@ public:
     Iterator end() { return Iterator(this, true); }
     
     // Return the number of not read events
-    u64 availableEvent();
+    std::optional<usize> availableEvent();
     
 private:
     // Return the next event on the bus with the same type of the event reader 
@@ -164,46 +165,51 @@ const EventType* EventReader<EventType>::nextEvent()
         // Update the buffer index
         updateIndex(buffer_p->m_update_count);
         
-        auto& new_buffer = buffer_p->getCurrentEvents(); 
-        auto& old_buffer = buffer_p->getOldEvents(); 
+        auto new_buffer = buffer_p->getCurrentEvents(); 
+        auto old_buffer = buffer_p->getOldEvents(); 
         
         // Get events starting from the oldest
-        if (old_buffer.size() > m_old_buffer_index) {
+        if (old_buffer->size() > m_old_buffer_index) {
             m_old_buffer_index += 1;
             return &old_buffer[m_old_buffer_index - 1];
             
-        } else if (new_buffer.size() > m_current_buffer_index) {
+        } else if (new_buffer->size() > m_current_buffer_index) {
             m_current_buffer_index += 1;
             return &new_buffer[m_current_buffer_index - 1];
         }
     } else {
-        // If the event buffer was deleted log a error message
         log::core::error(
-            "EventReader::NextEvent -> event buffer was deleted; Type: {}",
+            "EventReader::NextEvent -> buffer was deleted; Type: {}",
             typeid(EventType).name()
         );
     }
             
-    // Return nullopt if no events are available
     return nullptr;
 }
 
 // Return the number of not read events
 template <typename EventType>
-u64 EventReader<EventType>::availableEvent() {
+std::optional<usize> EventReader<EventType>::availableEvent() {
     if (auto buffer_p = m_buffer_p.lock()) {
         // Update the buffer index
         updateIndex(buffer_p->m_update_count);
         
         // Calculate the events count for each buffer and add them together
-        auto& new_buffer = buffer_p->getCurrentEvents(); 
-        auto& old_buffer = buffer_p->getOldEvents(); 
+        auto new_buffer = buffer_p->getCurrentEvents(); 
+        auto old_buffer = buffer_p->getOldEvents(); 
         
-        u64 old_count = old_buffer.size() - m_old_buffer_index;
-        u64 new_count = new_buffer.size() - m_current_buffer_index;
+        u64 old_count = old_buffer->size() - m_old_buffer_index;
+        u64 new_count = new_buffer->size() - m_current_buffer_index;
 
         return old_count + new_count;
+    } else {
+        log::core::error(
+            "EventReader::availableEvent -> buffer was deleted; Type: {}",
+            typeid(EventType).name()
+        );
     }
+        
+    return std::nullopt;
 }
     
 } // namespace cndt
