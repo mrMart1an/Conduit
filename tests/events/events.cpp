@@ -93,7 +93,7 @@ TEST(events_test, reader_test) {
     u32 int_count = 0;
     u32 array_count = 0;
 
-    for (auto& event : empty_reader) {
+    for (auto it = empty_reader.begin(); it != empty_reader.end(); it++) {
         empty_count++;
     }
     for (auto& event : int_reader) {
@@ -109,7 +109,7 @@ TEST(events_test, reader_test) {
     ASSERT_EQ(int_count, 3);
     ASSERT_EQ(array_count, 3);
 
-    for (auto& event : empty_reader) {
+    for (auto it = empty_reader.begin(); it != empty_reader.end(); it++) {
         empty_count++;
     }
     for (auto& event : int_reader) {
@@ -127,7 +127,7 @@ TEST(events_test, reader_test) {
     
     bus.update();
     
-    for (auto& event : empty_reader) {
+    for (auto it = empty_reader.begin(); it != empty_reader.end(); it++) {
         empty_count++;
     }
     for (auto& event : int_reader) {
