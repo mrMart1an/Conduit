@@ -53,12 +53,12 @@ protected:
 template <class EventType>
 class EventBuffer : public EventBufferBase {
 public:
+    
     // Thread safe buffer access pointer class
     class Buffer {
     public:
-        Buffer(std::shared_mutex& mutex, std::vector<EventType> *buffer_p)
-            : m_mutex_lock(mutex), m_buffer_p(buffer_p) 
-        { }
+        Buffer(std::vector<EventType> *buffer_p, std::shared_mutex& mutex)
+            : m_mutex_lock(mutex), m_buffer_p(buffer_p) { }
         
         // arrow operator access
         const std::vector<EventType>* operator->() { return m_buffer_p; }
@@ -90,14 +90,13 @@ public:
     Buffer getOldEvents();
     
 private:
+    // Event buffer mutex
+    std::shared_mutex m_mutex;
+
     // Store the events during odd updates
     std::vector<EventType> m_events_odd;
-    std::shared_mutex m_mutex_odd;
-    
     // Store the events during odd updates
     std::vector<EventType> m_events_even;
-    std::shared_mutex m_mutex_even;
-
 };
 
 /*
@@ -109,6 +108,8 @@ private:
 // Event buffer constructor
 template <class EventType>
 EventBuffer<EventType>::EventBuffer() {
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    
     // Reserve the buffer with the default size
     m_events_odd.reserve(event_buffer_default_size);
     m_events_even.reserve(event_buffer_default_size);
@@ -117,12 +118,12 @@ EventBuffer<EventType>::EventBuffer() {
 // Swap buffers and clear old events
 template <class EventType>
 void EventBuffer<EventType>::update() {
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    
     // Clear the buffer for the next update
     if (updateIsOdd()) {
-        std::unique_lock<std::shared_mutex> lock(m_mutex_even);
         m_events_even.clear();
     } else {
-        std::unique_lock<std::shared_mutex> lock(m_mutex_odd);
         m_events_odd.clear();
     }
 
@@ -133,22 +134,22 @@ void EventBuffer<EventType>::update() {
 // Append an event to the buffer
 template <class EventType>
 void EventBuffer<EventType>::append(const EventType& event) {
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    
     if (updateIsOdd()) {
-        std::unique_lock<std::shared_mutex> lock(m_mutex_odd);
         m_events_odd.push_back(event);
     } else {
-        std::unique_lock<std::shared_mutex> lock(m_mutex_even);
         m_events_even.push_back(event);
-    }
+    } 
 }
 
 // Return a reference to the events in the current update vectors
 template <class EventType>
 EventBuffer<EventType>::Buffer EventBuffer<EventType>::getCurrentEvents() {
     if (updateIsOdd()) {
-        return Buffer(m_mutex_odd, &m_events_odd);
+        return Buffer(&m_events_odd, m_mutex);
     } else {
-        return Buffer(m_mutex_even, &m_events_even);
+        return Buffer(&m_events_even, m_mutex);
     }
 }
 
@@ -156,9 +157,9 @@ EventBuffer<EventType>::Buffer EventBuffer<EventType>::getCurrentEvents() {
 template <class EventType>
 EventBuffer<EventType>::Buffer EventBuffer<EventType>::getOldEvents() {
     if (!updateIsOdd()) {
-        return Buffer(m_mutex_odd, &m_events_odd);
+        return Buffer(&m_events_odd, m_mutex);
     } else {
-        return Buffer(m_mutex_even, &m_events_even);
+        return Buffer(&m_events_even, m_mutex);
     }
 }
 
