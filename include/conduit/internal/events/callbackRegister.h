@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace cndt::internal {
@@ -40,6 +41,8 @@ private:
     void addEventType(EventBufferPtr<EventType> event_buffer_p);
     
 private:
+    std::mutex m_mutex;
+    
     // Event buffer vector
     std::vector<std::unique_ptr<CallbackBufferBase>> m_callback_buffers;
 };
@@ -58,9 +61,9 @@ void CallbackRegister::addCallback(
 ) {
     // Create the buffer if it doesn't already exist and get the type id
     addEventType<EventType>(std::move(event_buffer_p));
-    
-    // Get the unique event id
     auto type_id = EventTypeRegister::getTypeId<EventType>();
+    
+    std::lock_guard<std::mutex> lock(m_mutex);
     
     // Get a raw pointer to the callback buffer
     auto buffer = static_cast<CallbackBuffer<EventType>*>(
@@ -78,6 +81,8 @@ void CallbackRegister::addEventType(
 ) {
     // Get the unique event id
     auto type_id = EventTypeRegister::getTypeId<EventType>();
+    
+    std::lock_guard<std::mutex> lock(m_mutex);
     
     // Check if resizing the event buffer is necessary 
     if (m_callback_buffers.size() <= type_id) 

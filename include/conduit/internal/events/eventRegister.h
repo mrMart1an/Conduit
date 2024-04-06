@@ -34,7 +34,7 @@ private:
     void addEventType();
     
 private:
-    std::shared_mutex m_mutex;
+    std::mutex m_mutex;
     
     // Store event buffers
     std::vector<std::shared_ptr<EventBufferBase>> m_event_buffers;
@@ -56,7 +56,7 @@ std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer()
     auto type_id = EventTypeRegister::getTypeId<EventType>();
 
     // Cast the buffer shared pointer to a weak pointer
-    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     return std::static_pointer_cast<internal::EventBuffer<EventType>>(
         m_event_buffers.at(type_id)
     );
@@ -69,7 +69,7 @@ void EventRegister::addEventType()
     // Get the unique event id
     auto type_id = EventTypeRegister::getTypeId<EventType>();
     
-    std::lock_guard<std::shared_mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
     // Check if resizing the event buffer is necessary 
     if (m_event_buffers.size() <= type_id) 
