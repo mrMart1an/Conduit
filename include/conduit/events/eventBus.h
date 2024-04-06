@@ -19,8 +19,6 @@ namespace cndt {
  * */
 
 // Double buffered event bus
-// 
-// CURRENTLY NOT THREAD SAFE
 class EventBus {
     // Private type definition for readability
     template <class EventType>

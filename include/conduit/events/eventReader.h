@@ -22,6 +22,7 @@ template <typename EventType>
 class EventIterator;
 
 // Read component from the event bus that generated it
+// this event reader should not be shared between threads 
 template<typename EventType>
 class EventReader 
 {

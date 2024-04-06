@@ -16,6 +16,7 @@ namespace cndt {
  * */
 
 // Write event to the event bus that generated it 
+// this event writer should not be shared between threads 
 class EventWriter {
 public:   
     EventWriter(std::shared_ptr<internal::EventRegister> event_register) 
