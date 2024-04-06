@@ -68,6 +68,125 @@ struct ArrayEvent {
  *
  * */
 
+TEST(events_test, reader_test) {
+    EventBus bus;
+
+    EventWriter writer = bus.getEventWriter();
+
+    auto empty_reader = bus.getEventReader<EmptyEvent>();    
+    auto int_reader = bus.getEventReader<IntEvent>();    
+    auto array_reader = bus.getEventReader<ArrayEvent>();    
+    
+    writer.send<EmptyEvent>(EmptyEvent());
+    writer.send<EmptyEvent>(EmptyEvent());
+    writer.send<EmptyEvent>(EmptyEvent());
+    
+    writer.send<IntEvent>(IntEvent(test_int));
+    writer.send<IntEvent>(IntEvent(test_int));
+    writer.send<IntEvent>(IntEvent(test_int));
+    
+    writer.send<ArrayEvent>(ArrayEvent(test_array));
+    writer.send<ArrayEvent>(ArrayEvent(test_array));
+    writer.send<ArrayEvent>(ArrayEvent(test_array));
+        
+    u32 empty_count = 0;
+    u32 int_count = 0;
+    u32 array_count = 0;
+
+    for (auto& event : empty_reader) {
+        empty_count++;
+    }
+    for (auto& event : int_reader) {
+        int_count++;
+        ASSERT_EQ(event.value, test_int);
+    }
+    for (auto& event : array_reader) {
+        array_count++;
+        ASSERT_TRUE(event.checkArray(test_array));
+    }
+
+    ASSERT_EQ(empty_count, 3);
+    ASSERT_EQ(int_count, 3);
+    ASSERT_EQ(array_count, 3);
+
+    for (auto& event : empty_reader) {
+        empty_count++;
+    }
+    for (auto& event : int_reader) {
+        int_count++;
+        ASSERT_EQ(event.value, test_int);
+    }
+    for (auto& event : array_reader) {
+        array_count++;
+        ASSERT_TRUE(event.checkArray(test_array));
+    }
+    
+    ASSERT_EQ(empty_count, 3);
+    ASSERT_EQ(int_count, 3);
+    ASSERT_EQ(array_count, 3);
+    
+    bus.update();
+    
+    for (auto& event : empty_reader) {
+        empty_count++;
+    }
+    for (auto& event : int_reader) {
+        int_count++;
+        ASSERT_EQ(event.value, test_int);
+    }
+    for (auto& event : array_reader) {
+        array_count++;
+        ASSERT_TRUE(event.checkArray(test_array));
+    }
+    
+    ASSERT_EQ(empty_count, 3);
+    ASSERT_EQ(int_count, 3);
+    ASSERT_EQ(array_count, 3);
+
+    bus.update();
+    
+    // Event order test
+
+    for (u32 i = 0; i < 50; i++) {
+        writer.send(IntEvent(test_int + i));
+    }
+    u32 i = 0;
+    for (auto& event : int_reader) {
+        ASSERT_EQ(event.value, test_int + i);
+        i++;
+    }
+    
+    // Double buffer ordering test
+    for (u32 i = 0; i < 10; i++) {
+        writer.send(IntEvent(test_int + i));
+    }
+    bus.update();
+    for (u32 i = 0; i < 10; i++) {
+        writer.send(IntEvent(test_int + 10 + i));
+    }
+    
+    i = 0;
+    for (auto& event : int_reader) {
+        ASSERT_EQ(event.value, test_int + i);
+        i++;
+    }
+    
+    for (u32 i = 0; i < 10; i++) {
+        writer.send(IntEvent(test_int + i));
+    }
+    bus.update();
+    for (u32 i = 0; i < 10; i++) {
+        writer.send(IntEvent(test_int + 10 + i));
+    }
+    bus.update();
+    
+    i = 10;
+    for (auto& event : int_reader) {
+        ASSERT_EQ(event.value, test_int + i);
+        i++;
+    }
+}
+
 TEST(events_test, reader_count) {
     EventBus bus;
 
