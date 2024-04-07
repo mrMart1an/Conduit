@@ -17,7 +17,8 @@
 #define CNDT_ABORT() std::abort()
 
 // Compile time static assertion 
-#define STATIC_ASSERT(cond, error_msg) static_assert(cond, error_msg)
+#define STATIC_ASSERT(cond)                      \
+    static_assert(cond, "assert fail: " #cond)
 
 /*
  *
@@ -66,21 +67,21 @@ typedef uint8_t   b8;
 typedef uint32_t  b32;
 
 // Type size checks
-STATIC_ASSERT(sizeof(u8)  == 1, "sizeof(u18) != 1");
-STATIC_ASSERT(sizeof(u16) == 2, "sizeof(u16) != 2");
-STATIC_ASSERT(sizeof(u32) == 4, "sizeof(u32) != 4");
-STATIC_ASSERT(sizeof(u64) == 8, "sizeof(u64) != 8");
+STATIC_ASSERT(sizeof(u8)  == 1);
+STATIC_ASSERT(sizeof(u16) == 2);
+STATIC_ASSERT(sizeof(u32) == 4);
+STATIC_ASSERT(sizeof(u64) == 8);
 
-STATIC_ASSERT(sizeof(i8)  == 1, "sizeof(i18) != 1");
-STATIC_ASSERT(sizeof(i16) == 2, "sizeof(i16) != 2");
-STATIC_ASSERT(sizeof(i32) == 4, "sizeof(i32) != 4");
-STATIC_ASSERT(sizeof(i64) == 8, "sizeof(i64) != 8");
+STATIC_ASSERT(sizeof(i8)  == 1);
+STATIC_ASSERT(sizeof(i16) == 2);
+STATIC_ASSERT(sizeof(i32) == 4);
+STATIC_ASSERT(sizeof(i64) == 8);
 
-STATIC_ASSERT(sizeof(f32) == 4, "sizeof(f32) != 4");
-STATIC_ASSERT(sizeof(f64) == 8, "sizeof(f64) != 8");
+STATIC_ASSERT(sizeof(f32) == 4);
+STATIC_ASSERT(sizeof(f64) == 8);
 
-STATIC_ASSERT(sizeof(b8)  == 1, "sizeof(b8) != 1");
-STATIC_ASSERT(sizeof(b32) == 4, "sizeof(b32) != 4");
+STATIC_ASSERT(sizeof(b8)  == 1);
+STATIC_ASSERT(sizeof(b32) == 4);
 
 /*
  *
