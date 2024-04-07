@@ -90,6 +90,7 @@ STATIC_ASSERT(sizeof(b32) == 4, "sizeof(b32) != 4");
 
 // Conduit generic exception
 class Exception : public std::exception {
+public:
     Exception(std::string_view message) : m_message(message) { }
     Exception() : m_message("Conduit exception") { }
     
