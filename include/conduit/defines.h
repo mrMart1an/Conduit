@@ -3,6 +3,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <exception>
+#include <string>
+#include <string_view>
 
 /*
  *
@@ -55,7 +58,7 @@ typedef intptr_t  intptr;
 // Unsigned integer type capable of storing a pointer
 typedef uintptr_t uintptr;
 
-// Conduit boolean type
+// Conduit sized boolean type
  
 // 1 bytes (8 bits) boolean type
 typedef uint8_t   b8;
@@ -78,6 +81,27 @@ STATIC_ASSERT(sizeof(f64) == 8, "sizeof(f64) != 8");
 
 STATIC_ASSERT(sizeof(b8)  == 1, "sizeof(b8) != 1");
 STATIC_ASSERT(sizeof(b32) == 4, "sizeof(b32) != 4");
+
+/*
+ *
+ *      Conduit default exception type
+ *
+ * */
+
+// Conduit generic exception
+class Exception : public std::exception {
+    Exception(std::string_view message) : m_message(message) { }
+    Exception() : m_message("Conduit exception") { }
+    
+    virtual const char* what() const throw() 
+    {
+        return m_message.c_str();   
+    }
+    
+private:
+    // Store the exception message
+    std::string m_message;
+};
 
 }
 
