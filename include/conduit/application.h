@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 
 #include "conduit/events/eventBus.h"
+#include "conduit/window/window.h"
 
 #include <memory>
 
@@ -41,8 +42,13 @@ protected:
     void engineShutdown();
 
 protected:
+    bool m_run_application;
+    
     // Application event bus
     EventBus m_event_bus;
+
+    // Application window handle
+    std::unique_ptr<Window> m_window;
 };
 
 // Return an instance of an user defined application object

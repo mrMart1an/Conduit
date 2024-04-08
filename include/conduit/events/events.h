@@ -5,16 +5,72 @@
 
 namespace cndt {
 
-// Key event 
-struct KeyEvent { 
-    u16 key_code;
-    u16 scancode;
-    u16 mods;
+/*
+ *
+ *      Keyboard events
+ *
+ * */
+
+struct KeyPressEvent { 
+    i32 key_code;
+    i32 mods;
 };
 
-struct WindowResize { 
-    u32 width;
-    u32 height;
+struct KeyRepeatEvent { 
+    i32 key_code;
+    i32 mods;
+};
+
+struct KeyReleaseEvent { 
+    i32 key_code;
+    i32 mods;
+};
+
+/*
+ *
+ *      Mouse events
+ *
+ * */
+
+struct MouseKeyPressEvent { 
+    i32 button_code;
+    i32 mods;
+};
+
+struct MouseKeyReleaseEvent { 
+    i32 button_code;
+    i32 mods;
+};
+
+struct MouseScrollEvent {
+    f64 x_scroll;
+    f64 y_scroll;
+};
+    
+struct MousePositionEvent {
+    f64 x_pos;
+    f64 y_pos;
+};
+
+/*
+ *
+ *      Window events
+ *
+ * */
+
+struct WindowCloseEvent { };
+
+struct WindowFocusGainEvent { };
+struct WindowFocusLostEvent { };
+
+struct WindowResizeEvent {
+    i32 width;
+    i32 height;
+};
+
+struct WindowMoveEvent {
+    i32 x_pos;
+    i32 y_pos;
 };
 
 } // namespace cndt

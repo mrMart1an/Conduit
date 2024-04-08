@@ -2,8 +2,6 @@
 
 #include "conduit/application.h"
 
-#include "conduit/logging.h"
-
 using namespace cndt;
 using namespace cndt::log::app;
 
@@ -14,8 +12,8 @@ public:
         
     }
     
-    void update(f32 delta_time) override {
-        trace("updating: {}", delta_time); 
+    void update(f32) override {
+        
     }
 
     void shutdown() override {

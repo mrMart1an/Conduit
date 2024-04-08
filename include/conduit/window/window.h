@@ -3,6 +3,8 @@
 
 #include "conduit/defines.h"
 
+#include <string>
+
 namespace cndt {
 
 class Application;
@@ -14,25 +16,45 @@ class Window {
 public:
     // Window data storing position and size
     struct Data {
-        i32 xpos, ypos;      
-        i32 width, height;      
+        i32 x_pos, y_pos;      
+        
+        // Window size in screen coordinate
+        i32 window_width, window_height;      
+        // Frame buffer size in pixels
+        i32 buffer_width, buffer_height;      
     };
     
 protected:
     // Window configuration struct
     struct Config {
+        Config(
+            std::string_view title,
+            i32 width = 800, i32 height = 600,
+            bool fullscreen = false,
+            bool resizable = false,
+            bool floating = false
+        ) : 
+            title(title),
+            width(width), height(height),
+            fullscreen(fullscreen),
+            resizable(resizable),
+            floating(floating)
+        { }
+        
         // Window title
-        const char* title;
+        std::string title;
 
-        // Window dimension
+        // Window dimension,
+        // if the window is set to fullscreen, these value will be used
+        // as the window dimension on fullscreen exit
         i32 width, height;
 
-        // The window will always float on top of other window
-        bool floating;
+        // Ignore the provided width and height and make the window fullscreen
+        bool fullscreen;
         // The window will be resizable by the user
         bool resizable;
-        // Ignore the Provided width and height and make the window fullscreen
-        bool fullscreen;
+        // The window will always float on top of other window
+        bool floating;
     };
     
 public:
@@ -46,12 +68,24 @@ public:
     // Set the full screen mode of the window
     virtual void setFullscreen(bool fullscreen) = 0;
 
+    // Change the window size in windowed mode
+    virtual void setSize(i32 width, i32 height) = 0;
+
+    // Change window title
+    virtual void setTitle(const char* title) = 0;
+    
     // Capture the cursor and enable raw input if available
     virtual void captureCursor() = 0;
     // Release the cursor and disable raw input if available
     virtual void releaseCursor() = 0;
 
 protected:
+    // Window initialization function
+    virtual void initialize(Config config) = 0;
+
+    // Window shutdown function 
+    virtual void shutdown() = 0;
+
     // Pool the window event and send them to the event bus
     virtual void poolEvents() = 0;
 };
