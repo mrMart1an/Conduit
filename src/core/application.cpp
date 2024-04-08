@@ -25,18 +25,6 @@ Application::Application() :
 // Base application deconstructor
 Application::~Application() { };
 
-// Start application main loop
-void Application::startMainLoop() 
-{
-    while (m_run_application) {
-        update(0);
-
-        // Pool the window event and update the event buffer
-        m_window->poolEvents();
-        m_event_bus.update();
-    }
-}
-
 // Engine startup function
 void Application::engineStatup() 
 {
@@ -68,6 +56,18 @@ void Application::engineStatup()
             }
         }
     );
+}
+
+// Start application main loop
+void Application::startMainLoop() 
+{
+    while (m_run_application) {
+        update(0);
+
+        // Pool the window event and update the event buffer
+        m_window->poolEvents();
+        m_event_bus.update();
+    }
 }
 
 // Engine shutdown function
