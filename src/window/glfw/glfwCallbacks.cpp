@@ -24,16 +24,16 @@ void GlfwWindow::callback_mouse_button_event(
     switch (action) {
         case GLFW_PRESS: {
             MouseKeyPressEvent event = {
-                .button_code = button,
-                .mods = mods
+                .button_code = static_cast<u32>(button),
+                .mods = static_cast<u32>(mods)
             }; 
             writer.send(event);
         }
         
         case GLFW_RELEASE: {
             MouseKeyReleaseEvent event = {
-                .button_code = button,
-                .mods = mods
+                .button_code = static_cast<u32>(button),
+                .mods = static_cast<u32>(mods)
             }; 
             writer.send(event);
         }
@@ -76,24 +76,24 @@ void GlfwWindow::callback_key_event(
     switch (action) {
         case GLFW_PRESS: {
             KeyPressEvent event = {
-                .key_code = key,
-                .mods = mods
+                .key_code = static_cast<u32>(key),
+                .mods = static_cast<u32>(mods)
             }; 
             writer.send(event);
         }
 
         case GLFW_REPEAT: {
             KeyRepeatEvent event = {
-                .key_code = key,
-                .mods = mods
+                .key_code = static_cast<u32>(key),
+                .mods = static_cast<u32>(mods)
             }; 
             writer.send(event);
         }
         
         case GLFW_RELEASE: {
             KeyReleaseEvent event = {
-                .key_code = key,
-                .mods = mods
+                .key_code = static_cast<u32>(key),
+                .mods = static_cast<u32>(mods)
             }; 
             writer.send(event);
         }

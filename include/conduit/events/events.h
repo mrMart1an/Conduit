@@ -12,18 +12,18 @@ namespace cndt {
  * */
 
 struct KeyPressEvent { 
-    i32 key_code;
-    i32 mods;
+    u32 key_code;
+    u32 mods;
 };
 
 struct KeyRepeatEvent { 
-    i32 key_code;
-    i32 mods;
+    u32 key_code;
+    u32 mods;
 };
 
 struct KeyReleaseEvent { 
-    i32 key_code;
-    i32 mods;
+    u32 key_code;
+    u32 mods;
 };
 
 /*
@@ -33,13 +33,13 @@ struct KeyReleaseEvent {
  * */
 
 struct MouseKeyPressEvent { 
-    i32 button_code;
-    i32 mods;
+    u32 button_code;
+    u32 mods;
 };
 
 struct MouseKeyReleaseEvent { 
-    i32 button_code;
-    i32 mods;
+    u32 button_code;
+    u32 mods;
 };
 
 struct MouseScrollEvent {

@@ -63,7 +63,7 @@ void Application::engineStatup()
             char c = event->key_code;
             log::core::debug("key press: {}", c);
 
-            if (event->key_code == CNDT_KEY_F11) {
+            if (event->key_code == keycode::KEY_F11) {
                 window->toggleFullscreen();
             }
         }
