@@ -11,6 +11,12 @@ core_src = [
     'core/application.cpp',
 ]
 
+# Engine window source code
+window_src = [
+    'window/glfw/glfwWindow.cpp',
+    'window/glfw/glfwCallbacks.cpp'
+]
+
 # Platform specific code source files
 platform_src = [
     'platform/entryPoint.cpp'    
@@ -20,5 +26,6 @@ platform_src = [
 engine_source = files([
     core_src,
     event_src,
+    window_src,
     platform_src
 ])
