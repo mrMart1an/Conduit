@@ -146,22 +146,23 @@ TEST(events_test, reader_test) {
     bus.update();
     
     // Event order test
-
-    for (u32 i = 0; i < 50; i++) {
+    
+    u32 i = 0;
+    for (i = 0; i < 50; i++) {
         writer.send(IntEvent(test_int + i));
     }
-    u32 i = 0;
+    i = 0;
     for (auto& event : int_reader) {
         ASSERT_EQ(event.value, test_int + i);
         i++;
     }
     
     // Double buffer ordering test
-    for (u32 i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         writer.send(IntEvent(test_int + i));
     }
     bus.update();
-    for (u32 i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         writer.send(IntEvent(test_int + 10 + i));
     }
     
@@ -171,11 +172,11 @@ TEST(events_test, reader_test) {
         i++;
     }
     
-    for (u32 i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         writer.send(IntEvent(test_int + i));
     }
     bus.update();
-    for (u32 i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         writer.send(IntEvent(test_int + 10 + i));
     }
     bus.update();
