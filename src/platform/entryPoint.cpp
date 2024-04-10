@@ -1,4 +1,6 @@
 #include "conduit/application.h"
+#include "conduit/logging.h"
+
 #include "core/application.h"
 
 #include "buildConfig.h"
@@ -7,10 +9,17 @@
 
 // Linux and windows entry point
 int main(void) {
-    cndt::AppRunner app = cndt::getEntryClass();
-    
-    // Run the application
-    app.run();
+    try {
+        cndt::AppRunner app = cndt::getEntryClass();
+        
+        // Run the application
+        app.run();
+        
+    } catch (cndt::Exception &e) {
+        cndt::log::core::error(
+            "{}", e.what()
+        );        
+    };
 
     return 0;
 }

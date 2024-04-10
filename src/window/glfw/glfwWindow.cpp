@@ -73,6 +73,9 @@ void GlfwWindow::initialize(Config config)
         throw WindowInitError("glfw window creation failed");
     }
     
+    // Set the status to initialized
+    m_init_status = Status::Initialized;
+    
     // Store the current data
     glfwGetWindowPos(
         m_glfw_window, 
@@ -111,9 +114,6 @@ void GlfwWindow::initialize(Config config)
     glfwSetFramebufferSizeCallback(
         m_glfw_window, callback_buffer_resize_event
     );
-
-    // Set the status to initialized
-    m_init_status = Status::Initialized;
 }
 
 // Glfw window shutdown function 
