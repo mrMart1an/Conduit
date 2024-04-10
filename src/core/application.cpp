@@ -3,10 +3,12 @@
 #include "conduit/events/eventKeyCode.h"
 #include "conduit/logging.h"
 
+#include "conduit/time.h"
 #include "core/application.h"
 #include "window/glfw/glfwWindow.h"
 
 #include <memory>
+#include <unistd.h>
 
 namespace cndt {
 
@@ -20,13 +22,6 @@ namespace cndt {
 Application::Application() :
     m_run_application(true),
     m_event_bus()
-{ };
-
-// Base application deconstructor
-Application::~Application() { };
-
-// Engine startup function
-void Application::engineStatup() 
 {
     Window::Config window_config("Conduit test app");
     
@@ -51,24 +46,27 @@ void Application::engineStatup()
             }
         }
     );
-}
+};
+
+// Base application deconstructor
+Application::~Application() 
+{
+    m_window->shutdown();
+};
 
 // Start application main loop
 void Application::startMainLoop() 
 {
+    time::StopWatch frame_time;
+
     while (m_run_application) {
-        update(0);
+        // Run the user define application update function
+        update(frame_time.elapsed());
 
         // Pool the window event and update the event buffer
         m_window->poolEvents();
         m_event_bus.update();
     }
-}
-
-// Engine shutdown function
-void Application::engineShutdown() 
-{
-    m_window->shutdown();
 }
 
 /*
@@ -85,16 +83,14 @@ AppRunner::AppRunner(std::unique_ptr<Application> application)
 // Run the application
 void AppRunner::run() 
 {
-    // Initialize the engine and setup the application
-    m_application_p->engineStatup();
+    // Run the user defined application startup function
     m_application_p->startup();
 
-    // Start the application main loop
+    // Run the application main loop function
     m_application_p->startMainLoop();
     
-    // Quit the application and shutdown the engine
+    // Run the user defined application shutdown function
     m_application_p->shutdown();
-    m_application_p->engineShutdown();
 }
 
 } // namespace cndt

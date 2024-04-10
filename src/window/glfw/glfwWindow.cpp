@@ -38,11 +38,14 @@ void GlfwWindow::initialize(Config config)
             "GlfwWindow::GlfwWindow -> glfw initialization failed"
         );
         
-        throw WindowInitError("glfw initialization failed");
+        throw WindowInitError(
+            "GlfwWindow::GlfwWindow -> glfw initialization failed"
+        );
+        
+    } else {
+        // Set the status to glfw initialized
+        m_init_status = Status::GlfwInitialized;
     }
-    
-    // Set the status to glfw initialized
-    m_init_status = Status::GlfwInitialized;
     
     // Set the error message callback
     glfwSetErrorCallback(callback_error);
@@ -70,11 +73,15 @@ void GlfwWindow::initialize(Config config)
         
         // Terminate the glfw session and throw an init exception
         glfwTerminate();
-        throw WindowInitError("glfw window creation failed");
+        
+        throw WindowInitError(
+            "GlfwWindow::GlfwWindow -> glfw window creation failed"
+        );
+        
+    } else {
+        // Set the status to initialized
+        m_init_status = Status::Initialized;
     }
-    
-    // Set the status to initialized
-    m_init_status = Status::Initialized;
     
     // Store the current data
     glfwGetWindowPos(

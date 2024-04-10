@@ -12,8 +12,8 @@ public:
         
     }
     
-    void update(f32) override {
-        
+    void update(f64) override {
+
     }
 
     void shutdown() override {

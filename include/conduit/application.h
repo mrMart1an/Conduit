@@ -24,7 +24,7 @@ public:
 
     // Application update function, 
     // called once per frame to update the scene
-    virtual void update(f32 delta_time) = 0;
+    virtual void update(f64 delta_time) = 0;
 
     // Application shutdown function,
     // called before the engine shutdown
@@ -34,12 +34,6 @@ protected:
     // Start the main application loop
     // this function shouldn't be called by the client
     void startMainLoop();
-
-    // Engine startup function
-    void engineStatup();
-
-    // Engine shutdown function
-    void engineShutdown();
 
 protected:
     bool m_run_application;
