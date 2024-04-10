@@ -3,6 +3,8 @@
 
 #include "core/application.h"
 
+#include <exception>
+
 #include "buildConfig.h"
 
 #if defined CNDT_PLATFORM_LINUX || defined CNDT_PLATFORM_WINDOWS
@@ -15,10 +17,8 @@ int main(void) {
         // Run the application
         app.run();
         
-    } catch (cndt::Exception &e) {
-        cndt::log::core::error(
-            "{}", e.what()
-        );        
+    } catch (std::exception &e) {
+        cndt::log::core::fatal("Exception: {}", e.what());
     };
 
     return 0;
