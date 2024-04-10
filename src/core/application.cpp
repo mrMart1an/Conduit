@@ -31,16 +31,11 @@ void Application::engineStatup()
     Window::Config window_config("Conduit test app");
     
     // Create the glfw window handle
-    try {
-        m_window = std::make_unique<glfw::GlfwWindow>(
-            m_event_bus.getEventWriter()
-        );
-        
-        m_window->initialize(window_config);
-    } catch (WindowException& e) {
-        log::core::fatal("Window initialization failed: {}", e.what());    
-        return;
-    }
+    m_window = std::make_unique<glfw::GlfwWindow>(
+        m_event_bus.getEventWriter()
+    );
+    
+    m_window->initialize(window_config);
 
     // Events callbacks setup
     m_event_bus.addCallback<WindowCloseEvent>(
