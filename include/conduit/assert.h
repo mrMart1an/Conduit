@@ -23,6 +23,6 @@ void assert(
     i32 line
 );
 
-} // namespace cndt::core
+} // namespace cndt::internal
 
 #endif

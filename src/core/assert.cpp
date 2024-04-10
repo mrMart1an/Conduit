@@ -22,4 +22,4 @@ void assert(
     }
 }
 
-} // namespace cndt::core
+} // namespace cndt::internal
