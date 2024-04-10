@@ -61,7 +61,7 @@ void Application::startMainLoop()
 
     while (m_run_application) {
         // Run the user define application update function
-        update(frame_time.elapsed());
+        update(frame_time.delta());
 
         // Pool the window event and update the event buffer
         m_window->poolEvents();
