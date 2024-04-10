@@ -8,6 +8,7 @@ event_src = [
 # Engine core source files
 core_src = [
     'core/logging.cpp', 
+    'core/assert.cpp', 
     'core/application.cpp',
 ]
 
