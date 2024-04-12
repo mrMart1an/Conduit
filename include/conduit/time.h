@@ -43,8 +43,7 @@ private:
  *
  * */
 
-// Return time elapsed since its creation and the time
-// elapse since the last called to the delta function
+// Return time elapsed since its creation or the last call to reset
 class StopWatch {
     using ChronoClock = std::chrono::high_resolution_clock;
     using TimePoint = std::chrono::time_point<ChronoClock>;
@@ -67,17 +66,16 @@ public:
     u64 elapsedNs() const; 
     
     // Return the elapsed since the stop watch 
-    // reset or creation time in seconds
+    // reset or creation and call the reset function time in seconds
     f64 delta();
     
     // Return the elapsed since the stop watch 
-    // reset or creation time in nanoseconds
+    // reset or creation and call the reset function time in nanoseconds
     u64 deltaNs();
 
 private:
     ChronoClock m_clock;
 
-    TimePoint m_begin;
     TimePoint m_last_delta;
 };
 
