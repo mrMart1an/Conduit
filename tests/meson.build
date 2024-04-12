@@ -13,6 +13,7 @@ engine_lib_test_dep = declare_dependency(
 # If unity is not found don't compile the tests
 if gtest_dep.found()
     subdir('events')
+    subdir('ecs')
 else
     warning('google test not found, test compilation aborted')
 endif

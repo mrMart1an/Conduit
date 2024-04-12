@@ -3,6 +3,7 @@
 
 #include "conduit/defines.h"
 
+#include "conduit/ecs/world.h"
 #include "conduit/events/eventBus.h"
 #include "conduit/window/window.h"
 
@@ -40,6 +41,9 @@ protected:
     
     // Application event bus
     EventBus m_event_bus;
+
+    // ECS world
+    World m_ecs_world;
 
     // Application window handle
     std::unique_ptr<Window> m_window;

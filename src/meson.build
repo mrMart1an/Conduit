@@ -13,6 +13,12 @@ core_src = [
     'core/application.cpp',
 ]
 
+# Engine entity component system source files
+ecs_src = [
+    'ecs/entityRegister.cpp',
+    'ecs/world.cpp'
+]
+
 # Engine window source code
 window_src = [
     'window/glfw/glfwWindow.cpp',
@@ -27,6 +33,7 @@ platform_src = [
 # Define the engine_source variable
 engine_source = files([
     core_src,
+    ecs_src,
     event_src,
     window_src,
     platform_src
