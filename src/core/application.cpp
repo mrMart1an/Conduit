@@ -21,7 +21,8 @@ namespace cndt {
 // Base application constructor
 Application::Application() :
     m_run_application(true),
-    m_event_bus()
+    m_event_bus(),
+    m_ecs_world()
 {
     Window::Config window_config("Conduit test app");
     
