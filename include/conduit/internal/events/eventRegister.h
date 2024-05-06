@@ -5,7 +5,7 @@
 #include "conduit/internal/events/typeRegister.h"
 
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 
 namespace cndt::internal {
 
@@ -34,7 +34,7 @@ private:
     void addEventType();
     
 private:
-    std::mutex m_mutex;
+    std::shared_mutex m_mutex;
     
     // Store event buffers
     std::vector<std::shared_ptr<EventBufferBase>> m_event_buffers;
@@ -56,7 +56,8 @@ std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer()
     auto type_id = EventTypeRegister::getTypeId<EventType>();
 
     // Cast the buffer shared pointer to a weak pointer
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    
     return std::static_pointer_cast<internal::EventBuffer<EventType>>(
         m_event_buffers.at(type_id)
     );
@@ -69,18 +70,26 @@ void EventRegister::addEventType()
     // Get the unique event id
     auto type_id = EventTypeRegister::getTypeId<EventType>();
     
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    // Check if resizing the event buffer is necessary 
-    if (m_event_buffers.size() <= type_id) 
-        m_event_buffers.resize(type_id + 1);
-    
     // Create the buffer if it doesn't already exist
-    bool type_exist = m_event_buffers[type_id] != nullptr;
-    
+    bool type_exist = false;
+    {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+        
+        if (m_event_buffers.size() > type_id)
+            type_exist = m_event_buffers[type_id] != nullptr;
+    }
+
     if (!type_exist) {
-        auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
-        m_event_buffers[type_id] = std::move(buffer);
+        std::lock_guard<std::shared_mutex> lock(m_mutex);
+        
+        // Check if resizing the event buffer is necessary 
+        if (m_event_buffers.size() <= type_id) 
+            m_event_buffers.resize(type_id + 1);
+        
+        if (!type_exist) {
+            auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
+            m_event_buffers[type_id] = std::move(buffer);
+        }
     }
 }
 
