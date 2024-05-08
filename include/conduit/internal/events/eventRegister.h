@@ -4,6 +4,7 @@
 #include "conduit/internal/events/eventBuffer.h"
 #include "conduit/internal/events/typeRegister.h"
 
+#include <map>
 #include <memory>
 #include <shared_mutex>
 
@@ -11,14 +12,8 @@ namespace cndt::internal {
 
 // Store events buffers for the different events types
 class EventRegister {
-    // Private type definition for readability
-    template <class EventType>
-    using EventBuffer = internal::EventBuffer<EventType>;
-    
-    using  EventBufferBase = internal::EventBufferBase;
-
 public:
-    EventRegister();
+    EventRegister() = default;
     
     // Swap and clear the event buffers
     void update();
@@ -37,7 +32,10 @@ private:
     std::shared_mutex m_mutex;
     
     // Store event buffers
-    std::vector<std::shared_ptr<EventBufferBase>> m_event_buffers;
+    using TypeId = EventTypeRegister::TypeId;
+    using EventBufferPtr = std::shared_ptr<EventBufferBase>;
+    
+    std::map<TypeId, EventBufferPtr> m_event_buffers;
 };
 
 /*
@@ -53,13 +51,13 @@ std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer()
 {
     // Create the buffer if it doesn't already exist and get the type id
     addEventType<EventType>();
-    auto type_id = EventTypeRegister::getTypeId<EventType>();
 
     // Cast the buffer shared pointer to a weak pointer
     std::shared_lock<std::shared_mutex> lock(m_mutex);
     
-    return std::static_pointer_cast<internal::EventBuffer<EventType>>(
-        m_event_buffers.at(type_id)
+    auto type_id = EventTypeRegister::getTypeId<EventType>();
+    return std::static_pointer_cast<EventBuffer<EventType>>(
+        m_event_buffers[type_id]
     );
 }
 
@@ -75,21 +73,15 @@ void EventRegister::addEventType()
     {
         std::shared_lock<std::shared_mutex> lock(m_mutex);
         
-        if (m_event_buffers.size() > type_id)
-            type_exist = m_event_buffers[type_id] != nullptr;
+        if (m_event_buffers.find(type_id) != m_event_buffers.end())
+            type_exist = true;
     }
 
     if (!type_exist) {
         std::lock_guard<std::shared_mutex> lock(m_mutex);
         
-        // Check if resizing the event buffer is necessary 
-        if (m_event_buffers.size() <= type_id) 
-            m_event_buffers.resize(type_id + 1);
-        
-        if (!type_exist) {
-            auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
-            m_event_buffers[type_id] = std::move(buffer);
-        }
+        auto buffer = std::make_shared<internal::EventBuffer<EventType>>();
+        m_event_buffers[type_id] = std::move(buffer);
     }
 }
 
