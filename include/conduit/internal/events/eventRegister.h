@@ -49,7 +49,7 @@ private:
 template<class EventType>
 std::weak_ptr<EventBuffer<EventType>> EventRegister::getEventBuffer() 
 {
-    // Create the buffer if it doesn't already exist and get the type id
+    // Create the buffer if it doesn't already exist
     addEventType<EventType>();
 
     // Cast the buffer shared pointer to a weak pointer

@@ -30,9 +30,15 @@ public:
     { 
         return lhs.m_id != rhs.m_id; 
     }
+    
+    // Ordering for std map
+    friend bool operator<(const Entity& lhs, const Entity& rhs) 
+    {
+        return lhs.m_id < rhs.m_id;
+    }
 
 private:
-    // Private constructor callable only by the friend event register  
+    // Private constructor callable only by the friend entity register  
     explicit Entity(EntityId entity) : m_id(entity) { }
     
 private:
