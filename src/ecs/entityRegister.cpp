@@ -9,13 +9,13 @@
 
 namespace cndt::internal {
 
-constexpr usize entity_free_size = 20;
+constexpr usize entity_free_default_size = 20;
 
 EntityRegister::EntityRegister() :
     m_last_entity_id(0),
     m_free_entity_list()
 { 
-    m_free_entity_list.reserve(entity_free_size);
+    m_free_entity_list.reserve(entity_free_default_size);
 }
 
 Entity EntityRegister::newEntity() 
@@ -34,6 +34,7 @@ Entity EntityRegister::newEntity()
 
 void EntityRegister::deleteEntity(Entity entity) 
 {
+    // Check if the entity was already freed
     bool entity_freed = std::find(
         m_free_entity_list.begin(),
         m_free_entity_list.end(),
