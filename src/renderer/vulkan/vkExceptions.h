@@ -1,0 +1,71 @@
+#ifndef CNDT_VK_EXCEPTIONS
+#define CNDT_VK_EXCEPTIONS
+
+#include "renderer/vulkan/vkRenderer.h"
+
+namespace cndt::vulkan {
+
+/*
+ *
+ *      Vulkan renderer exception type
+ *
+ * */
+
+// Renderer generic exception
+class VulkanException : public RendererException {
+public:
+    VulkanException(std::string_view message) : 
+        RendererException(message, RendererBackend::Vulkan)
+    { }
+    VulkanException() : 
+        RendererException("Renderer exception", RendererBackend::Vulkan) 
+    { }
+};
+
+// Unexpected vulkan error
+class UnexpectedError : public VulkanException {
+public:
+    UnexpectedError(std::string_view message) : 
+        VulkanException(message)
+    { }
+    UnexpectedError() : 
+        VulkanException("Unexpected vulkan error") 
+    { }
+};
+
+/*
+ *
+ *      Initialization errors
+ *
+ * */
+
+// Initialization stage error
+class InitializationError : public VulkanException {
+public:
+    InitializationError(std::string_view message) : 
+        VulkanException(message)
+    { }
+    InitializationError() : 
+        VulkanException("Vulkan initialization error")
+    { }
+};
+
+// Vulkan instance initialization error
+class InstanceInitError : public InitializationError {
+public:
+    InstanceInitError(std::string_view message) : 
+        InitializationError(message)
+    { }
+};
+
+// Vulkan surface initialization error
+class SurfaceInitError : public InitializationError {
+public:
+    SurfaceInitError(std::string_view message) : 
+        InitializationError(message)
+    { }
+};
+
+} // namespace cndt::vulkan
+
+#endif

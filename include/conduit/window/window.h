@@ -4,6 +4,14 @@
 #include "conduit/defines.h"
 
 #include <string>
+#include <vector>
+
+// Define the vulkan surface type without importing the header
+typedef struct VkSurfaceKHR_T* VkSurfaceKHR;
+// Define the vulkan instance type without importing the header
+typedef struct VkInstance_T* VkInstance;
+// Define the vulkan allocation callbacks type without importing the header
+typedef struct VkAllocationCallbacks VkAllocationCallbacks ;
 
 namespace cndt {
 
@@ -78,6 +86,17 @@ public:
     virtual void captureCursor() = 0;
     // Release the cursor and disable raw input if available
     virtual void releaseCursor() = 0;
+
+// Vulkan implementation functions 
+public:
+    // Retrieve a vulkan surface
+    virtual VkSurfaceKHR getVkSurface(
+        VkInstance instance,
+        const VkAllocationCallbacks *allocator_p
+    ) = 0;
+    
+    // Fetch the required vulkan extensions
+    virtual std::vector<const char*> getVkExtensions() = 0;
 
 protected:
     // Window initialization function
