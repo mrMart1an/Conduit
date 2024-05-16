@@ -9,7 +9,6 @@ using namespace cndt::log::app;
 class Sandbox : public cndt::Application {
 public:
     void startup() override {
-
         
     }
     

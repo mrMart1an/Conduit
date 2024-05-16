@@ -4,7 +4,7 @@
 #include "conduit/events/eventWriter.h"
 #include "conduit/window/window.h"
 
-#include <GLFW/glfw3.h>
+struct GLFWwindow;
 
 namespace cndt::glfw {
 
@@ -50,7 +50,18 @@ private:
     
     // Pool the window event and send them to the event bus
     void poolEvents() override;
+
+// Vulkan implementation functions 
+public:
+    // Retrieve a vulkan surface
+    VkSurfaceKHR getVkSurface(
+        VkInstance instance,
+        const VkAllocationCallbacks *allocator_p
+    ) override;
     
+    // Fetch the required vulkan extensions
+    std::vector<const char*> getVkExtensions() override;
+
 private:
     // Glfw window handle
     GLFWwindow *m_glfw_window;

@@ -3,12 +3,12 @@
 #include "conduit/events/eventKeyCode.h"
 #include "conduit/logging.h"
 
+#include "conduit/renderer/renderer.h"
 #include "conduit/time.h"
 #include "core/application.h"
 #include "window/glfw/glfwWindow.h"
 
 #include <memory>
-#include <unistd.h>
 
 namespace cndt {
 
@@ -22,9 +22,11 @@ namespace cndt {
 Application::Application() :
     m_run_application(true),
     m_event_bus(),
-    m_ecs_world()
+    m_ecs_world(),
+    m_window(),
+    m_renderer()
 {
-    Window::Config window_config("Conduit test app");
+    Window::Config window_config(app_name);
     
     // Create the glfw window handle
     m_window = std::make_unique<glfw::GlfwWindow>(
@@ -47,11 +49,16 @@ Application::Application() :
             }
         }
     );
+
+    // Create and initialize the renderer 
+    m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
+    m_renderer->initialize(app_name, m_window.get());
 };
 
 // Base application deconstructor
 Application::~Application() 
 {
+    m_renderer->shutdown();
     m_window->shutdown();
 };
 

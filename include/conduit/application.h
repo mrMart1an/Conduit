@@ -5,6 +5,7 @@
 
 #include "conduit/ecs/world.h"
 #include "conduit/events/eventBus.h"
+#include "conduit/renderer/renderer.h"
 #include "conduit/window/window.h"
 
 #include <memory>
@@ -14,7 +15,11 @@ namespace cndt {
 // Base application class 
 class Application {
     friend class AppRunner;
-    
+
+public:
+    // Application name string
+    static constexpr const char* app_name = "Conduit app";
+
 public:
     Application();
     virtual ~Application();
@@ -47,6 +52,8 @@ protected:
 
     // Application window handle
     std::unique_ptr<Window> m_window;
+    // Application renderer handle
+    std::unique_ptr<Renderer> m_renderer;
 };
 
 // Return an instance of an user defined application object

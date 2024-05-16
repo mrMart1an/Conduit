@@ -22,7 +22,35 @@ ecs_src = [
 # Engine window source code
 window_src = [
     'window/glfw/glfwWindow.cpp',
+    'window/glfw/glfwVulkan.cpp',
     'window/glfw/glfwCallbacks.cpp'
+]
+
+# Vulkan renderer source files
+if(vulkan_enable.enabled())
+    vulkan_src = [
+        'renderer/vulkan/initialization/vkValidation.cpp',    
+        'renderer/vulkan/initialization/vkContext.cpp',
+        
+        'renderer/vulkan/deleteQueue.cpp',
+        'renderer/vulkan/vkRenderer.cpp'    
+    ]
+else
+    vulkan_src = []
+endif
+
+# OpenGL renderer source files
+if(opengl_enable.enabled())
+    opengl_src = []
+else
+    opengl_src = []
+endif
+
+# Renderer source files
+renderer_src = [
+    vulkan_src,
+    opengl_src,
+    'renderer/renderer.cpp'
 ]
 
 # Platform specific code source files
@@ -36,5 +64,6 @@ engine_source = files([
     ecs_src,
     event_src,
     window_src,
+    renderer_src,
     platform_src
 ])

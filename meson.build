@@ -32,27 +32,19 @@ message('Glfw windowing backend: @0@'.format(
 message('Core logger level: @0@'.format(core_logger_lvl))
 
 # --------
-# Engine configuration
+# Engine configuration checks
 # --------
- 
-conf_data = configuration_data()
 
 # Platform definition
 os_name = host_machine.system()
 # TODO: cygwin and openDSB support
 os_linux =  os_name == 'linux'
 os_windows =  os_name == 'windows'
-conf_data.set('CNDT_PLATFORM_LINUX', os_linux)
-conf_data.set('CNDT_PLATFORM_WINDOWS', os_windows)
 
 # If the host machine is not using a supported OS halt the build process
 if (not os_linux) and (not os_windows)
     error('Unsupported platform, the engine only support Linux and Windows')
 endif
-
-# Graphics backend
-conf_data.set('CNDT_VULKAN_BACKEND', vulkan_enable.enabled())
-conf_data.set('CNDT_OPENGL_BACKEND', opengl_enable.enabled())
 
 # NOTE: Disable OpenGL support for now
 if (opengl_enable.enabled())
@@ -64,12 +56,27 @@ if (not vulkan_enable.enabled()) and (not opengl_enable.enabled())
     error('At least one graphics backend need to be enabled')
 endif
 
-# Windowing backend
-conf_data.set('CNDT_GLFW_WINDOWING_BACKEND', glfw_enable.enabled())
-
 if (not glfw_enable.enabled())
     error('At least one windowing backend need to be enabled')
 endif
+
+# --------
+# Engine configuration
+# --------
+ 
+conf_data = configuration_data()
+
+conf_data.set('CNDT_ENGINE_NAME', '"Conduit"')
+
+conf_data.set('CNDT_PLATFORM_LINUX', os_linux)
+conf_data.set('CNDT_PLATFORM_WINDOWS', os_windows)
+
+# Graphics backend
+conf_data.set('CNDT_VULKAN_BACKEND', vulkan_enable.enabled())
+conf_data.set('CNDT_OPENGL_BACKEND', opengl_enable.enabled())
+
+# Windowing backend
+conf_data.set('CNDT_GLFW_WINDOWING_BACKEND', glfw_enable.enabled())
 
 # Core logger level
 lvl_dict = {
@@ -124,8 +131,7 @@ pch_file = 'pch/stdlibPch.h'
 cglm_dep = dependency('glm', fallback: ['glm', 'glm_dep'], static : true)
 glfw_dep = dependency(
     'glfw3', fallback: ['glfw', 'glfw_dep'],
-    required : glfw_enable,
-    static : true
+    required : glfw_enable
 )
 
 # Renderer dependency
