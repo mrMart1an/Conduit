@@ -59,6 +59,8 @@ void Context::initialize(
     Window *window_p,
     const VkAllocationCallbacks *allocator
 ) {
+    log::core::debug("Initializing vulkan context");
+
     // Assign the custom allocator
     this->allocator = allocator;
 
@@ -72,6 +74,7 @@ void Context::initialize(
 // Shutdown the vulkan context
 void Context::shutdown() 
 {
+    log::core::debug("Destroying vulkan context");
     m_delete_queue.callDeleter();
 }
 
@@ -247,10 +250,10 @@ void Context::logAvailableExtension()
     ));
 
     // Print the supported extension for debug purpose 
-    log::core::debug("Supported Vulkan extensions:");
+    log::core::trace("Supported Vulkan extensions:");
 
     for (u32 i = 0; i < ext_count; i++) {
-        log::core::debug(
+        log::core::trace(
             "Extensions: (versions: {}) {}",
             extensions[i].specVersion,
             extensions[i].extensionName

@@ -30,9 +30,11 @@ protected:
     void resize(u32 width, u32 height) override;
 
 private:
+    // Renderer delete queue
+    DeleteQueue m_delete_queue;
+    
     // Store the vulkan instance, surface, allocator and debug messenger 
     Context m_context;
-    
 };
 
 } // namespace cndt::vulkan
