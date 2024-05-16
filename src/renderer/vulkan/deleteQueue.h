@@ -18,6 +18,9 @@ public:
     // Call all of the deleter functions in the queue
     void callDeleter();
 
+    // Check if the queue is empty
+    bool empty();
+
 private:
     // Store the deleter functions
     std::vector<std::function<void(void)>> m_deleters;

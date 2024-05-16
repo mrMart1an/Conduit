@@ -18,4 +18,10 @@ void DeleteQueue::callDeleter()
     }
 }
 
+// Check if the queue is empty
+bool DeleteQueue::empty()
+{
+    return m_deleters.empty();
+}
+
 } // namespace cndt::vulkan
