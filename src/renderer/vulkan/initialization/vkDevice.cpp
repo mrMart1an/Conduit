@@ -1,11 +1,15 @@
 #include "renderer/vulkan/initialization/vkDevice.h"
 #include "conduit/logging.h"
+
 #include "renderer/vulkan/initialization/vkValidation.h"
 #include "renderer/vulkan/vkExceptions.h"
 #include "renderer/vulkan/vkUtils.h"
+
+#include <format>
 #include <functional>
 #include <string_view>
 #include <vector>
+
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -17,17 +21,32 @@ void Device::initialize(
 ) {
     log::core::debug("Creating vulkan device");
 
+    m_allocator = context_p->allocator;
+
     // Pick a suitable physical device matching the requirement
     pickPhysicalDevice(context_p, physical_device_requirement);
 
     // Create the logical device
     createLogicalDevice(context_p);
+    m_delete_queue.addDeleter(std::bind(&Device::destroyLogicalDevice, this));
+
+    // Retrieve the device queue
+    retrieveQueue();
+
+    // Create the command pools
+    if (m_device_requirement.required_queue.graphics()) {
+        graphics_cmd_pool = createCmdPool(
+            m_device_requirement.required_queue.graphics(),
+            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+        );
+    }
     
-    m_delete_queue.addDeleter(std::bind(
-        &Device::destroyLogicalDevice,
-        this,
-        context_p
-    ));
+    if (m_device_requirement.required_queue.transfer()) {
+        transfer_transient_cmd_pool = createCmdPool(
+            m_device_requirement.required_queue.transfer(),
+            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+        );
+    }
 }
 
 // Shutdown vulkan device
@@ -127,7 +146,7 @@ void Device::createLogicalDevice(Context *context_p)
     VkResult res = vkCreateDevice(
         physical, 
         &create_info, 
-        context_p->allocator, 
+        m_allocator, 
         &logical
     );
 
@@ -140,13 +159,107 @@ void Device::createLogicalDevice(Context *context_p)
 }
 
 // Destroy the logical device
-void Device::destroyLogicalDevice(Context *context_p)
+void Device::destroyLogicalDevice()
 {
     // Wait for all operation to end on the device
     vk_check(vkDeviceWaitIdle(logical));
     
     // Destroy the logical device
-    vkDestroyDevice(logical, context_p->allocator);
+    vkDestroyDevice(logical, m_allocator);
+}
+
+/*
+ *
+ *      Queue functions
+ *
+ * */
+
+// Retrieve the queue from the logical device
+void Device::retrieveQueue()
+{
+    // Graphic queue
+    if (m_device_requirement.required_queue.graphics()) {
+        vkGetDeviceQueue(
+            logical, 
+            m_queue_indices.graphicsIndex(), 
+            0, 
+            &graphics_queue
+        );
+    }
+    
+    // Compute queue
+    if (m_device_requirement.required_queue.compute()) {
+        vkGetDeviceQueue(
+            logical, 
+            m_queue_indices.computeIndex(), 
+            0, 
+            &compute_queue
+        );
+    }
+    
+    // Transfer queue
+    if (m_device_requirement.required_queue.transfer()) {
+        vkGetDeviceQueue(
+            logical, 
+            m_queue_indices.transferIndex(), 
+            0, 
+            &transfer_queue
+        );
+    }
+    
+    // Present queue
+    if (m_device_requirement.required_queue.present()) {
+        vkGetDeviceQueue(
+            logical,
+            m_queue_indices.presentIndex(),
+            0,
+            &present_queue
+        );
+    }
+}
+
+/*
+ *
+ *      Command pool functions
+ *
+ * */
+
+// Create the command pool 
+VkCommandPool Device::createCmdPool(
+    u32 queue_family_index,
+    VkCommandPoolCreateFlags flags
+) {
+    VkCommandPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    pool_info.flags = flags;
+
+    pool_info.queueFamilyIndex = queue_family_index;
+    
+    VkCommandPool out_pool;
+    VkResult res = vkCreateCommandPool(
+        logical,
+        &pool_info,
+        m_allocator, 
+        &out_pool
+    );
+    
+    if (res != VK_SUCCESS) {
+        throw CommandPoolInitError(std::format(
+            "vkCreateCommandPool (queue family: {}) error: {}",
+            queue_family_index,
+            vk_error_str(res)
+        ));
+    }
+
+    // Add delete function to the delete queue
+    m_delete_queue.addDeleter(std::bind(
+        vkDestroyCommandPool,
+        logical,
+        out_pool,
+        m_allocator
+    ));
+    
+    return out_pool;
 }
 
 /*

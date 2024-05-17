@@ -148,12 +148,41 @@ public:
     void shutdown();
 
 private:
+
+    /*
+     *
+     *      Logical device functions
+     *
+     * */
+
     // Create the logical device
     void createLogicalDevice(Context *context_p);
     
     // Destroy the logical device
-    void destroyLogicalDevice(Context *context_p);
+    void destroyLogicalDevice();
     
+    /*
+     *
+     *      Queue functions
+     *
+     * */
+
+    // Retrieve the queue from the logical device
+    void retrieveQueue();
+
+    /*
+     *
+     *      Command pool functions
+     *
+     * */
+    
+    // Create the command pool  
+    // add the pool to the delete queue
+    VkCommandPool createCmdPool(
+        u32 queue_family_index,
+        VkCommandPoolCreateFlags flags
+    );
+
     /*
      *
      *      Physical device functions
@@ -209,7 +238,20 @@ public:
     // Device memory property for allocation
     VkPhysicalDeviceMemoryProperties memory_properties;
     
+    VkQueue graphics_queue;
+    VkQueue compute_queue;
+    VkQueue transfer_queue;
+    VkQueue present_queue;
+    
+    // Command pool for graphics operations
+    VkCommandPool graphics_cmd_pool;
+    // Command pool for transient transfer commands
+    VkCommandPool transfer_transient_cmd_pool;
+    
 private:
+    // Store custom allocator callbacks
+    const VkAllocationCallbacks *m_allocator;
+
     // Queue family indices 
     QueueFamilyIndices m_queue_indices;
 

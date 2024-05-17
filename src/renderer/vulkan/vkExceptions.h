@@ -82,6 +82,14 @@ public:
     { }
 };
 
+// Vulkan command pool initialization error
+class CommandPoolInitError : public InitializationError {
+public:
+    CommandPoolInitError(std::string_view message) : 
+        InitializationError(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif
