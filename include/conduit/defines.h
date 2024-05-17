@@ -20,6 +20,13 @@
 #define STATIC_ASSERT(cond)                      \
     static_assert(cond, "assert fail: " #cond)
 
+// Return a integer with all bit set to 0 
+// except the one at the given index starting from 0 
+// for the least significant bit
+// 
+// BIT(0) = 0001;  BIT(1) = 0010  BIT(2) = 0100
+#define BIT(x) (1 << x)
+
 /*
  *
  *      Conduit types definitions
