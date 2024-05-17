@@ -66,6 +66,22 @@ public:
     { }
 };
 
+// Vulkan physical device initialization error
+class PhysicalDeviceError : public InitializationError {
+public:
+    PhysicalDeviceError(std::string_view message) : 
+        InitializationError(message)
+    { }
+};
+
+// Vulkan logical device initialization error
+class DeviceInitError : public InitializationError {
+public:
+    DeviceInitError(std::string_view message) : 
+        InitializationError(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif

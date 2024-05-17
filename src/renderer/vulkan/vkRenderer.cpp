@@ -1,4 +1,6 @@
 #include "renderer/vulkan/vkRenderer.h"
+#include "renderer/vulkan/initialization/vkDevice.h"
+
 #include <functional>
 
 namespace cndt::vulkan {
@@ -11,6 +13,21 @@ void VkRenderer::initialize(
     // Initialize the vulkan context
     m_context.initialize(app_title, window_p, VK_NULL_HANDLE);
     m_delete_queue.addDeleter(std::bind(&Context::shutdown, m_context));
+
+    // Initialize the vulkan device
+    Device::PhysicalDeviceRequirement requirement = {};
+    
+    // Enable swap chain extensions
+    requirement.required_device_extensions = Device::Extensions(true);
+    // Require graphics, transfer and present of queue
+    requirement.required_queue =
+        Device::QueueFamilyType(true, false, true, true);
+    // Require features 
+    requirement.required_feature.geometryShader = VK_TRUE;
+    requirement.required_feature.fillModeNonSolid = VK_TRUE;
+    
+    m_device.initialize(&m_context, requirement);
+    m_delete_queue.addDeleter(std::bind(&Device::shutdown, m_device));
 }
 
 // Shutdown the renderer implementation

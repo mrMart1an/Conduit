@@ -31,6 +31,8 @@ if(vulkan_enable.enabled())
     vulkan_src = [
         'renderer/vulkan/initialization/vkValidation.cpp',    
         'renderer/vulkan/initialization/vkContext.cpp',
+        'renderer/vulkan/initialization/vkSwapChain.cpp',
+        'renderer/vulkan/initialization/vkDevice.cpp',
         
         'renderer/vulkan/deleteQueue.cpp',
         'renderer/vulkan/vkRenderer.cpp'    

@@ -5,6 +5,7 @@
 #include "conduit/renderer/renderer.h"
 
 #include "renderer/vulkan/initialization/vkContext.h"
+#include "renderer/vulkan/initialization/vkDevice.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -35,6 +36,9 @@ private:
     
     // Store the vulkan instance, surface, allocator and debug messenger 
     Context m_context;
+
+    // Store logical, physical device and queue
+    Device m_device;
 };
 
 } // namespace cndt::vulkan
