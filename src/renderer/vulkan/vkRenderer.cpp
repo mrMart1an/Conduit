@@ -1,5 +1,5 @@
 #include "renderer/vulkan/vkRenderer.h"
-#include "renderer/vulkan/initialization/vkDevice.h"
+#include "renderer/vulkan/vkDevice.h"
 
 #include <functional>
 

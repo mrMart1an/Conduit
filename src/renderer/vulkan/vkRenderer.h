@@ -5,7 +5,7 @@
 #include "conduit/renderer/renderer.h"
 
 #include "renderer/vulkan/initialization/vkContext.h"
-#include "renderer/vulkan/initialization/vkDevice.h"
+#include "renderer/vulkan/vkDevice.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>

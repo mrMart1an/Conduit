@@ -147,19 +147,33 @@ public:
     // Shutdown vulkan device
     void shutdown();
 
-private:
-
     /*
      *
-     *      Logical device functions
+     *      Memory functions
      *
      * */
 
-    // Create the logical device
-    void createLogicalDevice(Context *context_p);
+    // Allocate device memory with the required property
+    VkDeviceMemory allocateMemory(
+        VkMemoryRequirements requirements,
+        VkMemoryPropertyFlags memory_flags
+    );
     
-    // Destroy the logical device
-    void destroyLogicalDevice();
+    // Free the given device memory 
+    void freeMemory(VkDeviceMemory memory);
+    
+private:
+    /*
+     *
+     *      Memory functions
+     *
+     * */
+    
+    // Find the index of a suitable memory type
+    u32 findMemoryTypeIndex(
+        u32 type_bits,
+        VkMemoryPropertyFlags properties
+    );
     
     /*
      *
@@ -183,6 +197,18 @@ private:
         VkCommandPoolCreateFlags flags
     );
 
+    /*
+     *
+     *      Logical device functions
+     *
+     * */
+
+    // Create the logical device
+    void createLogicalDevice(Context *context_p);
+    
+    // Destroy the logical device
+    void destroyLogicalDevice();
+    
     /*
      *
      *      Physical device functions

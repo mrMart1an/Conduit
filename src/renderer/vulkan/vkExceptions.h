@@ -90,6 +90,34 @@ public:
     { }
 };
 
+/*
+ *
+ *      Device errors
+ *
+ * */
+
+// Generic vulkan device exception
+class DeviceException : public VulkanException {
+public:
+    DeviceException(std::string_view message) : 
+        VulkanException(message)
+    { }
+    DeviceException() : 
+        VulkanException("Generic vulkan device error")
+    { }
+};
+
+// Vulkan device memory allocation exception
+class DeviceMemoryError : public DeviceException {
+public:
+    DeviceMemoryError(std::string_view message) : 
+        DeviceException(message)
+    { }
+    DeviceMemoryError() : 
+        DeviceException("Vulkan device memory error")
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif
