@@ -1,3 +1,4 @@
+#include "conduit/defines.h"
 #include "conduit/logging.h"
 #include "conduit/window/window.h"
 
@@ -57,12 +58,12 @@ namespace cndt::vulkan {
 void Context::initialize(
     const char* application_title,
     Window *window_p,
-    const VkAllocationCallbacks *allocator
+    const VkAllocationCallbacks *allocator_p
 ) {
     log::core::debug("Initializing vulkan context");
 
     // Assign the custom allocator
-    this->allocator = allocator;
+    allocator = allocator_p;
 
     initInstance(application_title, window_p);
 
@@ -102,13 +103,13 @@ void Context::initInstance(const char* application_title, Window *window_p)
     // Enable the required extensions
     std::vector<const char*> extensions = getRequiredExtension(window_p);
 
-    create_info.enabledExtensionCount = extensions.size();
+    create_info.enabledExtensionCount = (u32)extensions.size();
     create_info.ppEnabledExtensionNames = extensions.data();
 
     // Enable the required validation layers
     std::vector<const char*> layers = Validation::getLayers();
     
-    create_info.enabledLayerCount = layers.size();
+    create_info.enabledLayerCount = (u32)layers.size();
     create_info.ppEnabledLayerNames = layers.data();
 
     // Create the vulkan instance

@@ -11,6 +11,12 @@
 
 namespace cndt::vulkan {
 
+// Return the string representation of the error code stored in VkResult
+static const char* vk_error_str(VkResult result)
+{
+return string_VkResult(result);
+}
+
 // Abort the application if the vulkan result is not success
 constexpr void vk_check(
     VkResult result,
@@ -19,7 +25,8 @@ constexpr void vk_check(
     if (result != VK_SUCCESS) {
         throw UnexpectedError(
             std::format(
-                "Unexpected vulkan error in {} at line: {}",
+                "Unexpected vulkan error ({}) in {} at line: {}",
+                vk_error_str(result),
                 src_loc.file_name(),
                 src_loc.line()
             )
@@ -27,11 +34,6 @@ constexpr void vk_check(
     }
 }
 
-// Return the string representation of the error code stored in VkResult
-constexpr const char* vk_error_str(VkResult result) 
-{
-	return string_VkResult(result);
-}
 
 } // namespace cndt::vulkan
 
