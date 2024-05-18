@@ -41,7 +41,7 @@ Application::Application() :
     );   
     m_event_bus.addCallback<KeyPressEvent>(
         [&window = m_window](const KeyPressEvent* event) {
-            char c = event->key_code;
+            char c = (char)event->key_code;
             log::core::debug("key press: {}", c);
 
             if (event->key_code == keycode::KEY_F11) {

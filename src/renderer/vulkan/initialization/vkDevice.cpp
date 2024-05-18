@@ -1,6 +1,7 @@
-#include "renderer/vulkan/initialization/vkDevice.h"
+#include "conduit/defines.h"
 #include "conduit/logging.h"
 
+#include "renderer/vulkan/initialization/vkDevice.h"
 #include "renderer/vulkan/initialization/vkValidation.h"
 #include "renderer/vulkan/vkExceptions.h"
 #include "renderer/vulkan/vkUtils.h"
@@ -130,7 +131,7 @@ void Device::createLogicalDevice(Context *context_p)
     std::vector<const char*> extensions =
         m_device_requirement.required_device_extensions.getExtensions();
     
-    create_info.enabledExtensionCount = extensions.size();
+    create_info.enabledExtensionCount = (u32)extensions.size();
     create_info.ppEnabledExtensionNames = extensions.data(); 
 
     // Add validation layers in debug builds
@@ -138,7 +139,7 @@ void Device::createLogicalDevice(Context *context_p)
     std::vector<const char*> validation_layers = Validation::getLayers();
     
     // Check if the validation layers are valid
-    create_info.enabledLayerCount = validation_layers.size();
+    create_info.enabledLayerCount = (u32)validation_layers.size();
     create_info.ppEnabledLayerNames = validation_layers.data();
     #endif
     
@@ -294,7 +295,7 @@ void Device::pickPhysicalDevice(
     
     // Find the best device
     u32 best_score = 0;
-    u32 best_device = -1;
+    u32 best_device = (u32)-1;
 
     for (u32 i = 0; i < device_count; i++) {
         // Check if the device fit the requirement
@@ -439,10 +440,10 @@ Device::QueueFamilyIndices Device::getQueueIndices(
     Context *context_p,
     VkPhysicalDevice device
 ) {
-    u32 graphics_family = -1;
-    u32 compute_family  = -1;
-    u32 transfer_family = -1;
-    u32 present_family  = -1;
+    u32 graphics_family = (u32)-1;
+    u32 compute_family  = (u32)-1;
+    u32 transfer_family = (u32)-1;
+    u32 present_family  = (u32)-1;
 
     // Get queue family count
     u32 queue_family_count = 0;
@@ -459,9 +460,9 @@ Device::QueueFamilyIndices Device::getQueueIndices(
     );
 
     // Find queue family
-    u32 dedicated_transfer_queue = -1;
-    u32 dedicated_compute_queue = -1;
-    u32 graphics_and_present_queue = -1;
+    u32 dedicated_transfer_queue = (u32)-1;
+    u32 dedicated_compute_queue = (u32)-1;
+    u32 graphics_and_present_queue = (u32)-1;
     
     for (u32 i = 0; i < queue_family_count; i++) {
         bool graphic_support  = false;

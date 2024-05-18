@@ -86,33 +86,33 @@ public:
             u32 present_index
         ) : m_supported_queue(supported_queue),
             
-            m_indices(
-                graphics_index, 
+            m_indices{
+                graphics_index,
                 compute_index,
                 transfer_index,
                 present_index
-            ) 
+                }
         { };
 
         // Graphics queue index
         u32 graphicsIndex() const 
         { 
-            return (m_supported_queue.graphics() ? m_indices[0] : -1);
+            return (m_supported_queue.graphics() ? m_indices[0] : (u32)-1);
         };
         // Compute queue index
         u32 computeIndex() const
         { 
-            return (m_supported_queue.compute() ? m_indices[1] : -1);
+            return (m_supported_queue.compute() ? m_indices[1] : (u32)-1);
         };
         // Transfer queue index
         u32 transferIndex() const
         { 
-            return (m_supported_queue.transfer() ? m_indices[2] : -1);
+            return (m_supported_queue.transfer() ? m_indices[2] : (u32)-1);
         };
         // Present queue index
         u32 presentIndex() const
         { 
-            return (m_supported_queue.present() ? m_indices[3] : -1);
+            return (m_supported_queue.present() ? m_indices[3] : (u32)-1);
         };
 
         // indices array [graphics, compute, transfer, present]
