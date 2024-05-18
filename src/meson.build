@@ -32,10 +32,11 @@ if(vulkan_enable.enabled())
         'renderer/vulkan/initialization/vkValidation.cpp',    
         'renderer/vulkan/initialization/vkContext.cpp',
         'renderer/vulkan/initialization/vkSwapChain.cpp',
-        'renderer/vulkan/initialization/vkDevice.cpp',
+        
+        'renderer/vulkan/vkDevice.cpp',
+        'renderer/vulkan/vkRenderer.cpp',   
         
         'renderer/vulkan/deleteQueue.cpp',
-        'renderer/vulkan/vkRenderer.cpp'    
     ]
 else
     vulkan_src = []

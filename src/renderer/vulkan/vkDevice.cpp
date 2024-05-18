@@ -1,8 +1,8 @@
 #include "conduit/defines.h"
 #include "conduit/logging.h"
 
-#include "renderer/vulkan/initialization/vkDevice.h"
 #include "renderer/vulkan/initialization/vkValidation.h"
+#include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkExceptions.h"
 #include "renderer/vulkan/vkUtils.h"
 
@@ -57,6 +57,78 @@ void Device::shutdown()
 
     // Empty the delete queue
     m_delete_queue.callDeleter();
+}
+
+/*
+ *
+ *      Memory functions
+ *
+ * */
+
+// Allocate device memory with the required property
+VkDeviceMemory Device::allocateMemory(
+    VkMemoryRequirements requirements,
+    VkMemoryPropertyFlags memory_flags
+) {
+    // Find a suitable memory type
+    uint32_t mem_type_index = findMemoryTypeIndex(
+        requirements.memoryTypeBits, 
+        memory_flags
+    );
+    
+    VkMemoryAllocateInfo alloc_info = { };
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.memoryTypeIndex = mem_type_index;
+    alloc_info.allocationSize = requirements.size;
+    
+    // Perform the allocation
+    VkDeviceMemory out_memory;
+    
+    VkResult res = vkAllocateMemory(
+        logical,
+        &alloc_info,
+        m_allocator,
+        &out_memory
+    );
+
+    if (res != VK_SUCCESS) {
+        throw DeviceMemoryError(std::format(
+            "Device memory allocation error: {}",
+            vk_error_str(res)
+        ));
+    } 
+    
+    return out_memory;
+}
+
+// Free the given device memory 
+void Device::freeMemory(VkDeviceMemory memory)
+{
+    vkFreeMemory(logical, memory, m_allocator);
+}
+
+// Find the index of a suitable memory type
+u32 Device::findMemoryTypeIndex(
+    u32 type_bits,
+    VkMemoryPropertyFlags flags
+) {
+    VkPhysicalDeviceMemoryProperties mem_props = memory_properties;
+    
+    for (u32 i = 0; i < mem_props.memoryTypeCount; i++) {
+        bool type_bits_compatible = type_bits & (1 << i); 
+
+        VkMemoryPropertyFlags available_flags =
+            mem_props.memoryTypes[i].propertyFlags; 
+        
+        bool property_compatible = (available_flags & flags) == flags;  
+
+        if (type_bits_compatible && property_compatible) {
+            return i;
+        }
+    }
+
+    // Throw an exception if no suitable type was found
+    throw DeviceMemoryError("No suitable memory type for allocation");
 }
 
 /*
