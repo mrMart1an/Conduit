@@ -102,9 +102,6 @@ public:
     DeviceException(std::string_view message) : 
         VulkanException(message)
     { }
-    DeviceException() : 
-        VulkanException("Generic vulkan device error")
-    { }
 };
 
 // Vulkan device memory allocation exception
@@ -118,6 +115,77 @@ public:
     { }
 };
 
+/*
+ *
+ *      Device buffers errors
+ *
+ * */
+
+// Generic buffer exception
+class BufferException : public VulkanException {
+public:
+    BufferException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan buffer creation exception
+class BufferCreateError : public BufferException {
+public:
+    BufferCreateError(std::string_view message) : 
+        BufferException(message)
+    { }
+    BufferCreateError() : 
+        BufferException("Vulkan buffer creation error")
+    { }
+};
+
+// Vulkan buffer bind exception
+class BufferBindError : public BufferException {
+public:
+    BufferBindError(std::string_view message) : 
+        BufferException(message)
+    { }
+    BufferBindError() : 
+        BufferException("Vulkan buffer bind error")
+    { }
+};
+
+/*
+ *
+ *      Device image errors
+ *
+ * */
+
+// Generic image exception
+class ImageException : public VulkanException {
+public:
+    ImageException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan image creation exception
+class ImageCreateError : public ImageException {
+public:
+    ImageCreateError(std::string_view message) : 
+        ImageException(message)
+    { }
+    ImageCreateError() : 
+        ImageException("Vulkan image creation error")
+    { }
+};
+
+// Vulkan image bind exception
+class ImageBindError : public ImageException {
+public:
+    ImageBindError(std::string_view message) : 
+        ImageException(message)
+    { }
+    ImageBindError() : 
+        ImageException("Vulkan image bind error")
+    { }
+};
 } // namespace cndt::vulkan
 
 #endif
