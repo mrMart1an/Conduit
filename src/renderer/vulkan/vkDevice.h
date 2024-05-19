@@ -5,6 +5,8 @@
 
 #include "renderer/vulkan/deleteQueue.h"
 #include "renderer/vulkan/initialization/vkContext.h"
+#include "renderer/vulkan/storage/vkBuffer.h"
+#include "renderer/vulkan/storage/vkImage.h"
 
 #include <vector>
 
@@ -162,6 +164,32 @@ public:
     // Free the given device memory 
     void freeMemory(VkDeviceMemory memory);
     
+    /*
+     *
+     *      Image functions
+     *
+     * */
+
+    // Create a new image for 
+    Image createImage(
+        u32 width, 
+        u32 height, 
+        
+        VkFormat image_format,
+        bool linear_tiling,
+
+        VkImageUsageFlagBits usage_bits,
+        VkMemoryPropertyFlags memory_property,
+
+        bool bind_on_create
+    );
+
+    // Destroy the given image
+    void destroyImage(Image *image_p);
+
+    // Bind the  given Image to the device
+    void bind(Image *image_p, VkDeviceSize memory_offset);
+
 private:
     /*
      *

@@ -3,6 +3,7 @@
 
 #include "renderer/vulkan/initialization/vkValidation.h"
 #include "renderer/vulkan/vkDevice.h"
+#include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkExceptions.h"
 #include "renderer/vulkan/vkUtils.h"
 
@@ -129,6 +130,143 @@ u32 Device::findMemoryTypeIndex(
 
     // Throw an exception if no suitable type was found
     throw DeviceMemoryError("No suitable memory type for allocation");
+}
+
+/*
+ *
+ *      Image functions
+ *
+ * */
+
+// Create a new image for 
+Image Device::createImage(
+    u32 width, 
+    u32 height, 
+    
+    VkFormat image_format,
+    bool linear_tiling,
+
+    VkImageUsageFlagBits usage_bits,
+    VkMemoryPropertyFlags memory_property,
+
+    bool bind_on_create
+) {
+    Image out_image = { };
+    
+    out_image.image_format = image_format;
+    out_image.usage_bits = usage_bits;
+    out_image.memory_flags = memory_property;
+    out_image.image_extent.width = width;
+    out_image.image_extent.height = height;
+
+    // Prepare the create info struct
+    VkImageCreateInfo image_info = { };
+    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    image_info.extent.width = width;
+    image_info.extent.height = height;
+    image_info.extent.depth = 1;
+    image_info.mipLevels = 1;
+    image_info.arrayLayers = 1;
+    image_info.format = image_format;
+    image_info.tiling =
+        linear_tiling ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
+    image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_info.usage = usage_bits;
+    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    // Create the image handle
+    VkResult res = vkCreateImage(
+        logical,
+        &image_info,
+        NULL,
+        &out_image.handle
+    );
+
+    if (res != VK_SUCCESS) {
+        throw ImageCreateError(std::format(
+            "Image handle creation error: {}",
+            vk_error_str(res)
+        ));
+    }
+
+    // Allocate the image memory
+    VkMemoryRequirements requirements;
+    vkGetImageMemoryRequirements(
+        logical,
+        out_image.handle,
+        &requirements
+    );
+
+    out_image.m_memory = allocateMemory(
+        requirements,
+        memory_property
+    );
+    
+    // Create image view
+    VkImageViewCreateInfo view_info = { };
+    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.image = out_image.handle;
+    view_info.format = image_format;
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view_info.subresourceRange.baseMipLevel = 0;
+    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.baseArrayLayer = 0;
+    view_info.subresourceRange.layerCount = 1;
+
+    VkResult view_res = vkCreateImageView(
+        logical,
+        &view_info,
+        NULL,
+        &out_image.view
+    );
+
+    if (view_res != VK_SUCCESS) {
+        throw ImageCreateError(std::format(
+            "image view creation error %s",
+            vk_error_str(view_res)
+        ));
+    }
+    
+    // Bind the image if necessary
+    if (bind_on_create) {
+        bind(&out_image, 0);    
+    }
+    
+    return out_image;
+}
+
+// Destroy the given image
+void Device::destroyImage(Image *image_p)
+{
+    if (image_p->view != VK_NULL_HANDLE)
+        vkDestroyImageView(logical, image_p->view, m_allocator);
+    
+    if (image_p->handle != VK_NULL_HANDLE)
+        vkDestroyImage(logical, image_p->handle, m_allocator);
+    
+    if (image_p->m_memory != VK_NULL_HANDLE)
+        freeMemory(image_p->m_memory);
+}
+
+// Bind the  given Image to the device
+void Device::bind(Image *image_p, VkDeviceSize memory_offset) 
+{
+    VkResult res = vkBindImageMemory(
+        logical,
+        image_p->handle,
+        image_p->m_memory,
+        memory_offset 
+    );
+
+    if (res != VK_SUCCESS) {
+        throw ImageBindError(std::format(
+            "Vulkan image bind error: {}",
+            vk_error_str(res)
+        ));
+    }
 }
 
 /*
