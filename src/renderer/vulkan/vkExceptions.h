@@ -151,6 +151,17 @@ public:
     { }
 };
 
+// Vulkan buffer map exception
+class BufferMapError : public BufferException {
+public:
+    BufferMapError(std::string_view message) : 
+        BufferException(message)
+    { }
+    BufferMapError() : 
+        BufferException("Vulkan buffer map error")
+    { }
+};
+
 /*
  *
  *      Device image errors
