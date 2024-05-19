@@ -225,39 +225,41 @@ Image Device::createImage(
 
     if (view_res != VK_SUCCESS) {
         throw ImageCreateError(std::format(
-            "image view creation error %s",
+            "image view creation error {}",
             vk_error_str(view_res)
         ));
     }
     
     // Bind the image if necessary
     if (bind_on_create) {
-        bind(&out_image, 0);    
+        bind(out_image, 0);    
     }
     
     return out_image;
 }
 
 // Destroy the given image
-void Device::destroyImage(Image *image_p)
+void Device::destroyImage(Image &image)
 {
-    if (image_p->view != VK_NULL_HANDLE)
-        vkDestroyImageView(logical, image_p->view, m_allocator);
+    if (image.view != VK_NULL_HANDLE)
+        vkDestroyImageView(logical, image.view, m_allocator);
     
-    if (image_p->handle != VK_NULL_HANDLE)
-        vkDestroyImage(logical, image_p->handle, m_allocator);
+    if (image.handle != VK_NULL_HANDLE)
+        vkDestroyImage(logical, image.handle, m_allocator);
     
-    if (image_p->m_memory != VK_NULL_HANDLE)
-        freeMemory(image_p->m_memory);
+    if (image.m_memory != VK_NULL_HANDLE)
+        freeMemory(image.m_memory);
+
+    image = Image();
 }
 
 // Bind the  given Image to the device
-void Device::bind(Image *image_p, VkDeviceSize memory_offset) 
+void Device::bind(Image &image, VkDeviceSize memory_offset) 
 {
     VkResult res = vkBindImageMemory(
         logical,
-        image_p->handle,
-        image_p->m_memory,
+        image.handle,
+        image.m_memory,
         memory_offset 
     );
 
@@ -267,6 +269,138 @@ void Device::bind(Image *image_p, VkDeviceSize memory_offset)
             vk_error_str(res)
         ));
     }
+}
+
+/*
+ *
+ *     Buffer functions
+ *
+ * */
+
+// Create a new buffer with the given requirement
+Buffer Device::createBuffer(
+    VkDeviceSize size,
+    
+    VkBufferUsageFlagBits usage_bits,
+    VkMemoryPropertyFlags memory_flags,
+    
+    bool bind_on_create
+) {
+    Buffer out_buffer;
+    
+    out_buffer.usage_bits = usage_bits;
+    out_buffer.memory_flags = memory_flags;
+    
+    out_buffer.m_size = size;
+    out_buffer.m_mapped = false;
+
+    // Create the buffer
+    VkBufferCreateInfo buffer_info = { };
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = usage_bits;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkResult res = vkCreateBuffer(
+        logical,
+        &buffer_info, 
+        m_allocator, 
+        &out_buffer.handle
+    );
+
+    if (res != VK_SUCCESS) {
+        throw BufferCreateError(std::format(
+            "Vulkan buffer create error: {}",
+            vk_error_str(res)
+        ));
+    }
+
+    // Allocate the device memory
+    VkMemoryRequirements requirements;
+    vkGetBufferMemoryRequirements(
+        logical,
+        out_buffer.handle,
+        &requirements
+    );
+
+    out_buffer.m_memory = allocateMemory(
+        requirements,
+        out_buffer.memory_flags
+    );
+
+    if (bind_on_create) 
+        bind(out_buffer, 0);
+
+    return out_buffer;
+}
+
+// Destroy the given buffer
+void Device::destroyBuffer(Buffer &buffer) 
+{
+    if (buffer.handle != VK_NULL_HANDLE)
+        vkDestroyBuffer(logical, buffer.handle, m_allocator);
+    
+    if (buffer.m_memory != VK_NULL_HANDLE)
+        freeMemory(buffer.m_memory);
+
+    buffer = Buffer();
+}
+
+// Bind the given buffer to the device with the given memory offset
+void Device::bind(Buffer &buffer, VkDeviceSize memory_offset)
+{
+    VkResult res = vkBindBufferMemory(
+        logical,
+        buffer.handle,
+        buffer.m_memory,
+        memory_offset
+    );
+
+    if (res != VK_SUCCESS) {
+        throw BufferBindError(std::format(
+            "Vulkan buffer bind error: {}", 
+            vk_error_str(res)
+        ));
+    }
+}
+
+// Map the buffer to a region of host memory and return a pointer to it
+void* Device::mapBuffer(
+    Buffer &buffer,
+    
+    VkDeviceSize offset,
+    VkDeviceSize size,
+
+    VkMemoryMapFlags map_flags
+) {
+    void *data;
+    
+    VkResult res = vkMapMemory(
+        logical,
+        buffer.m_memory,
+        offset, size,
+        map_flags, 
+        &data
+    );
+
+    if (res != VK_SUCCESS) {
+        throw BufferMapError(std::format(
+            "Vulkan buffer map error: {}",
+            vk_error_str(res)
+        ));
+    }
+
+    buffer.m_mapped = true;
+
+    return data;
+}
+
+// Unmap the given buffer 
+void Device::unmapBuffer(Buffer &buffer)
+{
+    vkUnmapMemory(logical, buffer.m_memory);
+    
+    buffer.m_mapped = false;
 }
 
 /*

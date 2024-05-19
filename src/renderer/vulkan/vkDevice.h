@@ -170,7 +170,7 @@ public:
      *
      * */
 
-    // Create a new image for 
+    // Create a new image with the given requirement 
     Image createImage(
         u32 width, 
         u32 height, 
@@ -185,11 +185,46 @@ public:
     );
 
     // Destroy the given image
-    void destroyImage(Image *image_p);
+    void destroyImage(Image &image);
 
-    // Bind the  given Image to the device
-    void bind(Image *image_p, VkDeviceSize memory_offset);
+    // Bind the given Image to the device with the given memory offset
+    void bind(Image &image, VkDeviceSize memory_offset = 0);
 
+    /*
+     *
+     *     Buffer functions
+     *
+     * */
+
+    // Create a new buffer with the given requirement
+    Buffer createBuffer(
+        VkDeviceSize size,
+        
+        VkBufferUsageFlagBits usage_bits,
+        VkMemoryPropertyFlags memory_flags,
+        
+        bool bind_on_create
+    );
+
+    // Destroy the given buffer
+    void destroyBuffer(Buffer &buffer);
+
+    // Bind the given buffer to the device with the given memory offset
+    void bind(Buffer &buffer, VkDeviceSize memory_offset = 0);
+    
+    // Map the buffer to a region of host memory and return a pointer to it
+    void* mapBuffer(
+        Buffer &buffer,
+        
+        VkDeviceSize offset,
+        VkDeviceSize size,
+
+        VkMemoryMapFlags map_flags
+    );
+
+    // Unmap the given buffer 
+    void unmapBuffer(Buffer &buffer);
+    
 private:
     /*
      *
