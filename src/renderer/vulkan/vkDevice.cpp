@@ -35,20 +35,19 @@ void Device::initialize(
     // Retrieve the device queue
     retrieveQueue();
 
-    // Create the command pools
-    if (m_device_requirement.required_queue.graphics()) {
-        graphics_cmd_pool = createCmdPool(
-            m_device_requirement.required_queue.graphics(),
-            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-        );
-    }
-    
+    // Create the transfer command pools
     if (m_device_requirement.required_queue.transfer()) {
-        transfer_transient_cmd_pool = createCmdPool(
+        m_transfer_transient_cmd_pool = createCmdPool(
             m_device_requirement.required_queue.transfer(),
             VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
         );
     }
+
+    m_delete_queue.addDeleter(std::bind(
+        &Device::destroyCmdPool,
+        this,
+        m_transfer_transient_cmd_pool
+    ));
 }
 
 // Shutdown vulkan device
@@ -113,7 +112,7 @@ u32 Device::findMemoryTypeIndex(
     u32 type_bits,
     VkMemoryPropertyFlags flags
 ) {
-    VkPhysicalDeviceMemoryProperties mem_props = memory_properties;
+    VkPhysicalDeviceMemoryProperties mem_props = m_memory_properties;
     
     for (u32 i = 0; i < mem_props.memoryTypeCount; i++) {
         bool type_bits_compatible = type_bits & (1 << i); 
@@ -273,6 +272,57 @@ void Device::bind(Image &image, VkDeviceSize memory_offset)
 
 /*
  *
+ *      Command buffer functions
+ *
+ * */
+
+// Allocate a command buffer from a command pool
+CommandBuffer Device::allocateCmdBuffer(
+    VkCommandPool cmd_pool,
+    bool primary
+) {
+    CommandBuffer out_buffer;
+
+    VkCommandBufferAllocateInfo allocate_info = { };
+    allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocate_info.commandPool = cmd_pool;
+    
+    allocate_info.level = primary ? 
+        VK_COMMAND_BUFFER_LEVEL_PRIMARY :
+        VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+    
+    allocate_info.commandBufferCount = 1;
+
+    VkResult res = vkAllocateCommandBuffers(
+        logical, 
+        &allocate_info,
+        &out_buffer.m_handle
+    );
+
+    if (res != VK_SUCCESS) {
+        throw CmdBufferAllocationError(std::format(
+            "vk_allocate_command_buffer: buffer allocation error %s",
+            vk_error_str(res)
+        ));
+    }
+
+    return out_buffer;
+}
+
+// Free a command buffer in a command pool
+void Device::freeCmdBuffer(
+    CommandBuffer cmd_buffer,
+    VkCommandPool cmd_pool
+) {
+    vkFreeCommandBuffers(
+        logical, 
+        cmd_pool, 
+        1, &cmd_buffer.m_handle
+    );
+}
+
+/*
+ *
  *     Buffer functions
  *
  * */
@@ -415,7 +465,7 @@ void Device::createLogicalDevice(Context *context_p)
     // Store device memory properties for allocations
     vkGetPhysicalDeviceMemoryProperties(
         physical,
-        &memory_properties
+        &m_memory_properties
     );
 
     QueueFamilyIndices indices = getQueueIndices(context_p, physical);
@@ -569,6 +619,42 @@ void Device::retrieveQueue()
  *
  * */
 
+// Create the command pool  
+VkCommandPool Device::createCmdPool(
+    QueueType queue_type,
+    VkCommandPoolCreateFlags flags
+) {
+    u32 index;
+
+    switch (queue_type) {
+        case QueueType::Graphics: {
+            index = m_queue_indices.graphicsIndex();
+            break;
+        } 
+        case QueueType::Compute: {
+            index = m_queue_indices.computeIndex();
+            break;
+        } 
+        case QueueType::Transfer: {
+            index = m_queue_indices.transferIndex();
+            break;
+        } 
+    }
+
+    return createCmdPool(index, flags);
+}
+
+// Destroy the given command pool
+void Device::destroyCmdPool(VkCommandPool cmd_pool)
+{
+    vkDestroyCommandPool(
+        logical, 
+        cmd_pool, 
+        m_allocator
+    );
+}
+
+// PRIVATE:
 // Create the command pool 
 VkCommandPool Device::createCmdPool(
     u32 queue_family_index,
@@ -596,14 +682,6 @@ VkCommandPool Device::createCmdPool(
         ));
     }
 
-    // Add delete function to the delete queue
-    m_delete_queue.addDeleter(std::bind(
-        vkDestroyCommandPool,
-        logical,
-        out_pool,
-        m_allocator
-    ));
-    
     return out_pool;
 }
 

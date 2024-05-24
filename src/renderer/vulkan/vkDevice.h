@@ -7,6 +7,7 @@
 #include "renderer/vulkan/initialization/vkContext.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
+#include "renderer/vulkan/vkCommandBuffer.h"
 
 #include <vector>
 
@@ -72,6 +73,13 @@ public:
         bool m_compute;
         bool m_transfer;
         bool m_present;
+    };
+
+    // Store the queue type
+    enum class QueueType {
+        Graphics,
+        Compute,
+        Transfer
     };
     
     // Store the device queue family indices
@@ -192,6 +200,40 @@ public:
 
     /*
      *
+     *      Command pool functions
+     *
+     * */
+    
+    // Create the command pool  
+    // add the pool to the delete queue
+    VkCommandPool createCmdPool(
+        QueueType queue_type,
+        VkCommandPoolCreateFlags flags
+    );
+
+    // Destroy the given command pool
+    void destroyCmdPool(VkCommandPool cmd_pool);
+
+    /*
+     *
+     *      Command buffer functions
+     *
+     * */
+
+    // Allocate a command buffer from a command pool
+    CommandBuffer allocateCmdBuffer(
+        VkCommandPool cmd_pool,
+        bool primary = true
+    );
+
+    // Free a command buffer in a command pool
+    void freeCmdBuffer(
+        CommandBuffer cmd_buffer,
+        VkCommandPool cmd_pool
+    );
+
+    /*
+     *
      *     Buffer functions
      *
      * */
@@ -254,7 +296,6 @@ private:
      * */
     
     // Create the command pool  
-    // add the pool to the delete queue
     VkCommandPool createCmdPool(
         u32 queue_family_index,
         VkCommandPoolCreateFlags flags
@@ -324,18 +365,10 @@ public:
     // Physical vulkan device
     VkPhysicalDevice physical;
 
-    // Device memory property for allocation
-    VkPhysicalDeviceMemoryProperties memory_properties;
-    
     VkQueue graphics_queue;
     VkQueue compute_queue;
     VkQueue transfer_queue;
     VkQueue present_queue;
-    
-    // Command pool for graphics operations
-    VkCommandPool graphics_cmd_pool;
-    // Command pool for transient transfer commands
-    VkCommandPool transfer_transient_cmd_pool;
     
 private:
     // Store custom allocator callbacks
@@ -346,6 +379,12 @@ private:
 
     // Physical device requirement
     PhysicalDeviceRequirement m_device_requirement;
+    
+    // Device memory property for allocation
+    VkPhysicalDeviceMemoryProperties m_memory_properties;
+    
+    // Command pool for transient transfer commands
+    VkCommandPool m_transfer_transient_cmd_pool;
 
     // Device delete queue
     DeleteQueue m_delete_queue;

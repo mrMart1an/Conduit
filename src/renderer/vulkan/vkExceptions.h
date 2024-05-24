@@ -197,6 +197,77 @@ public:
         ImageException("Vulkan image bind error")
     { }
 };
+
+/*
+ *
+ *      Command buffer exception
+ *
+ * */
+
+// Generic command buffer exception
+class CmdBufferException : public VulkanException {
+public:
+    CmdBufferException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan command buffer allocation exception
+class CmdBufferAllocationError : public CmdBufferException {
+public:
+    CmdBufferAllocationError(std::string_view message) : 
+        CmdBufferException(message)
+    { }
+    CmdBufferAllocationError() : 
+        CmdBufferException("Vulkan command buffer allocation exception")
+    { }
+};
+
+// Vulkan command buffer begin exception
+class CmdBufferBeginError : public CmdBufferException {
+public:
+    CmdBufferBeginError(std::string_view message) : 
+        CmdBufferException(message)
+    { }
+    CmdBufferBeginError() : 
+        CmdBufferException("Vulkan command buffer begin exception")
+    { }
+};
+
+// Vulkan command buffer end exception
+class CmdBufferEndError : public CmdBufferException {
+public:
+    CmdBufferEndError(std::string_view message) : 
+        CmdBufferException(message)
+    { }
+    CmdBufferEndError() : 
+        CmdBufferException("Vulkan command buffer end exception")
+    { }
+};
+
+// Vulkan command buffer reset exception
+class CmdBufferResetError : public CmdBufferException {
+public:
+    CmdBufferResetError(std::string_view message) : 
+        CmdBufferException(message)
+    { }
+    CmdBufferResetError() : 
+        CmdBufferException("Vulkan command buffer reset exception")
+    { }
+};
+
+// Vulkan command buffer submit exception
+class CmdBufferSubmitError : public CmdBufferException {
+public:
+    CmdBufferSubmitError(std::string_view message) : 
+        CmdBufferException(message)
+    { }
+    CmdBufferSubmitError() : 
+        CmdBufferException("Vulkan command buffer submit exception")
+    { }
+};
+
+
 } // namespace cndt::vulkan
 
 #endif
