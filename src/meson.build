@@ -36,6 +36,7 @@ if(vulkan_enable.enabled())
         'renderer/vulkan/vkDevice.cpp',
         'renderer/vulkan/vkRenderer.cpp',   
         'renderer/vulkan/vkCommandBuffer.cpp',   
+        'renderer/vulkan/vkRenderPass.cpp',   
         
         'renderer/vulkan/deleteQueue.cpp',
     ]

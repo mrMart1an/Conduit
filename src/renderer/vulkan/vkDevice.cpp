@@ -61,6 +61,166 @@ void Device::shutdown()
 
 /*
  *
+ *      Render pass functions
+ *
+ * */
+
+// Create a vulkan render pass
+RenderPass Device::createRenderPass(
+    VkFormat attachment_format,
+    RenderPass::ClearColor clear_color
+) {
+    RenderPass out_pass(clear_color);
+
+    // Color attachment
+    VkAttachmentDescription color_attachment = { };
+    color_attachment.format = attachment_format;
+    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    
+    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    
+    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    
+    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    
+    VkAttachmentReference color_attachment_ref = { };
+    color_attachment_ref.attachment = 0;
+    color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    // Main sub pass 
+    VkSubpassDescription subpass = { };
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &color_attachment_ref;
+    
+    // Sub pass dependency
+    VkSubpassDependency dependency = { };
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    
+    // Render pass
+    VkRenderPassCreateInfo render_pass_info = { };
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_info.attachmentCount = 1;
+    render_pass_info.pAttachments = &color_attachment;
+    render_pass_info.subpassCount = 1;
+    render_pass_info.pSubpasses = &subpass;
+    render_pass_info.dependencyCount = 1;
+    render_pass_info.pDependencies = &dependency;
+
+    VkResult res = vkCreateRenderPass(
+        logical,
+        &render_pass_info,
+        m_allocator,
+        &out_pass.m_handle
+    );
+    
+    if (res != VK_SUCCESS) {
+        throw RenderPassCreationError(std::format(
+            "Render pass creation error {}",
+            vk_error_str(res)
+        ));
+    }
+
+    return out_pass;
+}
+
+// Destroy render pass
+void Device::destroyRenderPass(RenderPass &render_pass)
+{
+    vkDestroyRenderPass(
+        logical,
+        render_pass.m_handle,
+        m_allocator
+    );
+
+    render_pass.m_handle = VK_NULL_HANDLE;
+    render_pass.m_clear_color = RenderPass::ClearColor();
+}
+
+/*
+ *
+ *      Render attachment functions
+ *
+ * */
+
+// Create a vulkan render attachment
+RenderAttachment Device::createRenderAttachment(
+    RenderPass render_pass,
+    
+    VkImageView image_view,
+    VkExtent2D image_extent,
+    VkFormat image_format
+) {
+    RenderAttachment out_attachment;
+
+    // Store extent and format of the attachment
+    out_attachment.m_extent = image_extent;
+    out_attachment.m_format = image_format;
+
+    VkFramebufferCreateInfo frame_buffer_info = { };
+    frame_buffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    
+    frame_buffer_info.attachmentCount = 1;
+    frame_buffer_info.pAttachments = &image_view;
+    frame_buffer_info.renderPass = render_pass.m_handle; 
+    
+    frame_buffer_info.width = image_extent.width;
+    frame_buffer_info.height = image_extent.height;
+    frame_buffer_info.layers = 1;
+
+    VkResult res = vkCreateFramebuffer(
+        logical,
+        &frame_buffer_info,
+        m_allocator,
+        &out_attachment.m_frame_buffer
+    ); 
+    
+    if (res != VK_SUCCESS) {
+        throw RenderAttachmentCreationError(std::format(
+            "frame buffer creation error {}",
+            vk_error_str(res)
+        ));
+    }
+
+    return out_attachment;
+}
+
+// Create a vulkan render attachment
+RenderAttachment Device::createRenderAttachment(
+    RenderPass render_pass,
+    Image &image
+) {
+    return createRenderAttachment(
+        render_pass,
+        
+        image.view,
+        image.image_extent,
+        image.image_format
+    );
+}
+
+// Destroy the given vulkan render attachment
+void Device::destroyRenderAttachment(RenderAttachment &attachment)
+{
+    vkDestroyFramebuffer(
+        logical,
+        attachment.m_frame_buffer,
+        m_allocator
+    );
+
+    attachment = RenderAttachment();
+}
+
+/*
+ *
  *      Memory functions
  *
  * */
@@ -71,7 +231,7 @@ VkDeviceMemory Device::allocateMemory(
     VkMemoryPropertyFlags memory_flags
 ) {
     // Find a suitable memory type
-    uint32_t mem_type_index = findMemoryTypeIndex(
+    u32 mem_type_index = findMemoryTypeIndex(
         requirements.memoryTypeBits, 
         memory_flags
     );
@@ -319,6 +479,8 @@ void Device::freeCmdBuffer(
         cmd_pool, 
         1, &cmd_buffer.m_handle
     );
+
+    cmd_buffer.m_handle = VK_NULL_HANDLE;
 }
 
 /*

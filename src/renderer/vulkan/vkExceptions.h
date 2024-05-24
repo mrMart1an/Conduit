@@ -1,7 +1,7 @@
 #ifndef CNDT_VK_EXCEPTIONS
 #define CNDT_VK_EXCEPTIONS
 
-#include "renderer/vulkan/vkRenderer.h"
+#include "conduit/renderer/renderer.h"
 
 namespace cndt::vulkan {
 
@@ -267,6 +267,56 @@ public:
     { }
 };
 
+/*
+ *
+ *      Render pass exception
+ *
+ * */
+
+// Generic render pass exception
+class RenderPassException : public VulkanException {
+public:
+    RenderPassException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan command buffer submit exception
+class RenderPassCreationError : public RenderPassException {
+public:
+    RenderPassCreationError(std::string_view message) : 
+        RenderPassException(message)
+    { }
+    RenderPassCreationError() : 
+        RenderPassException("Vulkan render pass creation exception")
+    { }
+};
+
+/*
+ *
+ *      Render attachment exception
+ *
+ * */
+
+// Generic render pass exception
+class RenderAttachmentException : public VulkanException {
+public:
+    RenderAttachmentException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan command buffer submit exception
+class RenderAttachmentCreationError : public RenderAttachmentException {
+public:
+    RenderAttachmentCreationError(std::string_view message) : 
+        RenderAttachmentException(message)
+    { }
+    RenderAttachmentCreationError() : 
+        RenderAttachmentException(
+            "Vulkan render attachment creation exception"
+        ) { }
+};
 
 } // namespace cndt::vulkan
 

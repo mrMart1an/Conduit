@@ -8,6 +8,8 @@
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkCommandBuffer.h"
+#include "renderer/vulkan/vkRenderAttachment.h"
+#include "renderer/vulkan/vkRenderPass.h"
 
 #include <vector>
 
@@ -159,6 +161,79 @@ public:
 
     /*
      *
+     *      Command pool functions
+     *
+     * */
+    
+    // Create the command pool  
+    // add the pool to the delete queue
+    VkCommandPool createCmdPool(
+        QueueType queue_type,
+        VkCommandPoolCreateFlags flags
+    );
+
+    // Destroy the given command pool
+    void destroyCmdPool(VkCommandPool cmd_pool);
+
+    /*
+     *
+     *      Command buffer functions
+     *
+     * */
+
+    // Allocate a command buffer from a command pool
+    CommandBuffer allocateCmdBuffer(
+        VkCommandPool cmd_pool,
+        bool primary = true
+    );
+
+    // Free a command buffer in a command pool
+    void freeCmdBuffer(
+        CommandBuffer cmd_buffer,
+        VkCommandPool cmd_pool
+    );
+
+    /*
+     *
+     *      Render pass functions
+     *
+     * */
+
+    // Create a vulkan render pass
+    RenderPass createRenderPass(
+        VkFormat attachment_format,
+        RenderPass::ClearColor clear_color
+    );
+
+    // Destroy render pass
+    void destroyRenderPass(RenderPass &render_pass);
+
+    /*
+     *
+     *      Render attachment functions
+     *
+     * */
+    
+    // Create a vulkan render attachment
+    RenderAttachment createRenderAttachment(
+        RenderPass render_pass,
+        
+        VkImageView image_view,
+        VkExtent2D image_extent,
+        VkFormat image_format
+    );
+    
+    // Create a vulkan render attachment
+    RenderAttachment createRenderAttachment(
+        RenderPass render_pass,
+        Image &image
+    );
+
+    // Destroy the given vulkan render attachment
+    void destroyRenderAttachment(RenderAttachment &attachment);
+
+    /*
+     *
      *      Memory functions
      *
      * */
@@ -197,41 +272,7 @@ public:
 
     // Bind the given Image to the device with the given memory offset
     void bind(Image &image, VkDeviceSize memory_offset = 0);
-
-    /*
-     *
-     *      Command pool functions
-     *
-     * */
     
-    // Create the command pool  
-    // add the pool to the delete queue
-    VkCommandPool createCmdPool(
-        QueueType queue_type,
-        VkCommandPoolCreateFlags flags
-    );
-
-    // Destroy the given command pool
-    void destroyCmdPool(VkCommandPool cmd_pool);
-
-    /*
-     *
-     *      Command buffer functions
-     *
-     * */
-
-    // Allocate a command buffer from a command pool
-    CommandBuffer allocateCmdBuffer(
-        VkCommandPool cmd_pool,
-        bool primary = true
-    );
-
-    // Free a command buffer in a command pool
-    void freeCmdBuffer(
-        CommandBuffer cmd_buffer,
-        VkCommandPool cmd_pool
-    );
-
     /*
      *
      *     Buffer functions
