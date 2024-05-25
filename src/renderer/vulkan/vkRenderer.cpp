@@ -33,6 +33,7 @@ void VkRenderer::initialize(
     m_swap_chain.initialize(
         m_context,
         m_device,
+        2,
         window_p->getWindowData().buffer_width,
         window_p->getWindowData().buffer_height,
         true 
