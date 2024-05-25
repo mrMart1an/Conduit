@@ -6,6 +6,7 @@
 
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
+#include "renderer/vulkan/vkSwapChain.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -39,6 +40,9 @@ private:
 
     // Store logical, physical device and queue
     Device m_device;
+
+    // Swap chain 
+    SwapChain m_swap_chain;
 };
 
 } // namespace cndt::vulkan

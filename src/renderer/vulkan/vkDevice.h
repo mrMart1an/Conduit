@@ -308,6 +308,15 @@ public:
 
     // Unmap the given buffer 
     void unmapBuffer(Buffer &buffer);
+
+    /*
+     *
+     *      Getter
+     *
+     * */
+
+    // Return the device queue family indices
+    QueueFamilyIndices queueIndices() const { return m_queue_indices; }
     
 private:
     /*
