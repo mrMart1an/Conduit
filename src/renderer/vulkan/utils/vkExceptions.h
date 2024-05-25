@@ -318,6 +318,44 @@ public:
         ) { }
 };
 
+/*
+ *
+ *      Swap chain exception
+ *
+ * */
+
+// Generic swap chain exception
+class SwapChainException : public VulkanException {
+public:
+    SwapChainException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan swap chain initialization error exception
+class SwapChainInitError : public SwapChainException {
+public:
+    SwapChainInitError(std::string_view message) : 
+        SwapChainException(message)
+    { }
+    SwapChainInitError() : 
+        SwapChainException(
+            "Vulkan swap chain initialization error exception"
+        ) { }
+};
+
+// Vulkan swap chain image view error exception
+class SwapChainViewError : public SwapChainException {
+public:
+    SwapChainViewError(std::string_view message) : 
+        SwapChainException(message)
+    { }
+    SwapChainViewError() : 
+        SwapChainException(
+            "Vulkan swap chain image view error exception"
+        ) { }
+};
+
 } // namespace cndt::vulkan
 
 #endif

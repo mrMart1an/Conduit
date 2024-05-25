@@ -39,6 +39,7 @@ Application::Application() :
     m_event_bus.addCallback<WindowCloseEvent>(
         [&run = m_run_application](const WindowCloseEvent*) { run = false; }
     );   
+    
     m_event_bus.addCallback<KeyPressEvent>(
         [&window = m_window](const KeyPressEvent* event) {
             char c = (char)event->key_code;
@@ -47,6 +48,12 @@ Application::Application() :
             if (event->key_code == keycode::KEY_F11) {
                 window->toggleFullscreen();
             }
+        }
+    );
+
+    m_event_bus.addCallback<WindowResizeEvent>(
+        [&renderer = m_renderer](const WindowResizeEvent* event) {
+            renderer->resize(event->width, event->height);
         }
     );
 
