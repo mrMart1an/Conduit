@@ -1,17 +1,18 @@
 #include "conduit/defines.h"
 #include "conduit/logging.h"
+
 #include "conduit/window/window.h"
 
-#include "renderer/vulkan/initialization/vkValidation.h"
-#include "renderer/vulkan/initialization/vkContext.h"
-#include "renderer/vulkan/vkExceptions.h"
-#include "renderer/vulkan/vkUtils.h"
+#include "renderer/vulkan/utils/vkValidation.h"
+#include "renderer/vulkan/utils/vkExceptions.h"
+#include "renderer/vulkan/utils/vkUtils.h"
+
+#include "renderer/vulkan/vkContext.h"
 
 #include <functional>
-#include <vulkan/vulkan.h>
-
 #include <vector>
 #include <format>
+
 #include <vulkan/vulkan_core.h>
 
 #include "buildConfig.h"

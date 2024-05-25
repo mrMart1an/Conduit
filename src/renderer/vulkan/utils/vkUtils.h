@@ -1,7 +1,7 @@
 #ifndef CNDT_VK_UTILS
 #define CNDT_VK_UTILS
 
-#include "renderer/vulkan/vkExceptions.h"
+#include "renderer/vulkan/utils/vkExceptions.h"
 
 #include <format>
 #include <source_location>
