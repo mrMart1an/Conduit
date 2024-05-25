@@ -1,10 +1,13 @@
 #include "conduit/logging.h"
+
 #include "renderer/vulkan/utils/vkUtils.h"
 #include "renderer/vulkan/utils/vkUtils.h"
 
 #include "renderer/vulkan/vkSwapChain.h"
 
 #include <algorithm>
+#include <format>
+
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -14,6 +17,8 @@ void SwapChain::initialize(
     Context &context,
     Device &device,
     
+    u32 frame_in_flight,
+
     u32 width, u32 height,
     bool v_sync
 ) {
@@ -27,7 +32,25 @@ void SwapChain::initialize(
     VkExtent2D extent = chooseExtent(details, width, height);
 
     // Get the number of images in the swap chains
-    u32 image_count = details.capabilities().minImageCount + 1;
+    if (frame_in_flight < 1)
+        frame_in_flight = 1;
+    
+    u32 image_count = frame_in_flight + 1;
+
+    // If max image count is 0 there is no maximum
+    if (details.capabilities().maxImageCount > 0) {
+        image_count = std::clamp(
+            image_count,
+            details.capabilities().minImageCount,
+            details.capabilities().maxImageCount
+        );
+    } else {
+        image_count = std::clamp(
+            image_count,
+            details.capabilities().minImageCount,
+            UINT32_MAX
+        );
+    }
 
     // Check if image count is past the maximum (0 means no maximum)
     if (
@@ -118,7 +141,7 @@ void SwapChain::initialize(
     m_extent = extent;
     m_v_sync = v_sync;
 
-    m_max_frame_in_flight = m_image_count - 1;
+    m_frame_in_flight = m_image_count - 1;
     m_current_image = 0;
     m_current_frame = 0;
     
@@ -143,10 +166,15 @@ void SwapChain::reinitialize(
     // Shutdown and reinitialize the swap chain
     shutdown(context, device);
 
-    initialize(context, device, width, height, m_v_sync);
+    initialize(
+        context,
+        device,
 
-    // Clear the out dated flags
-    m_outdated = false;
+        m_frame_in_flight,
+        width,
+        height,
+        m_v_sync
+    );
 }
 
 // Shutdown the swap chain
@@ -163,6 +191,115 @@ void SwapChain::shutdown(Context &context, Device &device)
         m_handle,
         context.allocator
     );
+}
+
+// Enable or disable v-sync
+void SwapChain::setVsync(Context &context, Device &device, bool v_sync)
+{
+    // Wait for all the device operation to finish
+    vk_check(vkDeviceWaitIdle(device.logical));
+
+    // Shutdown and reinitialize the swap chain
+    shutdown(context, device);
+
+    initialize(
+        context,
+        device,
+        
+        m_frame_in_flight,
+        m_extent.width,
+        m_extent.height,
+        v_sync
+    );
+}
+
+// Store the index to the next swap chain image to present after rendering
+bool SwapChain::acquireNextImage(
+    Device &device,
+    VkSemaphore image_available,
+    VkFence fence
+) {
+    VkResult res = vkAcquireNextImageKHR(
+        device.logical, 
+        m_handle, 
+        UINT64_MAX,
+        image_available, 
+        fence, 
+        &m_current_image
+    );
+
+    // Check the result and recreate the swap chain if it's out of date
+    if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+        m_outdated = true;
+        
+        log::core::trace(
+            "SwapChain::acquireNextImage -> Vulkan swap chain out of date"
+        );
+        
+        return false;
+        
+    } else if (res == VK_SUBOPTIMAL_KHR) {
+        m_outdated = true;
+        
+        log::core::trace(
+            "SwapChain::acquireNextImage -> Vulkan swap chain suboptimal"
+        );
+        
+        return false;
+        
+    } else if (res != VK_SUCCESS) {
+        throw SwapChainImageAcquireError(std::format(
+            "Swap chain image acquisition error: {}",
+            vk_error_str(res)
+        ));
+    }
+    
+    // Update the current frame counter
+    m_current_frame = (m_current_frame + 1) % m_frame_in_flight;
+
+    return true;
+}
+
+// Present the current swap chain image
+bool SwapChain::presentImage(Device &device, VkSemaphore render_done)
+{
+    VkPresentInfoKHR present_info = { };
+    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.swapchainCount = 1;
+    present_info.pSwapchains = &m_handle;
+    present_info.waitSemaphoreCount = 1;
+    present_info.pWaitSemaphores = &render_done;
+    present_info.pImageIndices = &m_current_image;
+
+    VkResult res = vkQueuePresentKHR(device.present_queue, &present_info);
+    
+    // Check the result and recreate the swap chain if it's out of date
+    if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+        m_outdated = true;
+        
+        log::core::trace(
+            "SwapChain::presentImage -> Vulkan swap chain out of date"
+        );
+        
+        return false;
+        
+    } else if (res == VK_SUBOPTIMAL_KHR) {
+        m_outdated = true;
+        
+        log::core::trace(
+            "SwapChain::presentImage -> Vulkan swap chain suboptimal"
+        );
+        
+        return false;
+        
+    } else if (res != VK_SUCCESS) {
+        throw SwapChainPresentError(std::format(
+            "Swap chain image presentation error: {}",
+            vk_error_str(res)
+        ));
+    }
+    
+    return true;
 }
 
 // Create the swap chain image views

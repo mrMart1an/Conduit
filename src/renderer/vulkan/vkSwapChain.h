@@ -44,9 +44,13 @@ private:
 
 public:
     // Initialize the swap chain
+    // The actual number of frame in flight might differ from the requested one
+    // the minimum number of frame in flight is 1
     void initialize(
         Context &context,
         Device &device,
+        
+        u32 frame_in_flight,
         
         u32 width, u32 height,
         bool v_sync
@@ -62,6 +66,33 @@ public:
 
     // Shutdown the swap chain
     void shutdown(Context &context, Device &device);
+    
+    // Enable or disable v-sync
+    void setVsync(Context &context, Device &device, bool v_sync);
+
+    // Store the index to the next swap chain image to present after rendering
+    // Return true if the image was acquired successfully
+    bool acquireNextImage(
+        Device &device,
+        VkSemaphore image_available,
+        VkFence fence
+    );   
+
+    // Present the current swap chain image
+    // Return true if the image was presented successfully
+    bool presentImage(Device &device, VkSemaphore render_done);
+    
+    /*
+     *
+     *      Getter
+     *
+     * */
+
+    // Get the index to the next swap chain image to present
+    u32 currentImage() const { return m_current_image; }
+    
+    // Get the index to the current frame in flight
+    u32 currentFrame() const { return m_current_frame; }
 
     // Return true if the swap chain is out of date and need to be recreated
     bool outOfDate() const { return m_outdated; }
@@ -87,7 +118,7 @@ private:
     VkExtent2D m_extent;
     bool m_v_sync;
 
-    u32 m_max_frame_in_flight;
+    u32 m_frame_in_flight;
 
     u32 m_image_count;
     std::vector<VkImage> m_images;
