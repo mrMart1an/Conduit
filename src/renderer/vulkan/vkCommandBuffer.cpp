@@ -1,10 +1,12 @@
 #include "conduit/defines.h"
 
-#include "renderer/vulkan/vkExceptions.h"
-#include "renderer/vulkan/vkUtils.h"
+#include "renderer/vulkan/utils/vkExceptions.h"
+#include "renderer/vulkan/utils/vkUtils.h"
+
 #include "renderer/vulkan/vkCommandBuffer.h"
 
 #include <format>
+
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {

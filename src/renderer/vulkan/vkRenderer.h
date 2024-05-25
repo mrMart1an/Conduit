@@ -4,7 +4,7 @@
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
 
-#include "renderer/vulkan/initialization/vkContext.h"
+#include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
 
 #include <vulkan/vulkan.h>

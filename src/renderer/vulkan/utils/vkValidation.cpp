@@ -1,8 +1,8 @@
 #include "conduit/defines.h"
 #include "conduit/logging.h"
 
-#include "renderer/vulkan/vkUtils.h"
-#include "vkValidation.h"
+#include "renderer/vulkan/utils/vkUtils.h"
+#include "renderer/vulkan/utils/vkValidation.h"
 
 #include <vector>
 

@@ -3,13 +3,14 @@
 
 #include "conduit/defines.h"
 
-#include "renderer/vulkan/deleteQueue.h"
-#include "renderer/vulkan/initialization/vkContext.h"
+#include "renderer/vulkan/utils/deleteQueue.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
+
 #include "renderer/vulkan/vkCommandBuffer.h"
 #include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
+#include "renderer/vulkan/vkContext.h"
 
 #include <vector>
 

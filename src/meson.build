@@ -29,16 +29,16 @@ window_src = [
 # Vulkan renderer source files
 if(vulkan_enable.enabled())
     vulkan_src = [
-        'renderer/vulkan/initialization/vkValidation.cpp',    
-        'renderer/vulkan/initialization/vkContext.cpp',
-        'renderer/vulkan/initialization/vkSwapChain.cpp',
+        'renderer/vulkan/utils/vkValidation.cpp',    
+        'renderer/vulkan/utils/deleteQueue.cpp',
         
+        'renderer/vulkan/vkContext.cpp',
         'renderer/vulkan/vkDevice.cpp',
         'renderer/vulkan/vkRenderer.cpp',   
         'renderer/vulkan/vkCommandBuffer.cpp',   
         'renderer/vulkan/vkRenderPass.cpp',   
+        'renderer/vulkan/vkSwapChain.cpp',
         
-        'renderer/vulkan/deleteQueue.cpp',
     ]
 else
     vulkan_src = []

@@ -1,10 +1,10 @@
 #ifndef CNDT_VK_CONTEXT_H
 #define CNDT_VK_CONTEXT_H
 
-#include "renderer/vulkan/initialization/vkValidation.h"
+#include "renderer/vulkan/utils/vkValidation.h"
+#include "renderer/vulkan/utils/deleteQueue.h"
 
 #include "conduit/window/window.h"
-#include "renderer/vulkan/deleteQueue.h"
 
 #include <vulkan/vulkan.h>
 
