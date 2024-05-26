@@ -245,7 +245,7 @@ bool SwapChain::acquireNextImage(
             "SwapChain::acquireNextImage -> Vulkan swap chain suboptimal"
         );
         
-        return false;
+        return true;
         
     } else if (res != VK_SUCCESS) {
         throw SwapChainImageAcquireError(std::format(

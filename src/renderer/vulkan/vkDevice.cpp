@@ -991,6 +991,7 @@ void Device::pickPhysicalDevice(
 
     // Store the selected physical device
     physical = devices[best_device];
+    m_device_requirement = requirement;
 
     // Print debug information
     printPhysicalDeviceInfo(
