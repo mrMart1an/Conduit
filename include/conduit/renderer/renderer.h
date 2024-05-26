@@ -35,6 +35,9 @@ protected:
 public:
     Renderer() = default;
     virtual ~Renderer() = default;
+
+    // Draw a frame and present it
+    virtual void draw() = 0;
     
 protected:
     // Initialize the renderer implementation

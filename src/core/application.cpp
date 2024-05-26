@@ -78,6 +78,9 @@ void Application::startMainLoop()
         // Run the user define application update function
         update(frame_time.delta());
 
+        // Draw a frame
+        m_renderer->draw();
+
         // Pool the window event and update the event buffer
         m_window->poolEvents();
         m_event_bus.update();

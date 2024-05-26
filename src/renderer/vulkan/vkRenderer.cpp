@@ -5,6 +5,12 @@
 
 namespace cndt::vulkan {
 
+/*
+ *
+ *      Initialization code
+ *
+ * */
+
 // Initialize the renderer implementation
 void VkRenderer::initialize(
     const char *app_title,
@@ -55,6 +61,18 @@ void VkRenderer::shutdown()
 // Resize the renderer viewport
 void VkRenderer::resize(u32 width, u32 height) {
     m_swap_chain.reinitialize(m_context, m_device, width, height);
+}
+
+/*
+ *
+ *      Rendering code      
+ *
+ * */
+
+// Draw and present a frame
+void VkRenderer::draw()
+{
+    
 }
 
 } // namespace cndt::vulkan

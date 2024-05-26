@@ -8,6 +8,7 @@
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkSwapChain.h"
 
+#include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
@@ -17,6 +18,16 @@ class VkRenderer : public Renderer {
 public:
     VkRenderer() = default; 
     ~VkRenderer() override = default;
+
+public:
+    // Frame in flight data
+    class FrameData {
+        
+    };
+
+public:
+    // Draw a frame and present it
+    void draw() override;
 
 protected:
     // Initialize the renderer implementation
@@ -41,8 +52,10 @@ private:
     // Store logical, physical device and queue
     Device m_device;
 
-    // Swap chain 
     SwapChain m_swap_chain;
+
+    // Frame in flight data 
+    std::vector<FrameData> m_frames_data;
 };
 
 } // namespace cndt::vulkan
