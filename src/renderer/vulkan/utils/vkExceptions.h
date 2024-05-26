@@ -82,11 +82,33 @@ public:
     { }
 };
 
+/*
+ *
+ *      Command pool exception
+ *
+ * */
+
+// Vulkan command pool generic exception
+class CommandPoolException : public VulkanException {
+public:
+    CommandPoolException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
 // Vulkan command pool initialization error
-class CommandPoolInitError : public InitializationError {
+class CommandPoolInitError : public CommandPoolException {
 public:
     CommandPoolInitError(std::string_view message) : 
-        InitializationError(message)
+        CommandPoolException(message)
+    { }
+};
+
+// Vulkan command pool reset error
+class CommandPoolResetError : public CommandPoolException {
+public:
+    CommandPoolResetError(std::string_view message) : 
+        CommandPoolException(message)
     { }
 };
 
@@ -110,9 +132,6 @@ public:
     DeviceMemoryError(std::string_view message) : 
         DeviceException(message)
     { }
-    DeviceMemoryError() : 
-        DeviceException("Vulkan device memory error")
-    { }
 };
 
 /*
@@ -135,9 +154,6 @@ public:
     BufferCreateError(std::string_view message) : 
         BufferException(message)
     { }
-    BufferCreateError() : 
-        BufferException("Vulkan buffer creation error")
-    { }
 };
 
 // Vulkan buffer bind exception
@@ -146,9 +162,6 @@ public:
     BufferBindError(std::string_view message) : 
         BufferException(message)
     { }
-    BufferBindError() : 
-        BufferException("Vulkan buffer bind error")
-    { }
 };
 
 // Vulkan buffer map exception
@@ -156,9 +169,6 @@ class BufferMapError : public BufferException {
 public:
     BufferMapError(std::string_view message) : 
         BufferException(message)
-    { }
-    BufferMapError() : 
-        BufferException("Vulkan buffer map error")
     { }
 };
 
@@ -182,9 +192,6 @@ public:
     ImageCreateError(std::string_view message) : 
         ImageException(message)
     { }
-    ImageCreateError() : 
-        ImageException("Vulkan image creation error")
-    { }
 };
 
 // Vulkan image bind exception
@@ -192,9 +199,6 @@ class ImageBindError : public ImageException {
 public:
     ImageBindError(std::string_view message) : 
         ImageException(message)
-    { }
-    ImageBindError() : 
-        ImageException("Vulkan image bind error")
     { }
 };
 
@@ -218,9 +222,6 @@ public:
     CmdBufferAllocationError(std::string_view message) : 
         CmdBufferException(message)
     { }
-    CmdBufferAllocationError() : 
-        CmdBufferException("Vulkan command buffer allocation exception")
-    { }
 };
 
 // Vulkan command buffer begin exception
@@ -228,9 +229,6 @@ class CmdBufferBeginError : public CmdBufferException {
 public:
     CmdBufferBeginError(std::string_view message) : 
         CmdBufferException(message)
-    { }
-    CmdBufferBeginError() : 
-        CmdBufferException("Vulkan command buffer begin exception")
     { }
 };
 
@@ -240,9 +238,6 @@ public:
     CmdBufferEndError(std::string_view message) : 
         CmdBufferException(message)
     { }
-    CmdBufferEndError() : 
-        CmdBufferException("Vulkan command buffer end exception")
-    { }
 };
 
 // Vulkan command buffer reset exception
@@ -251,9 +246,6 @@ public:
     CmdBufferResetError(std::string_view message) : 
         CmdBufferException(message)
     { }
-    CmdBufferResetError() : 
-        CmdBufferException("Vulkan command buffer reset exception")
-    { }
 };
 
 // Vulkan command buffer submit exception
@@ -261,9 +253,6 @@ class CmdBufferSubmitError : public CmdBufferException {
 public:
     CmdBufferSubmitError(std::string_view message) : 
         CmdBufferException(message)
-    { }
-    CmdBufferSubmitError() : 
-        CmdBufferException("Vulkan command buffer submit exception")
     { }
 };
 
@@ -287,9 +276,6 @@ public:
     RenderPassCreationError(std::string_view message) : 
         RenderPassException(message)
     { }
-    RenderPassCreationError() : 
-        RenderPassException("Vulkan render pass creation exception")
-    { }
 };
 
 /*
@@ -312,10 +298,6 @@ public:
     RenderAttachmentCreationError(std::string_view message) : 
         RenderAttachmentException(message)
     { }
-    RenderAttachmentCreationError() : 
-        RenderAttachmentException(
-            "Vulkan render attachment creation exception"
-        ) { }
 };
 
 /*
@@ -338,10 +320,6 @@ public:
     SwapChainInitError(std::string_view message) : 
         SwapChainException(message)
     { }
-    SwapChainInitError() : 
-        SwapChainException(
-            "Vulkan swap chain initialization error exception"
-        ) { }
 };
 
 // Vulkan swap chain image view error exception
@@ -350,10 +328,6 @@ public:
     SwapChainViewError(std::string_view message) : 
         SwapChainException(message)
     { }
-    SwapChainViewError() : 
-        SwapChainException(
-            "Vulkan swap chain image view error exception"
-        ) { }
 };
 
 // Vulkan swap chain image acquisition error exception
@@ -362,10 +336,6 @@ public:
     SwapChainImageAcquireError(std::string_view message) : 
         SwapChainException(message)
     { }
-    SwapChainImageAcquireError() : 
-        SwapChainException(
-            "Vulkan swap chain image acquisition error exception"
-        ) { }
 };
 
 // Vulkan swap chain image presentation error exception
@@ -374,10 +344,6 @@ public:
     SwapChainPresentError(std::string_view message) : 
         SwapChainException(message)
     { }
-    SwapChainPresentError() : 
-        SwapChainException(
-            "Vulkan swap chain image presentation error exception"
-        ) { }
 };
 
 } // namespace cndt::vulkan

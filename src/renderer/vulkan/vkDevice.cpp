@@ -7,6 +7,7 @@
 
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/storage/vkImage.h"
+#include "renderer/vulkan/vkCommandPool.h"
 
 #include <format>
 #include <functional>
@@ -35,20 +36,6 @@ void Device::initialize(
 
     // Retrieve the device queue
     retrieveQueue();
-
-    // Create the transfer command pools
-    if (m_device_requirement.required_queue.transfer()) {
-        m_transfer_transient_cmd_pool = createCmdPool(
-            m_device_requirement.required_queue.transfer(),
-            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
-        );
-    }
-
-    m_delete_queue.addDeleter(std::bind(
-        &Device::destroyCmdPool,
-        this,
-        m_transfer_transient_cmd_pool
-    ));
 }
 
 // Shutdown vulkan device
@@ -783,7 +770,7 @@ void Device::retrieveQueue()
  * */
 
 // Create the command pool  
-VkCommandPool Device::createCmdPool(
+CommandPool Device::createCmdPool(
     QueueType queue_type,
     VkCommandPoolCreateFlags flags
 ) {
@@ -807,34 +794,62 @@ VkCommandPool Device::createCmdPool(
     return createCmdPool(index, flags);
 }
 
+void Device::resetCmdPool(
+    CommandPool cmd_pool,
+    bool release_resources
+) {
+    VkCommandPoolResetFlags flag;
+    
+    if (release_resources)
+        flag = VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT; 
+    else
+        flag = 0;
+
+    VkResult res = vkResetCommandPool(
+        logical,
+        cmd_pool.m_handle,
+        flag
+    );
+
+    if (res != VK_SUCCESS) {
+        throw CommandPoolResetError(std::format(
+            "Command pool reset error: {}",
+            vk_error_str(res)
+        ));
+    }
+}
+
 // Destroy the given command pool
-void Device::destroyCmdPool(VkCommandPool cmd_pool)
+void Device::destroyCmdPool(CommandPool cmd_pool)
 {
     vkDestroyCommandPool(
         logical, 
-        cmd_pool, 
+        cmd_pool.m_handle, 
         m_allocator
     );
+
+    cmd_pool = CommandPool();
 }
 
 // PRIVATE:
 // Create the command pool 
-VkCommandPool Device::createCmdPool(
+CommandPool Device::createCmdPool(
     u32 queue_family_index,
     VkCommandPoolCreateFlags flags
 ) {
+    CommandPool out_pool;
+    
     VkCommandPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     pool_info.flags = flags;
 
     pool_info.queueFamilyIndex = queue_family_index;
     
-    VkCommandPool out_pool;
     VkResult res = vkCreateCommandPool(
         logical,
         &pool_info,
         m_allocator, 
-        &out_pool
+        &out_pool.m_handle
     );
     
     if (res != VK_SUCCESS) {
