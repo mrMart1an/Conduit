@@ -72,11 +72,13 @@ public:
 
     // Store the index to the next swap chain image to present after rendering
     // Return true if the image was acquired successfully
+    //
+    // The given semaphore and fence are signaled when an image is acquired
     bool acquireNextImage(
         Device &device,
         VkSemaphore image_available,
         VkFence fence
-    );   
+    );
 
     // Present the current swap chain image
     // Return true if the image was presented successfully

@@ -51,6 +51,9 @@ protected:
 
 private:
 
+    // Recreate the swap chain and the swap chain render attachments
+    void recreateSwapChain(u32 width, u32 height);
+
     /*
      *
      *      Frame data functions
@@ -96,6 +99,9 @@ private:
 
     // Frame in flight data 
     std::vector<FrameData> m_frames_data;
+
+    // Store true and halt rendering if the window is minimized
+    bool m_minimized;
 };
 
 } // namespace cndt::vulkan

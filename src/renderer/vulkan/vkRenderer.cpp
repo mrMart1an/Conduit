@@ -2,6 +2,7 @@
 #include "renderer/vulkan/vkDevice.h"
 
 #include <functional>
+#include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
 
@@ -27,7 +28,7 @@ void VkRenderer::initialize(
     requirement.required_device_extensions = Device::Extensions(true);
     // Require graphics, transfer and present of queue
     requirement.required_queue =
-        Device::QueueFamilyType(true, false, true, true);
+        Device::QueueFamilyType(true, true, true, true);
     // Require features 
     requirement.required_feature.geometryShader = VK_TRUE;
     requirement.required_feature.fillModeNonSolid = VK_TRUE;
@@ -85,6 +86,17 @@ void VkRenderer::shutdown()
 
 // Resize the renderer viewport
 void VkRenderer::resize(u32 width, u32 height) {
+    if (width != 0 && height != 0) {
+        recreateSwapChain(width, height);
+        m_minimized = false;
+    } else {
+        m_minimized = true;
+    }
+}
+
+// Recreate the swap chain and the swap chain render attachments
+void VkRenderer::recreateSwapChain(u32 width, u32 height)
+{
     destroySwapChainAttachment();
     
     m_swap_chain.reinitialize(m_context, m_device, width, height);
@@ -101,7 +113,71 @@ void VkRenderer::resize(u32 width, u32 height) {
 // Draw and present a frame
 void VkRenderer::draw()
 {
+    if (m_minimized)
+        return;
     
+    FrameData &frame_data = getCurrentFrame();
+
+    vkWaitForFences(
+        m_device.logical, 
+        1, &frame_data.render_fence,
+        VK_TRUE, UINT64_MAX
+    );
+
+    // If the swap chain is outdated recreate it
+    if (m_swap_chain.outOfDate()) {
+        VkExtent2D extent = m_swap_chain.extent();
+        recreateSwapChain(extent.width, extent.height);
+    }
+
+    // Acquire the next swap chain image for rendering
+    bool was_acquired = m_swap_chain.acquireNextImage(
+        m_device,
+        frame_data.image_semaphore,
+        VK_NULL_HANDLE
+    );
+
+    if (!was_acquired)
+        return;
+
+    // Reset the rendering fence
+    vkResetFences(m_device.logical, 1, &frame_data.render_fence);
+
+    // Start render pass and command buffer recording
+    frame_data.main_cmd_buffer.reset();
+    frame_data.main_cmd_buffer.begin(false, false, false);
+
+    RenderAttachment &attachment =
+        m_swap_chain_attachements.at(m_swap_chain.currentImage());
+    
+    RenderPass::RenderArea render_area(
+        m_swap_chain.extent().width,
+        m_swap_chain.extent().height
+    );
+    
+    m_main_render_pass.begin(
+        attachment,
+        render_area,
+        frame_data.main_cmd_buffer
+    );
+
+    // TODO render code...
+
+    // End command buffer recording and render pass
+    m_main_render_pass.end(frame_data.main_cmd_buffer);
+    frame_data.main_cmd_buffer.end();
+
+    // Submit the rendering command buffer
+    frame_data.main_cmd_buffer.submit(
+        m_device.graphics_queue, 
+        frame_data.render_fence, 
+        1, &frame_data.image_semaphore, 
+        1, &frame_data.render_semaphore, 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    );
+
+    // Present the swap chain image
+    m_swap_chain.presentImage(m_device, frame_data.render_semaphore);
 }
 
 /*
@@ -137,6 +213,8 @@ void VkRenderer::createFrameDatas()
 // Destroy all the frame in flight data
 void VkRenderer::destroyFrameData()
 {
+    vkDeviceWaitIdle(m_device.logical);
+    
     for (auto& frame_data : m_frames_data) {
         // Destroy the sync object
         m_device.destroyFence(frame_data.render_fence);
@@ -190,6 +268,8 @@ void VkRenderer::createSwapChainAttachment()
 // Destroy the swap chain render attachments
 void VkRenderer::destroySwapChainAttachment()
 {
+    vkDeviceWaitIdle(m_device.logical);
+
     for (auto& attachment : m_swap_chain_attachements) {
         m_device.destroyRenderAttachment(attachment);
     }
