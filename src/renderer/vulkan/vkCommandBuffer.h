@@ -13,11 +13,9 @@ class Device;
 class CommandBuffer {
     friend class Device;
 
-    // Private constructor, only the device friend class
-    // can create a command buffer
+public:
     CommandBuffer() = default;
     
-public:
     // Return the vulkan command buffer handle
     VkCommandBuffer handle() const { return m_handle; };
     

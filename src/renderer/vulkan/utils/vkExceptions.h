@@ -84,6 +84,36 @@ public:
 
 /*
  *
+ *      Sync object exception
+ *
+ * */
+
+// Vulkan generic sync object exception
+class SyncObjectException : public VulkanException {
+public:
+    SyncObjectException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan fence initialization error
+class FenceInitError : public SyncObjectException {
+public:
+    FenceInitError(std::string_view message) : 
+        SyncObjectException(message)
+    { }
+};
+
+// Vulkan semaphore initialization error
+class SemaphoreInitError : public SyncObjectException {
+public:
+    SemaphoreInitError(std::string_view message) : 
+        SyncObjectException(message)
+    { }
+};
+
+/*
+ *
  *      Command pool exception
  *
  * */

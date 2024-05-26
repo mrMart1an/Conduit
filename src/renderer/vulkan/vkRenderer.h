@@ -6,6 +6,8 @@
 
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
+#include "renderer/vulkan/vkRenderAttachment.h"
+#include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkSwapChain.h"
 
 #include <vector>
@@ -21,8 +23,13 @@ public:
 
 public:
     // Frame in flight data
-    class FrameData {
-        
+    struct FrameData {
+        CommandPool graphics_cmd_pool;
+        CommandBuffer main_cmd_buffer;
+
+        // Sync objects
+        VkFence render_fence;
+        VkSemaphore image_semaphore, render_semaphore;
     };
 
 public:
@@ -43,6 +50,35 @@ protected:
     void resize(u32 width, u32 height) override;
 
 private:
+
+    /*
+     *
+     *      Frame data functions
+     *
+     * */
+
+    // Create and initialized all the frame in flight data
+    void createFrameDatas();
+    
+    // Destroy all the frame in flight data
+    void destroyFrameData();
+
+    // Get the current frame in flight data
+    FrameData& getCurrentFrame();
+
+    /*
+     *
+     *      Render attachment functions
+     *
+     * */
+
+    // Create the swap chain render attachments using the main render pass
+    void createSwapChainAttachment();
+
+    // Destroy the swap chain render attachments
+    void destroySwapChainAttachment();
+
+private:
     // Renderer delete queue
     DeleteQueue m_delete_queue;
     
@@ -53,6 +89,10 @@ private:
     Device m_device;
 
     SwapChain m_swap_chain;
+
+    // Render pass and related swap chain render attachment
+    RenderPass m_main_render_pass;
+    std::vector<RenderAttachment> m_swap_chain_attachements;
 
     // Frame in flight data 
     std::vector<FrameData> m_frames_data;

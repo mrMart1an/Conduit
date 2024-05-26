@@ -40,6 +40,8 @@ public:
     };
 
 public:
+    RenderPass() = default;
+    
     // Begin the render pass on the given attachment
     void begin(
         RenderAttachment &attachment,

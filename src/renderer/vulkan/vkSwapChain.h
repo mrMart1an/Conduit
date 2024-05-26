@@ -88,6 +88,22 @@ public:
      *
      * */
 
+    // Return a constant reference to the image view vector
+    const std::vector<VkImageView>& imageViews() const 
+        { return m_image_views; }
+
+    // Return the swap chain image format
+    VkFormat format() const { return m_format; }
+    
+    // Return the swap chain image extent
+    VkExtent2D extent() const { return m_extent; }
+
+    // Return the number of swap chain images
+    u32 imageCount() const { return m_image_count; }
+
+    // Return the number of frame in frame in flight
+    u32 frameInFlight() const { return m_frame_in_flight; }
+
     // Get the index to the next swap chain image to present
     u32 currentImage() const { return m_current_image; }
     
