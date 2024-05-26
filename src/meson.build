@@ -32,10 +32,10 @@ if(vulkan_enable.enabled())
         'renderer/vulkan/utils/vkValidation.cpp',    
         'renderer/vulkan/utils/deleteQueue.cpp',
         
+        'renderer/vulkan/vkCommandBuffer.cpp',   
         'renderer/vulkan/vkContext.cpp',
         'renderer/vulkan/vkDevice.cpp',
         'renderer/vulkan/vkRenderer.cpp',   
-        'renderer/vulkan/vkCommandBuffer.cpp',   
         'renderer/vulkan/vkRenderPass.cpp',   
         'renderer/vulkan/vkSwapChain.cpp',
         

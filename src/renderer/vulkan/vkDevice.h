@@ -8,6 +8,7 @@
 #include "renderer/vulkan/storage/vkImage.h"
 
 #include "renderer/vulkan/vkCommandBuffer.h"
+#include "renderer/vulkan/vkCommandPool.h"
 #include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkContext.h"
@@ -168,13 +169,19 @@ public:
     
     // Create the command pool  
     // add the pool to the delete queue
-    VkCommandPool createCmdPool(
+    CommandPool createCmdPool(
         QueueType queue_type,
         VkCommandPoolCreateFlags flags
     );
 
+    // Reset a command pool
+    void resetCmdPool(
+        CommandPool cmd_pool,
+        bool release_resources = false
+    );
+
     // Destroy the given command pool
-    void destroyCmdPool(VkCommandPool cmd_pool);
+    void destroyCmdPool(CommandPool cmd_pool);
 
     /*
      *
@@ -347,7 +354,7 @@ private:
      * */
     
     // Create the command pool  
-    VkCommandPool createCmdPool(
+    CommandPool createCmdPool(
         u32 queue_family_index,
         VkCommandPoolCreateFlags flags
     );
@@ -434,9 +441,6 @@ private:
     // Device memory property for allocation
     VkPhysicalDeviceMemoryProperties m_memory_properties;
     
-    // Command pool for transient transfer commands
-    VkCommandPool m_transfer_transient_cmd_pool;
-
     // Device delete queue
     DeleteQueue m_delete_queue;
 };
