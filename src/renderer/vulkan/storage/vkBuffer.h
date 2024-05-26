@@ -11,10 +11,9 @@ class Device;
 class Buffer {
     friend class Device;
 
-    // Private Constructor, only the device can create a Buffer instance
+public:
     Buffer() = default;
 
-public:
     // Return true if the buffer is mapped
     bool mapped() const { return m_mapped; };
 

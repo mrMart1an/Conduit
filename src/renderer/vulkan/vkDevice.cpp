@@ -209,6 +209,75 @@ void Device::destroyRenderAttachment(RenderAttachment &attachment)
 
 /*
  *
+ *      Sync object functions
+ *
+ * */
+
+// Create a fence, used for GPU to CPU synchronization 
+VkFence Device::createFence(bool signaled)
+{
+    VkFence out_fence;
+
+    VkFenceCreateInfo fence_info = { };
+    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_info.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
+
+    VkResult res = vkCreateFence(
+        logical, 
+        &fence_info, 
+        m_allocator, 
+        &out_fence
+    );
+    
+    if (res != VK_SUCCESS) {
+        throw FenceInitError(std::format(
+            "Vulkan fence initialization error {}",
+            vk_error_str(res)
+        ));
+    }
+
+    return out_fence;
+}
+
+// Destroy the given fence
+void Device::destroyFence(VkFence &fence)
+{
+    vkDestroyFence(logical, fence, m_allocator);
+}
+
+// Create a semaphore, used for GPU to GPU synchronization
+VkSemaphore Device::createSemaphore()
+{
+    VkSemaphore out_semaphore;
+    
+    VkSemaphoreCreateInfo semaphore_info = { };
+    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkResult res = vkCreateSemaphore(
+        logical, 
+        &semaphore_info, 
+        m_allocator, 
+        &out_semaphore
+    );
+    
+    if (res != VK_SUCCESS) {
+        throw SemaphoreInitError(std::format(
+            "Vulkan semaphore initialization error {}",
+            vk_error_str(res)
+        ));
+    }
+
+    return out_semaphore;
+}
+
+// Destroy the given semaphore
+void Device::destroySemaphore(VkSemaphore &semaphore) 
+{
+    vkDestroySemaphore(logical, semaphore, m_allocator);
+}
+
+/*
+ *
  *      Memory functions
  *
  * */
@@ -426,14 +495,14 @@ void Device::bind(Image &image, VkDeviceSize memory_offset)
 
 // Allocate a command buffer from a command pool
 CommandBuffer Device::allocateCmdBuffer(
-    VkCommandPool cmd_pool,
+    CommandPool &cmd_pool,
     bool primary
 ) {
     CommandBuffer out_buffer;
 
     VkCommandBufferAllocateInfo allocate_info = { };
     allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocate_info.commandPool = cmd_pool;
+    allocate_info.commandPool = cmd_pool.m_handle;
     
     allocate_info.level = primary ? 
         VK_COMMAND_BUFFER_LEVEL_PRIMARY :
@@ -449,7 +518,7 @@ CommandBuffer Device::allocateCmdBuffer(
 
     if (res != VK_SUCCESS) {
         throw CmdBufferAllocationError(std::format(
-            "vk_allocate_command_buffer: buffer allocation error %s",
+            "Vulkan buffer allocation error %s",
             vk_error_str(res)
         ));
     }
@@ -459,12 +528,12 @@ CommandBuffer Device::allocateCmdBuffer(
 
 // Free a command buffer in a command pool
 void Device::freeCmdBuffer(
-    CommandBuffer cmd_buffer,
-    VkCommandPool cmd_pool
+    CommandPool &cmd_pool,
+    CommandBuffer &cmd_buffer
 ) {
     vkFreeCommandBuffers(
         logical, 
-        cmd_pool, 
+        cmd_pool.m_handle, 
         1, &cmd_buffer.m_handle
     );
 

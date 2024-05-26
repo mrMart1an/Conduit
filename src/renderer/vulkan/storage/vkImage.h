@@ -11,10 +11,9 @@ class Device;
 class Image {
     friend class Device;
     
-    // Private Constructor, only the device can create an Image instance
+public:
     Image() = default;
 
-public:
     VkImage handle;
     VkImageView view;
     

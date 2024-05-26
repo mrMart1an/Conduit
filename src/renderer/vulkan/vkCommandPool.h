@@ -11,8 +11,7 @@ class Device;
 class CommandPool {
     friend class Device;
 
-    // Private constructor, only the device friend class
-    // can create a command buffer
+public:
     CommandPool() = default;
     
 private:

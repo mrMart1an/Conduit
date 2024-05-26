@@ -171,7 +171,7 @@ public:
     // add the pool to the delete queue
     CommandPool createCmdPool(
         QueueType queue_type,
-        VkCommandPoolCreateFlags flags
+        VkCommandPoolCreateFlags flags = 0
     );
 
     // Reset a command pool
@@ -191,14 +191,14 @@ public:
 
     // Allocate a command buffer from a command pool
     CommandBuffer allocateCmdBuffer(
-        VkCommandPool cmd_pool,
+        CommandPool &cmd_pool,
         bool primary = true
     );
 
     // Free a command buffer in a command pool
     void freeCmdBuffer(
-        CommandBuffer cmd_buffer,
-        VkCommandPool cmd_pool
+        CommandPool &cmd_pool,
+        CommandBuffer &cmd_buffer
     );
 
     /*
@@ -240,6 +240,25 @@ public:
     // Destroy the given vulkan render attachment
     void destroyRenderAttachment(RenderAttachment &attachment);
 
+    /*
+     *
+     *      Sync object functions
+     *
+     * */
+
+    // Create a fence, used for GPU to CPU synchronization 
+    // If the signaled argument is true the fence is signaled on creation
+    VkFence createFence(bool signaled = true);
+
+    // Destroy the given fence
+    void destroyFence(VkFence &fence);
+
+    // Create a semaphore, used for GPU to GPU synchronization
+    VkSemaphore createSemaphore();
+
+    // Destroy the given semaphore
+    void destroySemaphore(VkSemaphore &semaphore);
+    
     /*
      *
      *      Memory functions

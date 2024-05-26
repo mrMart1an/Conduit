@@ -11,10 +11,9 @@ class Device;
 class RenderAttachment {
     friend class Device;
     
-    // Private constructor, only the device class can create render attachment
+public:
     RenderAttachment() = default;
     
-public:
     // Return the attachment format
     VkFormat format() const { return m_format; }
 

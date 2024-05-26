@@ -254,9 +254,6 @@ bool SwapChain::acquireNextImage(
         ));
     }
     
-    // Update the current frame counter
-    m_current_frame = (m_current_frame + 1) % m_frame_in_flight;
-
     return true;
 }
 
@@ -298,6 +295,9 @@ bool SwapChain::presentImage(Device &device, VkSemaphore render_done)
             vk_error_str(res)
         ));
     }
+    
+    // Update the current frame counter
+    m_current_frame = (m_current_frame + 1) % m_frame_in_flight;
     
     return true;
 }
