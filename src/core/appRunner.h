@@ -1,5 +1,5 @@
-#ifndef CNDT_APPLICATION_CORE_H
-#define CNDT_APPLICATION_CORE_H
+#ifndef CNDT_APP_RUNNER_H
+#define CNDT_APP_RUNNER_H
 
 #include <memory>
 

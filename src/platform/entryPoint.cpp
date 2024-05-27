@@ -1,7 +1,7 @@
 #include "conduit/application.h"
 #include "conduit/logging.h"
 
-#include "core/application.h"
+#include "core/appRunner.h"
 
 #include <exception>
 
