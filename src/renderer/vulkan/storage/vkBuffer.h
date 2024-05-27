@@ -14,22 +14,24 @@ class Buffer {
 public:
     Buffer() = default;
 
-    // Return true if the buffer is mapped
-    bool mapped() const { return m_mapped; };
+    // Return the buffer handle
+    VkBuffer handle() const { return m_handle; }
 
     // Return the size of the buffer
     VkDeviceSize size() const { return m_size; };
 
-public:
-    VkBuffer handle;
-    
-    VkBufferUsageFlagBits usage_bits;
-    VkMemoryPropertyFlags memory_flags;
+    // Return true if the buffer is mapped
+    bool mapped() const { return m_mapped; };
 
 private:
-    VkDeviceMemory m_memory;
+    VkBuffer m_handle;
     
     VkDeviceSize m_size;
+    
+    VkBufferUsageFlagBits m_usage_bits;
+    VkMemoryPropertyFlags m_memory_flags;
+    
+    VkDeviceMemory m_memory;
     
     bool m_mapped;
 };

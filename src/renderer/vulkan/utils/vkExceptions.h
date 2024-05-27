@@ -104,6 +104,22 @@ public:
     { }
 };
 
+// Vulkan fence wait error
+class FenceWaitError : public SyncObjectException {
+public:
+    FenceWaitError(std::string_view message) : 
+        SyncObjectException(message)
+    { }
+};
+
+// Vulkan fence reset error
+class FenceResetError : public SyncObjectException {
+public:
+    FenceResetError(std::string_view message) : 
+        SyncObjectException(message)
+    { }
+};
+
 // Vulkan semaphore initialization error
 class SemaphoreInitError : public SyncObjectException {
 public:
