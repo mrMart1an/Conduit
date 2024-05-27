@@ -2,8 +2,8 @@
 #define CNDT_VK_DEVICE_H
 
 #include "conduit/defines.h"
+#include "core/deleteQueue.h"
 
-#include "renderer/vulkan/utils/deleteQueue.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
 

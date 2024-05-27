@@ -11,6 +11,8 @@ core_src = [
     'core/time.cpp', 
     'core/assert.cpp', 
     'core/application.cpp',
+    'core/appRunner.cpp',
+    'core/deleteQueue.cpp',
 ]
 
 # Engine entity component system source files
@@ -30,7 +32,6 @@ window_src = [
 if(vulkan_enable.enabled())
     vulkan_src = [
         'renderer/vulkan/utils/vkValidation.cpp',    
-        'renderer/vulkan/utils/deleteQueue.cpp',
         
         'renderer/vulkan/vkCommandBuffer.cpp',   
         'renderer/vulkan/vkContext.cpp',
