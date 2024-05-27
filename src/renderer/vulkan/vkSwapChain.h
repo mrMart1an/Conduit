@@ -100,6 +100,9 @@ public:
     // Return the swap chain image extent
     VkExtent2D extent() const { return m_extent; }
 
+    // Return true if v-sync is enabled
+    bool vSync() const { return m_v_sync; }
+
     // Return the number of swap chain images
     u32 imageCount() const { return m_image_count; }
 

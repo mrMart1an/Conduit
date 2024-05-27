@@ -104,6 +104,23 @@ void VkRenderer::recreateSwapChain(u32 width, u32 height)
     createSwapChainAttachment();
 }
 
+// Set renderer v-sync 
+void VkRenderer::setVsync(bool v_sync)
+{
+    destroySwapChainAttachment();
+    
+    m_swap_chain.setVsync(m_context, m_device, v_sync);
+    
+    createSwapChainAttachment();
+}
+
+// Toggle renderer v-sync
+void VkRenderer::toggleVsync()
+{
+    bool v_status = m_swap_chain.vSync();
+    setVsync(!v_status);
+}
+
 /*
  *
  *      Rendering code      

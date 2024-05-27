@@ -38,6 +38,12 @@ public:
 
     // Draw a frame and present it
     virtual void draw() = 0;
+
+    // Set renderer v-sync 
+    virtual void setVsync(bool v_sync) = 0;
+
+    // Toggle renderer v-sync
+    virtual void toggleVsync() = 0;
     
 protected:
     // Initialize the renderer implementation
