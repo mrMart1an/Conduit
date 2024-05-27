@@ -35,6 +35,12 @@ public:
 public:
     // Draw a frame and present it
     void draw() override;
+    
+    // Set renderer v-sync 
+    void setVsync(bool v_sync) override;
+
+    // Toggle renderer v-sync
+    void toggleVsync() override;
 
 protected:
     // Initialize the renderer implementation

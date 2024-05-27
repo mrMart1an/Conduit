@@ -84,15 +84,16 @@ void Application::engineShutdown()
 void Application::setupKeyBinding()
 {
     m_event_bus.addCallback<KeyPressEvent>(
-        [&window = m_window](const KeyPressEvent* event) {
+        [&window = m_window, &renderer = m_renderer]
+        (const KeyPressEvent* event) {
             // Toggle fullscreen
             if (event->key_code == keycode::KEY_F11) {
                 window->toggleFullscreen();
             }
             
             // Toggle v-sync
-            if (event->key_code == keycode::KEY_F11) {
-                
+            if (event->key_code == keycode::KEY_F7) {
+                renderer->toggleVsync();
             }
         }
     );
