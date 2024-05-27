@@ -14,16 +14,26 @@ class Image {
 public:
     Image() = default;
 
-    VkImage handle;
-    VkImageView view;
+    // Return the image handle
+    VkImage handle() const { return m_handle; }
+    // Return the image view handle
+    VkImageView view() const { return m_view; }
     
-    VkExtent2D image_extent;
-    VkFormat image_format;
-    
-    VkImageUsageFlagBits usage_bits;
-    VkMemoryPropertyFlags memory_flags;
+    // Return the image extent handle
+    VkExtent2D extent() const { return m_image_extent; }
+    // Return the image format handle
+    VkFormat format() const { return m_image_format; }
     
 private:
+    VkImage m_handle;
+    VkImageView m_view;
+    
+    VkExtent2D m_image_extent;
+    VkFormat m_image_format;
+    
+    VkImageUsageFlagBits m_usage_bits;
+    VkMemoryPropertyFlags m_memory_flags;
+    
     VkDeviceMemory m_memory;
 };
 

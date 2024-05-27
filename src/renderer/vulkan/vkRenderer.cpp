@@ -211,7 +211,7 @@ void VkRenderer::createFrameDatas()
 
     for (auto& frame_data : m_frames_data) {
         // Create the sync object
-        frame_data.render_fence = m_device.createFence();        
+        frame_data.render_fence = m_device.createFence(true);        
         frame_data.render_semaphore = m_device.createSemaphore();
         frame_data.image_semaphore = m_device.createSemaphore();
 

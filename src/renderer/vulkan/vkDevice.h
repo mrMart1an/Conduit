@@ -248,7 +248,13 @@ public:
 
     // Create a fence, used for GPU to CPU synchronization 
     // If the signaled argument is true the fence is signaled on creation
-    VkFence createFence(bool signaled = true);
+    VkFence createFence(bool signaled);
+
+    // Wait on the given fence
+    void waitFence(VkFence fence, u64 timeout = UINT64_MAX);
+
+    // Reset the given fence
+    void resetFence(VkFence fence);
 
     // Destroy the given fence
     void destroyFence(VkFence &fence);
@@ -318,7 +324,14 @@ public:
 
     // Destroy the given buffer
     void destroyBuffer(Buffer &buffer);
-
+    
+    // Resize the given buffer
+    // this operation is blocking
+    void bufferResize(
+        Buffer &buffer,
+        VkDeviceSize size
+    );
+    
     // Bind the given buffer to the device with the given memory offset
     void bind(Buffer &buffer, VkDeviceSize memory_offset = 0);
     
@@ -334,7 +347,42 @@ public:
 
     // Unmap the given buffer 
     void unmapBuffer(Buffer &buffer);
+    
+    // Load the data at the given pointer to the buffer at the given offset
+    void loadBuffer(
+        Buffer &buffer,
+        VkMemoryMapFlags map_flags,
+    
+        VkDeviceSize buffer_offset,
+        VkDeviceSize size,
+    
+        void *data_p
+    );
 
+    // Copy the content of one buffer to another
+    // this operation is blocking
+    void copyBuffer(
+        VkDeviceSize src_offset,
+        Buffer &src_buffer,
+        
+        VkDeviceSize dest_offset,
+        Buffer &dest_buffer,
+
+        VkDeviceSize size
+    );
+
+    // Copy the content of one buffer to another
+    // this operation is blocking
+    void copyBuffer(
+        VkDeviceSize src_offset,
+        VkBuffer src_buffer,
+        
+        VkDeviceSize dest_offset,
+        VkBuffer dest_buffer,
+
+        VkDeviceSize size
+    );
+    
     /*
      *
      *      Getter
@@ -459,6 +507,11 @@ private:
     
     // Device memory property for allocation
     VkPhysicalDeviceMemoryProperties m_memory_properties;
+
+    // Transfer operation command pool
+    CommandPool m_transfer_cmd_pool;
+    // Transfer operation fence
+    VkFence m_transfer_fence;
     
     // Device delete queue
     DeleteQueue m_delete_queue;

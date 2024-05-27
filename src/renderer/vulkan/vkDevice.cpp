@@ -10,6 +10,8 @@
 #include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkCommandPool.h"
 
+#include <atomic>
+#include <cstring>
 #include <format>
 #include <functional>
 #include <string_view>
@@ -37,6 +39,30 @@ void Device::initialize(
 
     // Retrieve the device queue
     retrieveQueue();
+
+    // Create transfer queue and fence
+    if (m_device_requirement.required_queue.transfer()) {
+        // Create the transient command pool for transfer operation
+        m_transfer_cmd_pool = createCmdPool(
+            m_queue_indices.transferIndex(),
+            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+        );
+
+        m_delete_queue.addDeleter(std::bind(
+            &Device::destroyCmdPool,
+            this,
+            std::ref(m_transfer_cmd_pool)
+        ));
+
+        // Create the transfer operation fence
+        m_transfer_fence = createFence(false);
+
+        m_delete_queue.addDeleter(std::bind(
+            &Device::destroyFence,
+            this,
+            std::ref(m_transfer_fence)
+        ));
+    }
 }
 
 // Shutdown vulkan device
@@ -190,9 +216,9 @@ RenderAttachment Device::createRenderAttachment(
     return createRenderAttachment(
         render_pass,
         
-        image.view,
-        image.image_extent,
-        image.image_format
+        image.m_view,
+        image.m_image_extent,
+        image.m_image_format
     );
 }
 
@@ -238,6 +264,37 @@ VkFence Device::createFence(bool signaled)
     }
 
     return out_fence;
+}
+
+// Wait on the given fence
+void Device::waitFence(VkFence fence, u64 timeout)
+{
+    VkResult res = vkWaitForFences(
+        logical,
+        1, &fence,
+        VK_TRUE, 
+        timeout
+    );
+
+    if (res != VK_SUCCESS) {
+        throw FenceWaitError(std::format(
+            "Vulkan fence wait error {}",
+            vk_error_str(res)
+        ));
+    }
+}
+
+// Reset the given fence
+void Device::resetFence(VkFence fence)
+{
+    VkResult res = vkResetFences(logical, 1, &fence);
+    
+    if (res != VK_SUCCESS) {
+        throw FenceResetError(std::format(
+            "Vulkan fence reset error {}",
+            vk_error_str(res)
+        ));
+    }
 }
 
 // Destroy the given fence
@@ -370,11 +427,11 @@ Image Device::createImage(
 ) {
     Image out_image = { };
     
-    out_image.image_format = image_format;
-    out_image.usage_bits = usage_bits;
-    out_image.memory_flags = memory_property;
-    out_image.image_extent.width = width;
-    out_image.image_extent.height = height;
+    out_image.m_image_format = image_format;
+    out_image.m_usage_bits = usage_bits;
+    out_image.m_memory_flags = memory_property;
+    out_image.m_image_extent.width = width;
+    out_image.m_image_extent.height = height;
 
     // Prepare the create info struct
     VkImageCreateInfo image_info = { };
@@ -398,7 +455,7 @@ Image Device::createImage(
         logical,
         &image_info,
         NULL,
-        &out_image.handle
+        &out_image.m_handle
     );
 
     if (res != VK_SUCCESS) {
@@ -412,7 +469,7 @@ Image Device::createImage(
     VkMemoryRequirements requirements;
     vkGetImageMemoryRequirements(
         logical,
-        out_image.handle,
+        out_image.m_handle,
         &requirements
     );
 
@@ -425,7 +482,7 @@ Image Device::createImage(
     VkImageViewCreateInfo view_info = { };
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    view_info.image = out_image.handle;
+    view_info.image = out_image.m_handle;
     view_info.format = image_format;
     view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     view_info.subresourceRange.baseMipLevel = 0;
@@ -437,7 +494,7 @@ Image Device::createImage(
         logical,
         &view_info,
         NULL,
-        &out_image.view
+        &out_image.m_view
     );
 
     if (view_res != VK_SUCCESS) {
@@ -458,11 +515,11 @@ Image Device::createImage(
 // Destroy the given image
 void Device::destroyImage(Image &image)
 {
-    if (image.view != VK_NULL_HANDLE)
-        vkDestroyImageView(logical, image.view, m_allocator);
+    if (image.m_view != VK_NULL_HANDLE)
+        vkDestroyImageView(logical, image.m_view, m_allocator);
     
-    if (image.handle != VK_NULL_HANDLE)
-        vkDestroyImage(logical, image.handle, m_allocator);
+    if (image.m_handle != VK_NULL_HANDLE)
+        vkDestroyImage(logical, image.m_handle, m_allocator);
     
     if (image.m_memory != VK_NULL_HANDLE)
         freeMemory(image.m_memory);
@@ -475,7 +532,7 @@ void Device::bind(Image &image, VkDeviceSize memory_offset)
 {
     VkResult res = vkBindImageMemory(
         logical,
-        image.handle,
+        image.m_handle,
         image.m_memory,
         memory_offset 
     );
@@ -558,8 +615,8 @@ Buffer Device::createBuffer(
 ) {
     Buffer out_buffer;
     
-    out_buffer.usage_bits = usage_bits;
-    out_buffer.memory_flags = memory_flags;
+    out_buffer.m_usage_bits = usage_bits;
+    out_buffer.m_memory_flags = memory_flags;
     
     out_buffer.m_size = size;
     out_buffer.m_mapped = false;
@@ -575,7 +632,7 @@ Buffer Device::createBuffer(
         logical,
         &buffer_info, 
         m_allocator, 
-        &out_buffer.handle
+        &out_buffer.m_handle
     );
 
     if (res != VK_SUCCESS) {
@@ -589,13 +646,13 @@ Buffer Device::createBuffer(
     VkMemoryRequirements requirements;
     vkGetBufferMemoryRequirements(
         logical,
-        out_buffer.handle,
+        out_buffer.m_handle,
         &requirements
     );
 
     out_buffer.m_memory = allocateMemory(
         requirements,
-        out_buffer.memory_flags
+        out_buffer.m_memory_flags
     );
 
     if (bind_on_create) 
@@ -607,8 +664,8 @@ Buffer Device::createBuffer(
 // Destroy the given buffer
 void Device::destroyBuffer(Buffer &buffer) 
 {
-    if (buffer.handle != VK_NULL_HANDLE)
-        vkDestroyBuffer(logical, buffer.handle, m_allocator);
+    if (buffer.m_handle != VK_NULL_HANDLE)
+        vkDestroyBuffer(logical, buffer.m_handle, m_allocator);
     
     if (buffer.m_memory != VK_NULL_HANDLE)
         freeMemory(buffer.m_memory);
@@ -616,12 +673,82 @@ void Device::destroyBuffer(Buffer &buffer)
     buffer = Buffer();
 }
 
+// Resize the given buffer
+// this operation is blocking
+void Device::bufferResize(
+    Buffer &buffer,
+    VkDeviceSize size
+) {
+    VkBuffer new_buffer;
+    VkDeviceMemory new_memory;
+
+    // Create the buffer
+    VkBufferCreateInfo buffer_info = { };
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = buffer.m_usage_bits;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkResult buf_res = vkCreateBuffer(
+        logical,
+        &buffer_info, 
+        m_allocator, 
+        &new_buffer
+    );
+    
+    if (buf_res != VK_SUCCESS) {
+        throw BufferCreateError(std::format(
+            "Vulkan buffer resize error: {}",
+            vk_error_str(buf_res)
+        ));
+    }
+    
+    // Allocate the device memory
+    VkMemoryRequirements requirements;
+    vkGetBufferMemoryRequirements(
+        logical,
+        buffer.m_handle,
+        &requirements
+    );
+
+    new_memory = allocateMemory(
+        requirements,
+        buffer.m_memory_flags
+    );
+    
+    // Bind the buffer and copy the content of the old one in the new one
+    VkResult bind_res = vkBindBufferMemory(logical, new_buffer, new_memory, 0);
+
+    if (bind_res != VK_SUCCESS) {
+        throw BufferBindError(std::format(
+            "Vulkan buffer resize bind error: {}", 
+            vk_error_str(bind_res)
+        ));
+    }
+    
+    // Copy the old buffer content in the new one
+    copyBuffer(
+        0, buffer.m_handle,
+        0, new_buffer,
+        buffer.m_size
+    );
+
+    // Destroy the old buffer memory and handle
+    freeMemory(buffer.m_memory);   
+    vkDestroyBuffer(logical, buffer.m_handle, m_allocator);
+
+    // Assign the new buffer and memory
+    buffer.m_handle = new_buffer;
+    buffer.m_memory = new_memory;
+    buffer.m_size = size;
+}
+
 // Bind the given buffer to the device with the given memory offset
 void Device::bind(Buffer &buffer, VkDeviceSize memory_offset)
 {
     VkResult res = vkBindBufferMemory(
         logical,
-        buffer.handle,
+        buffer.m_handle,
         buffer.m_memory,
         memory_offset
     );
@@ -671,6 +798,89 @@ void Device::unmapBuffer(Buffer &buffer)
     vkUnmapMemory(logical, buffer.m_memory);
     
     buffer.m_mapped = false;
+}
+
+// Load the data at the given pointer to the buffer at the given offset
+void Device::loadBuffer(
+    Buffer &buffer,
+    VkMemoryMapFlags map_flags,
+
+    VkDeviceSize buffer_offset,
+    VkDeviceSize size,
+
+    void *data_p
+) {
+    void *buffer_data = mapBuffer(buffer, buffer_offset, size, map_flags);
+
+    std::memcpy(buffer_data, data_p, size);
+
+    unmapBuffer(buffer);
+}
+
+// Copy the content of one buffer to another
+// this operation is blocking
+void Device::copyBuffer(
+    VkDeviceSize src_offset,
+    Buffer &src_buffer,
+    
+    VkDeviceSize dest_offset,
+    Buffer &dest_buffer,
+
+    VkDeviceSize size
+) {
+    copyBuffer(
+        src_offset,
+        src_buffer.m_handle,
+
+        dest_offset,
+        dest_buffer.m_handle,
+
+        size
+    );
+} 
+
+// Copy the content of one buffer to another
+// this operation is blocking
+void Device::copyBuffer(
+    VkDeviceSize src_offset,
+    VkBuffer src_buffer,
+    
+    VkDeviceSize dest_offset,
+    VkBuffer dest_buffer,
+
+    VkDeviceSize size
+) {
+    // Allocate the command buffer
+    CommandBuffer cmd_buffer = allocateCmdBuffer(m_transfer_cmd_pool);
+    cmd_buffer.begin(true, false, false);
+    
+    VkBufferCopy copy_op = { };
+    copy_op.size = size;
+    copy_op.srcOffset = src_offset;
+    copy_op.dstOffset = dest_offset;
+
+    vkCmdCopyBuffer(
+        cmd_buffer.handle(), 
+        src_buffer, 
+        dest_buffer, 
+        1, &copy_op
+    );
+
+    cmd_buffer.end();
+    cmd_buffer.submit(
+        transfer_queue,
+        m_transfer_fence,
+        0, VK_NULL_HANDLE,
+        0, VK_NULL_HANDLE,
+        0
+    );
+
+    // Wait for the operation to finish and free the command buffer
+    waitFence(m_transfer_fence);
+    
+    freeCmdBuffer(m_transfer_cmd_pool, cmd_buffer);
+
+    resetFence(m_transfer_fence);
 }
 
 /*
