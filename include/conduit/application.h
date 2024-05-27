@@ -7,10 +7,13 @@
 #include "conduit/events/eventBus.h"
 #include "conduit/renderer/renderer.h"
 #include "conduit/window/window.h"
+#include "conduit/internal/core/deleteQueue.h"
 
 #include <memory>
 
 namespace cndt {
+
+class DeleteQueue;
 
 // Base application class 
 class Application {
@@ -63,6 +66,10 @@ protected:
     std::unique_ptr<Window> m_window;
     // Application renderer handle
     std::unique_ptr<Renderer> m_renderer;
+
+private:
+    // Application deleter queue
+    DeleteQueue m_delete_queue;
 };
 
 // Return an instance of an user defined application object

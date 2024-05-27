@@ -2,7 +2,7 @@
 #define CNDT_VK_CONTEXT_H
 
 #include "conduit/window/window.h"
-#include "core/deleteQueue.h"
+#include "conduit/internal/core/deleteQueue.h"
 
 #include "renderer/vulkan/utils/vkValidation.h"
 

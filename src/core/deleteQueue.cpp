@@ -1,6 +1,6 @@
-#include "core/deleteQueue.h"
+#include "conduit/internal/core/deleteQueue.h"
 
-namespace cndt::vulkan {
+namespace cndt {
 
 void DeleteQueue::addDeleter(std::function<void(void)> deleter_fun) 
 {

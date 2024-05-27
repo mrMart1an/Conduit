@@ -1,8 +1,9 @@
+#include "conduit/internal/core/deleteQueue.h"
+
 #include "conduit/application.h"
 #include "conduit/events/events.h"
 #include "conduit/events/eventKeyCode.h"
 #include "conduit/renderer/renderer.h"
-#include "conduit/logging.h"
 #include "conduit/time.h"
 
 #include "window/glfw/glfwWindow.h"
@@ -25,11 +26,14 @@ Application::Application() :
     m_event_bus(),
     m_ecs_world(),
     m_window(),
-    m_renderer()
+    m_renderer(),
+    m_delete_queue()
 { };
 
 // Base application deconstructor
-Application::~Application() { };
+Application::~Application() {
+    m_delete_queue.callDeleter();
+};
 
 // Initialize the game engine 
 void Application::engineStartup()
@@ -42,7 +46,19 @@ void Application::engineStartup()
     );
     
     m_window->initialize(window_config);
+    
+    m_delete_queue.addDeleter(std::bind(
+        &Window::shutdown, m_window.get()
+    ));
 
+    // Create and initialize the renderer 
+    m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
+    m_renderer->initialize(appName().c_str(), m_window.get());
+    
+    m_delete_queue.addDeleter(std::bind(
+        &Renderer::shutdown, m_renderer.get()
+    ));
+    
     // Events callbacks setup
     m_event_bus.addCallback<WindowCloseEvent>(
         [&run = m_run_application](const WindowCloseEvent*) { run = false; }
@@ -56,17 +72,12 @@ void Application::engineStartup()
 
     // Set up engine key binding
     setupKeyBinding();
-
-    // Create and initialize the renderer 
-    m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
-    m_renderer->initialize(appName().c_str(), m_window.get());
 }
 
 // Shutdown the game engine
 void Application::engineShutdown()
 {
-    m_renderer->shutdown();
-    m_window->shutdown();
+    m_delete_queue.callDeleter();
 }
 
 // Set-up the game engine key bindings

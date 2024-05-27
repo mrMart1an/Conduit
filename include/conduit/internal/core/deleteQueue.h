@@ -4,7 +4,7 @@
 #include <functional>
 #include <vector>
 
-namespace cndt::vulkan {
+namespace cndt {
 
 // Call the deleter functions in the opposite order to hot they were added
 class DeleteQueue {
