@@ -1,12 +1,13 @@
 #include "conduit/application.h"
 #include "conduit/events/events.h"
 #include "conduit/events/eventKeyCode.h"
-#include "conduit/logging.h"
-
 #include "conduit/renderer/renderer.h"
+#include "conduit/logging.h"
 #include "conduit/time.h"
-#include "core/application.h"
+
 #include "window/glfw/glfwWindow.h"
+
+#include "core/appRunner.h"
 
 #include <memory>
 
