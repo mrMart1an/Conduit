@@ -1,5 +1,6 @@
 #include "conduit/defines.h"
 #include "conduit/logging.h"
+#include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/window/window.h"
 
