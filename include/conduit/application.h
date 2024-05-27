@@ -17,12 +17,12 @@ class Application {
     friend class AppRunner;
 
 public:
-    // Application name string
-    static constexpr const char* app_name = "Conduit app";
-
-public:
     Application();
     virtual ~Application();
+
+protected:
+    // Return a string as the application name
+    virtual std::string appName() const { return "Conduit application"; };
 
     // Application startup function,
     // called after engine initialization and before stating the main loop
@@ -36,10 +36,19 @@ public:
     // called before the engine shutdown
     virtual void shutdown() = 0;
 
-protected:
+// These functions shouldn't be called by the used defined application class
+private:
+    // Initialize the game engine 
+    void engineStartup();
+
+    // Shutdown the game engine
+    void engineShutdown();
+    
+    // Set-up the game engine key bindings
+    void setupKeyBinding();
+
     // Start the main application loop
-    // this function shouldn't be called by the client
-    void startMainLoop();
+    void mainLoop();
 
 protected:
     bool m_run_application;
@@ -60,12 +69,12 @@ protected:
 // to be implemented by the client
 std::unique_ptr<Application> getEntryClass();
     
-} // namespace cndt
- 
 // Macro to generate the get entry class function
 #define CNDT_ENTRY_CLASS(Type)                                  \
     std::unique_ptr<cndt::Application> cndt::getEntryClass() {  \
         return std::make_unique<Type>();                        \
     }  
+
+} // namespace cndt
 
 #endif

@@ -15,7 +15,7 @@ namespace cndt {
 
 /*
  *
- *      Application implementation
+ *      Engine initialization and shutdown 
  * 
  * */
 
@@ -26,8 +26,15 @@ Application::Application() :
     m_ecs_world(),
     m_window(),
     m_renderer()
+{ };
+
+// Base application deconstructor
+Application::~Application() { };
+
+// Initialize the game engine 
+void Application::engineStartup()
 {
-    Window::Config window_config(app_name);
+    Window::Config window_config(appName());
     
     // Create the glfw window handle
     m_window = std::make_unique<glfw::GlfwWindow>(
@@ -40,17 +47,6 @@ Application::Application() :
     m_event_bus.addCallback<WindowCloseEvent>(
         [&run = m_run_application](const WindowCloseEvent*) { run = false; }
     );   
-    
-    m_event_bus.addCallback<KeyPressEvent>(
-        [&window = m_window](const KeyPressEvent* event) {
-            char c = (char)event->key_code;
-            log::core::debug("key press: {}", c);
-
-            if (event->key_code == keycode::KEY_F11) {
-                window->toggleFullscreen();
-            }
-        }
-    );
 
     m_event_bus.addCallback<WindowResizeEvent>(
         [&renderer = m_renderer](const WindowResizeEvent* event) {
@@ -58,20 +54,47 @@ Application::Application() :
         }
     );
 
+    // Set up engine key binding
+    setupKeyBinding();
+
     // Create and initialize the renderer 
     m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
-    m_renderer->initialize(app_name, m_window.get());
-};
+    m_renderer->initialize(appName().c_str(), m_window.get());
+}
 
-// Base application deconstructor
-Application::~Application() 
+// Shutdown the game engine
+void Application::engineShutdown()
 {
     m_renderer->shutdown();
     m_window->shutdown();
-};
+}
+
+// Set-up the game engine key bindings
+void Application::setupKeyBinding()
+{
+    m_event_bus.addCallback<KeyPressEvent>(
+        [&window = m_window](const KeyPressEvent* event) {
+            // Toggle fullscreen
+            if (event->key_code == keycode::KEY_F11) {
+                window->toggleFullscreen();
+            }
+            
+            // Toggle v-sync
+            if (event->key_code == keycode::KEY_F11) {
+                
+            }
+        }
+    );
+}
+
+/*
+ *
+ *      Engine functions
+ *
+ * */
 
 // Start application main loop
-void Application::startMainLoop() 
+void Application::mainLoop() 
 {
     time::StopWatch frame_time;
 
@@ -86,30 +109,6 @@ void Application::startMainLoop()
         m_window->poolEvents();
         m_event_bus.update();
     }
-}
-
-/*
- *
- *      App runner implementation
- * 
- * */
-
-// Take ownership of the application and construct an event reader
-AppRunner::AppRunner(std::unique_ptr<Application> application)
-    : m_application_p(std::move(application))
-{ }
-
-// Run the application
-void AppRunner::run() 
-{
-    // Run the user defined application startup function
-    m_application_p->startup();
-
-    // Run the application main loop function
-    m_application_p->startMainLoop();
-    
-    // Run the user defined application shutdown function
-    m_application_p->shutdown();
 }
 
 } // namespace cndt

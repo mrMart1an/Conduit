@@ -1,5 +1,6 @@
 #include "conduit/defines.h"
 #include "conduit/logging.h"
+#include "core/deleteQueue.h"
 
 #include "renderer/vulkan/utils/vkValidation.h"
 #include "renderer/vulkan/utils/vkExceptions.h"

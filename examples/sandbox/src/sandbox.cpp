@@ -8,6 +8,8 @@ using namespace cndt::log::app;
 // Declare the application class
 class Sandbox : public cndt::Application {
 public:
+    std::string appName() const override { return "Sanbox app"; }
+
     void startup() override {
         
     }

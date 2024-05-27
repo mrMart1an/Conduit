@@ -1,4 +1,4 @@
-#include "renderer/vulkan/utils/deleteQueue.h"
+#include "core/deleteQueue.h"
 
 namespace cndt::vulkan {
 
