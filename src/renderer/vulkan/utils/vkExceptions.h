@@ -392,6 +392,36 @@ public:
     { }
 };
 
+/*
+ *
+ *      Shader module exception
+ *
+ * */
+
+// Generic shader module exception
+class ShaderModuleException : public VulkanException {
+public:
+    ShaderModuleException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan shader module file access error
+class ShaderModuleFileError : public ShaderModuleException {
+public:
+    ShaderModuleFileError(std::string_view message) : 
+        ShaderModuleException(message)
+    { }
+};
+
+// Vulkan shader module creation error
+class ShaderModuleCreateError : public ShaderModuleException {
+public:
+    ShaderModuleCreateError(std::string_view message) : 
+        ShaderModuleException(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif

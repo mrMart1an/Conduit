@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "renderer/vulkan/pipelines/vkShaderModule.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
 
@@ -381,6 +382,23 @@ public:
         VkBuffer dest_buffer,
 
         VkDeviceSize size
+    );
+
+    /*
+     *
+     *      Shader module functions
+     *
+     * */
+
+    // Create a shader module for the required stage from the SPIR-V file
+    ShaderModule createShaderModule(
+        const char* filepath,
+        VkShaderStageFlagBits stage_flag_bits
+    );
+
+    // Destroy a shader module
+    void destroyShaderModule(
+        ShaderModule &module
     );
     
     /*
