@@ -10,7 +10,8 @@
 #include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkCommandPool.h"
 
-#include <atomic>
+#include <iostream>
+#include <fstream>
 #include <cstring>
 #include <format>
 #include <functional>
@@ -991,6 +992,87 @@ void Device::destroyLogicalDevice()
     
     // Destroy the logical device
     vkDestroyDevice(logical, m_allocator);
+}
+
+/*
+ *
+ *      Shader module functions
+ *
+ * */
+
+// Create a shader module for the required stage from the SPIR-V file
+ShaderModule Device::createShaderModule(
+    const char* filepath,
+    VkShaderStageFlagBits stage_flag_bits
+) {
+    ShaderModule out_shader;
+
+    usize file_size;
+    std::vector<char> file_buffer;
+
+    // Read the file
+    try {
+        std::ifstream input_file;
+        input_file.open(filepath, std::ios::in | std::ios::binary | std::ios::ate);
+
+        // Store the file content in a vector
+        file_size = input_file.tellg();
+        input_file.seekg(0, std::ios::beg);
+        
+        file_buffer.resize(file_size);
+        input_file.read (file_buffer.data(), file_size);
+        
+        input_file.close();
+    } catch (const std::ifstream::failure& e) {
+        throw ShaderModuleFileError(std::format(
+            "Vulkan shader module file access error ({}), file: {}",
+            e.what(),
+            filepath
+        ));
+    }
+    
+    // Prepare the shader create info
+    out_shader.m_create_info.sType =
+        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    
+    out_shader.m_create_info.codeSize = file_size;
+    out_shader.m_create_info.pCode = 
+        reinterpret_cast<u32*>(file_buffer.data());
+
+    // Create the shader module
+    VkResult res = vkCreateShaderModule(
+        logical,
+        &out_shader.m_create_info,
+        m_allocator,
+        &out_shader.m_handle
+    );
+
+    if (res != VK_SUCCESS) {
+        throw ShaderModuleFileError(std::format(
+            "Vulkan shader module creation error ({}), file: {}",
+            vk_error_str(res),
+            filepath
+        ));
+    }
+
+    // Stage create info
+    out_shader.m_shader_stage_create_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    out_shader.m_shader_stage_create_info.stage = stage_flag_bits;
+    out_shader.m_shader_stage_create_info.module = out_shader.m_handle;
+    
+    // Use main as default shader entry point
+    out_shader.m_shader_stage_create_info.pName = "main"; 
+
+    return out_shader;
+}
+
+// Destroy a shader module
+void Device::destroyShaderModule(
+    ShaderModule &module
+) {
+    vkDestroyShaderModule(logical, module.m_handle, m_allocator);
+    module = ShaderModule();
 }
 
 /*
