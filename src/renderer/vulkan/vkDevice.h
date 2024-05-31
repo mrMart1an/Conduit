@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
@@ -14,6 +15,7 @@
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkContext.h"
 
+#include <string>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -400,6 +402,27 @@ public:
     void destroyShaderModule(
         ShaderModule &module
     );
+        
+    /*
+     *
+     *      Pipeline functions
+     *
+     * */
+
+    // Create a vulkan graphics pipeline
+    GraphicsPipeline createGraphicsPipeline(
+    	RenderPass &render_pass,
+
+    	std::string vertex_shader_filepath,
+    	std::string fragment_shader_filepath,
+    	
+    	bool wireframe = false
+    );
+    
+    // Destroy a vulkan graphic pipeline
+    void destroyGraphicsPipeline(
+    	GraphicsPipeline &pipeline
+    );
     
     /*
      *
@@ -411,6 +434,7 @@ public:
     QueueFamilyIndices queueIndices() const { return m_queue_indices; }
     
 private:
+    
     /*
      *
      *      Memory functions

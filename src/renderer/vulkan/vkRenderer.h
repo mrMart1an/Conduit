@@ -4,6 +4,7 @@
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
 
+#include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkRenderAttachment.h"
@@ -98,6 +99,8 @@ private:
     Device m_device;
 
     SwapChain m_swap_chain;
+
+    GraphicsPipeline m_graphics_pipeline;
 
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;
