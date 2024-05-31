@@ -32,6 +32,9 @@ window_src = [
 if(vulkan_enable.enabled())
     vulkan_src = [
         'renderer/vulkan/utils/vkValidation.cpp',    
+        'renderer/vulkan/utils/vkAttributeDescriptor.cpp',    
+        
+        'renderer/vulkan/pipelines/vkPipeline.cpp',   
         
         'renderer/vulkan/vkCommandBuffer.cpp',   
         'renderer/vulkan/vkContext.cpp',

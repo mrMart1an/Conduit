@@ -196,9 +196,6 @@ void SwapChain::shutdown(Context &context, Device &device)
 // Enable or disable v-sync
 void SwapChain::setVsync(Context &context, Device &device, bool v_sync)
 {
-    // Wait for all the device operation to finish
-    vk_check(vkDeviceWaitIdle(device.logical));
-
     // Shutdown and reinitialize the swap chain
     shutdown(context, device);
 

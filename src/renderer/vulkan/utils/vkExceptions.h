@@ -422,6 +422,28 @@ public:
     { }
 };
 
+/*
+ *
+ *      Pipeline exception
+ *
+ * */
+
+// Generic pipeline exception
+class PipelineException : public VulkanException {
+public:
+    PipelineException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan pipeline create error
+class PipelineCreationError : public PipelineException {
+public:
+    PipelineCreationError(std::string_view message) : 
+        PipelineException(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif
