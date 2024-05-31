@@ -2,6 +2,7 @@
 #include "renderer/vulkan/vkDevice.h"
 
 #include <functional>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -88,6 +89,29 @@ void VkRenderer::initialize(
         &m_device,
         std::ref(m_graphics_pipeline)
     ));
+
+    // Create the static mesh geometry buffer
+    m_static_mesh_buffer = m_device.createGeometryBuffer<Vertex3D>(128, 128);
+    m_delete_queue.addDeleter(std::bind(
+        &Device::destroyGeometryBuffer<Vertex3D>,
+        &m_device,
+        std::ref(m_static_mesh_buffer)
+    ));
+
+    // Load test geometry in the buffer
+    // Load test geometry to the geometry buffers
+    std::vector<Vertex3D> vertices = { 
+        {{0., -0.5, 0.}, {1.,0.,0.}, {0., 0.}}, 
+        {{0.5, 0.5, 0.}, {1.,1.,0.}, {0., 0.}}, 
+        {{-0.5, 0.5, 0.}, {1.,0.,1.}, {0., 0.}}, 
+    };
+    std::vector<u32> indices = { 0, 1, 2 };
+
+    m_device.geometryBufferLoad(
+        m_static_mesh_buffer,
+        vertices, 
+        indices
+    );
 }
 
 // Shutdown the renderer implementation

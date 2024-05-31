@@ -1,10 +1,12 @@
 #ifndef CNDT_VK_RENDERER_H
 #define CNDT_VK_RENDERER_H
 
+#include "conduit/renderer/vertex.h"
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
 
 #include "renderer/vulkan/pipelines/vkPipeline.h"
+#include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkRenderAttachment.h"
@@ -101,6 +103,8 @@ private:
     SwapChain m_swap_chain;
 
     GraphicsPipeline m_graphics_pipeline;
+
+    GeometryBuffer<Vertex3D> m_static_mesh_buffer;
 
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;

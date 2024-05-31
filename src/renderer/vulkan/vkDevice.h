@@ -7,6 +7,7 @@
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
+#include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
 
 #include "renderer/vulkan/vkCommandBuffer.h"
@@ -388,6 +389,34 @@ public:
 
     /*
      *
+     *      Geometry buffer functions
+     *
+     * */
+
+    // Initialize the vertex and index buffer in the geometry buffer object
+    template<typename VertexType>
+    GeometryBuffer<VertexType> createGeometryBuffer(
+        u64 vertex_count,
+        u64 index_count
+    );
+    
+    // Destroy the vertex and index buffers in the geometry buffer object
+    template<typename VertexType>
+    void destroyGeometryBuffer(
+        GeometryBuffer<VertexType> &buffer
+    );
+    
+    // Load mesh data in the geometry buffer
+    template<typename VertexType>
+    void geometryBufferLoad(
+        GeometryBuffer<VertexType> &buffer,
+        
+        std::vector<VertexType> vertices,
+        std::vector<u32> indices
+    );
+    
+    /*
+     *
      *      Shader module functions
      *
      * */
@@ -558,6 +587,131 @@ private:
     // Device delete queue
     DeleteQueue m_delete_queue;
 };
+
+
+/*
+ *
+ *      Template implementation
+ *
+ * */
+
+// Initialize the vertex and index buffer in the geometry buffer object
+template<typename VertexType>
+GeometryBuffer<VertexType> Device::createGeometryBuffer(
+    u64 vertex_count,
+    u64 index_count
+) {
+    GeometryBuffer<VertexType> out_buffer;
+
+    VkMemoryPropertyFlags mem_prop = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VkBufferUsageFlagBits vertex_usage = static_cast<VkBufferUsageFlagBits>(
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | 
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+    );
+    VkBufferUsageFlagBits index_usage = static_cast<VkBufferUsageFlagBits>(
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | 
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+    );
+
+    // Create the vertex buffer
+    out_buffer.m_vertex_buffer = createBuffer(
+        vertex_count * sizeof(VertexType), 
+        vertex_usage,
+        mem_prop, 
+        true
+    );
+
+    // Create the index buffer
+    out_buffer.m_index_buffer = createBuffer(
+        index_count * sizeof(u32), 
+        index_usage,
+        mem_prop, 
+        true
+    );
+    
+    // Set load offsets to 0
+    out_buffer.m_vertex_load_offset = 0;
+    out_buffer.m_index_load_offset = 0;
+
+    return out_buffer;
+}
+
+// Destroy the vertex and index buffers in the geometry buffer object
+template<typename VertexType>
+void Device::destroyGeometryBuffer(
+    GeometryBuffer<VertexType> &buffer
+) {
+    destroyBuffer(buffer.m_vertex_buffer);
+    destroyBuffer(buffer.m_index_buffer);
+}
+
+// Load mesh data in the geometry buffer
+template<typename VertexType>
+void Device::geometryBufferLoad(
+    GeometryBuffer<VertexType> &buffer,
+    
+    std::vector<VertexType> vertices,
+    std::vector<u32> indices
+) {
+    VkDeviceSize vertex_data_size = vertices.size() * sizeof(VertexType);
+    VkDeviceSize index_data_size = indices.size() * sizeof(u32);
+
+    // Create the staging buffers
+    VkMemoryPropertyFlags staging_mem_prop =
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    
+    Buffer vertex_staging = createBuffer(
+        vertex_data_size,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        staging_mem_prop,
+        true
+    );
+    Buffer index_staging = createBuffer(
+        index_data_size,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        staging_mem_prop,
+        true
+    );
+
+    // Load the staging buffer with the data
+    loadBuffer(
+        vertex_staging, 
+        0, 
+        0, vertex_data_size,
+        vertices.data()
+    );
+    loadBuffer(
+        index_staging, 
+        0, 
+        0, index_data_size,
+        indices.data()
+    );
+
+    // Copy the staging buffers to the geometry buffer
+    copyBuffer(
+        0, vertex_staging,
+        buffer.m_vertex_load_offset,
+        buffer.m_vertex_buffer,
+        vertex_data_size
+    );
+    copyBuffer(
+        0, index_staging,
+        buffer.m_index_load_offset,
+        buffer.m_index_buffer,
+        index_data_size
+    );
+    
+    // Increment the loading offset
+    buffer.m_vertex_load_offset += vertex_data_size;
+    buffer.m_index_load_offset += index_data_size;
+
+    // Destroy the staging buffers
+    destroyBuffer(vertex_staging);
+    destroyBuffer(index_staging);
+}
 
 } // namespace cndt::vulkan
 
