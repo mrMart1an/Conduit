@@ -18,12 +18,6 @@ friend class Device;
 public:
     Pipeline() = default;
     
-    // Bind the pipeline for use
-    void bind(
-        CommandBuffer &cmd_buffer,
-	    VkPipelineBindPoint bind_port
-    );
-
 protected:
     VkPipeline m_handle;
     VkPipelineLayout m_layout;
@@ -33,6 +27,11 @@ protected:
 class GraphicsPipeline : public Pipeline {
 
 friend class Device;
+    
+public:
+    // Bind the pipeline for use
+    // Use the graphic bind port by default for this pipeline
+    void bind(CommandBuffer &cmd_buffer);
     
 private:
     ShaderModule m_vertex_stage;
