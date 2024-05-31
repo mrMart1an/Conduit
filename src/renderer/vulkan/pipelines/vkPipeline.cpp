@@ -6,11 +6,14 @@
 namespace cndt::vulkan {
 
 // Bind the pipeline for use
-void Pipeline::bind(
-    CommandBuffer &cmd_buffer,
-    VkPipelineBindPoint bind_port
+void GraphicsPipeline::bind(
+    CommandBuffer &cmd_buffer
 ) {
-	vkCmdBindPipeline(cmd_buffer.handle(), bind_port, m_handle);
+	vkCmdBindPipeline(
+	    cmd_buffer.handle(),
+	    VK_PIPELINE_BIND_POINT_GRAPHICS,
+	    m_handle
+	);
 }
 
 } // namespace cndt::vulkan

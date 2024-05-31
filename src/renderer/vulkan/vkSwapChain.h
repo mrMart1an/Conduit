@@ -57,6 +57,7 @@ public:
     );
     
     // Reinitialize an out dated the swap chain
+    // This function reset current image and current frame to 0
     void reinitialize(
         Context &context,
         Device &device,
@@ -83,7 +84,10 @@ public:
     // Present the current swap chain image
     // Return true if the image was presented successfully
     bool presentImage(Device &device, VkSemaphore render_done);
-    
+
+    // Set the out of date status of the swap chain from the renderer
+    void setOutOfDate() { m_outdated = true; }
+
     /*
      *
      *      Getter

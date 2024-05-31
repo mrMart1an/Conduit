@@ -60,8 +60,19 @@ protected:
 
 private:
 
+    // Begin frame rendering, return true if the frame was begun successfully 
+    // and the rendering can proceed
+    bool beginFrame();
+
+    // End frame rendering
+    void endFrame();
+
+    // Present the current swap chain frame, return true if the frame was 
+    // presented successfully to the screen
+    bool presentFrame();
+
     // Recreate the swap chain and the swap chain render attachments
-    void recreateSwapChain(u32 width, u32 height);
+    void recreateSwapChain();
 
     /*
      *
@@ -90,6 +101,9 @@ private:
     // Destroy the swap chain render attachments
     void destroySwapChainAttachment();
 
+    // Get the current swap chain render attachment
+    RenderAttachment& getCurrentAttachment();
+
 private:
     // Renderer delete queue
     DeleteQueue m_delete_queue;
@@ -113,8 +127,14 @@ private:
     // Frame in flight data 
     std::vector<FrameData> m_frames_data;
 
+    // Dimensions of the renderer swap chain attachments
+    u32 m_frame_width, m_frame_height;
+
     // Store true and halt rendering if the window is minimized
     bool m_minimized;
+
+    // Count the total number of frame rendered by the renderer
+    u64 m_frame_count;
 };
 
 } // namespace cndt::vulkan
