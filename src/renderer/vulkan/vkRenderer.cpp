@@ -86,7 +86,8 @@ void VkRenderer::initialize(
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
         "resources/shaders/builtin.vert.spv",
-        "resources/shaders/builtin.frag.spv"
+        "resources/shaders/builtin.frag.spv",
+        std::vector<VkDescriptorSetLayout>()
     );
     m_delete_queue.addDeleter(std::bind(
         &Device::destroyGraphicsPipeline,
