@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
@@ -379,6 +380,15 @@ public:
     void destroyGraphicsPipeline(
     	GraphicsPipeline &pipeline
     );
+
+    /*
+     *
+     *      Descriptor set functions
+     *
+     * */
+
+    // Create the descriptor layout builder
+    DescriptorLayoutBuilder createDescriptorLayoutBuilder();
     
     /*
      *
@@ -389,6 +399,9 @@ public:
     // Return the device queue family indices
     QueueFamilyIndices queueIndices() const { return m_queue_indices; }
     
+    // Get the allocator callbacks pointer
+    const VkAllocationCallbacks *allocator() const { return m_allocator; }
+
 private:
     
     /*

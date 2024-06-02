@@ -3,6 +3,7 @@
 #include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/renderer/vertex.h"
+#include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/utils/vkAttributeDescriptor.h"
 #include "renderer/vulkan/utils/vkValidation.h"
 #include "renderer/vulkan/utils/vkExceptions.h"
@@ -642,6 +643,21 @@ void Device::copyBuffer(
     m_transfer_fence.reset();
 }
 
+/*
+ *
+ *      Descriptor set functions
+ *
+ * */
+
+// Create the descriptor layout builder
+DescriptorLayoutBuilder Device::createDescriptorLayoutBuilder()
+{
+    DescriptorLayoutBuilder out_builder;
+    out_builder.m_device_p = this;
+
+    return out_builder;
+}
+    
 // PRIVATE ----------------------------
 
 /*
