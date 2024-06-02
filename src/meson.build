@@ -36,13 +36,18 @@ if(vulkan_enable.enabled())
         
         'renderer/vulkan/pipelines/vkPipeline.cpp',   
         
+        'renderer/vulkan/storage/vkBuffer.cpp',   
+        'renderer/vulkan/storage/vkImage.cpp',   
+        
+        'renderer/vulkan/sync/vkFence.cpp',   
+        
         'renderer/vulkan/vkCommandBuffer.cpp',   
+        'renderer/vulkan/vkCommandPool.cpp',   
         'renderer/vulkan/vkContext.cpp',
         'renderer/vulkan/vkDevice.cpp',
         'renderer/vulkan/vkRenderer.cpp',   
         'renderer/vulkan/vkRenderPass.cpp',   
         'renderer/vulkan/vkSwapChain.cpp',
-        
     ]
 else
     vulkan_src = []

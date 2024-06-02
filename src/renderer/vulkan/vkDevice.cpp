@@ -245,9 +245,10 @@ void Device::destroyRenderAttachment(RenderAttachment &attachment)
  * */
 
 // Create a fence, used for GPU to CPU synchronization 
-VkFence Device::createFence(bool signaled)
+Fence Device::createFence(bool signaled)
 {
-    VkFence out_fence;
+    Fence out_fence;
+    out_fence.m_device_p = this;
 
     VkFenceCreateInfo fence_info = { };
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -257,7 +258,7 @@ VkFence Device::createFence(bool signaled)
         logical, 
         &fence_info, 
         m_allocator, 
-        &out_fence
+        &out_fence.m_handle
     );
     
     if (res != VK_SUCCESS) {
@@ -270,41 +271,12 @@ VkFence Device::createFence(bool signaled)
     return out_fence;
 }
 
-// Wait on the given fence
-void Device::waitFence(VkFence fence, u64 timeout)
-{
-    VkResult res = vkWaitForFences(
-        logical,
-        1, &fence,
-        VK_TRUE, 
-        timeout
-    );
-
-    if (res != VK_SUCCESS) {
-        throw FenceWaitError(std::format(
-            "Vulkan fence wait error {}",
-            vk_error_str(res)
-        ));
-    }
-}
-
-// Reset the given fence
-void Device::resetFence(VkFence fence)
-{
-    VkResult res = vkResetFences(logical, 1, &fence);
-    
-    if (res != VK_SUCCESS) {
-        throw FenceResetError(std::format(
-            "Vulkan fence reset error {}",
-            vk_error_str(res)
-        ));
-    }
-}
-
 // Destroy the given fence
-void Device::destroyFence(VkFence &fence)
+void Device::destroyFence(Fence &fence)
 {
-    vkDestroyFence(logical, fence, m_allocator);
+    vkDestroyFence(logical, fence.m_handle, m_allocator);
+
+    fence = Fence();
 }
 
 // Create a semaphore, used for GPU to GPU synchronization
@@ -340,78 +312,6 @@ void Device::destroySemaphore(VkSemaphore &semaphore)
 
 /*
  *
- *      Memory functions
- *
- * */
-
-// Allocate device memory with the required property
-VkDeviceMemory Device::allocateMemory(
-    VkMemoryRequirements requirements,
-    VkMemoryPropertyFlags memory_flags
-) {
-    // Find a suitable memory type
-    u32 mem_type_index = findMemoryTypeIndex(
-        requirements.memoryTypeBits, 
-        memory_flags
-    );
-    
-    VkMemoryAllocateInfo alloc_info = { };
-    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc_info.memoryTypeIndex = mem_type_index;
-    alloc_info.allocationSize = requirements.size;
-    
-    // Perform the allocation
-    VkDeviceMemory out_memory;
-    
-    VkResult res = vkAllocateMemory(
-        logical,
-        &alloc_info,
-        m_allocator,
-        &out_memory
-    );
-
-    if (res != VK_SUCCESS) {
-        throw DeviceMemoryError(std::format(
-            "Device memory allocation error: {}",
-            vk_error_str(res)
-        ));
-    } 
-    
-    return out_memory;
-}
-
-// Free the given device memory 
-void Device::freeMemory(VkDeviceMemory memory)
-{
-    vkFreeMemory(logical, memory, m_allocator);
-}
-
-// Find the index of a suitable memory type
-u32 Device::findMemoryTypeIndex(
-    u32 type_bits,
-    VkMemoryPropertyFlags flags
-) {
-    VkPhysicalDeviceMemoryProperties mem_props = m_memory_properties;
-    
-    for (u32 i = 0; i < mem_props.memoryTypeCount; i++) {
-        bool type_bits_compatible = type_bits & (1 << i); 
-
-        VkMemoryPropertyFlags available_flags =
-            mem_props.memoryTypes[i].propertyFlags; 
-        
-        bool property_compatible = (available_flags & flags) == flags;  
-
-        if (type_bits_compatible && property_compatible) {
-            return i;
-        }
-    }
-
-    // Throw an exception if no suitable type was found
-    throw DeviceMemoryError("No suitable memory type for allocation");
-}
-
-/*
- *
  *      Image functions
  *
  * */
@@ -429,7 +329,8 @@ Image Device::createImage(
 
     bool bind_on_create
 ) {
-    Image out_image = { };
+    Image out_image;
+    out_image.m_device_p = this;
     
     out_image.m_image_format = image_format;
     out_image.m_usage_bits = usage_bits;
@@ -451,7 +352,10 @@ Image Device::createImage(
         linear_tiling ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     image_info.usage = usage_bits;
+
+    // TODO: Multi sampling
     image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    // TODO: Non exclusive sharing
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     // Create the image handle
@@ -509,9 +413,8 @@ Image Device::createImage(
     }
     
     // Bind the image if necessary
-    if (bind_on_create) {
-        bind(out_image, 0);    
-    }
+    if (bind_on_create) 
+        out_image.bind();
     
     return out_image;
 }
@@ -519,87 +422,12 @@ Image Device::createImage(
 // Destroy the given image
 void Device::destroyImage(Image &image)
 {
-    if (image.m_view != VK_NULL_HANDLE)
-        vkDestroyImageView(logical, image.m_view, m_allocator);
+    vkDestroyImageView(logical, image.m_view, m_allocator);
+    vkDestroyImage(logical, image.m_handle, m_allocator);
     
-    if (image.m_handle != VK_NULL_HANDLE)
-        vkDestroyImage(logical, image.m_handle, m_allocator);
-    
-    if (image.m_memory != VK_NULL_HANDLE)
-        freeMemory(image.m_memory);
+    freeMemory(image.m_memory);
 
     image = Image();
-}
-
-// Bind the  given Image to the device
-void Device::bind(Image &image, VkDeviceSize memory_offset) 
-{
-    VkResult res = vkBindImageMemory(
-        logical,
-        image.m_handle,
-        image.m_memory,
-        memory_offset 
-    );
-
-    if (res != VK_SUCCESS) {
-        throw ImageBindError(std::format(
-            "Vulkan image bind error: {}",
-            vk_error_str(res)
-        ));
-    }
-}
-
-/*
- *
- *      Command buffer functions
- *
- * */
-
-// Allocate a command buffer from a command pool
-CommandBuffer Device::allocateCmdBuffer(
-    CommandPool &cmd_pool,
-    bool primary
-) {
-    CommandBuffer out_buffer;
-
-    VkCommandBufferAllocateInfo allocate_info = { };
-    allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocate_info.commandPool = cmd_pool.m_handle;
-    
-    allocate_info.level = primary ? 
-        VK_COMMAND_BUFFER_LEVEL_PRIMARY :
-        VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-    
-    allocate_info.commandBufferCount = 1;
-
-    VkResult res = vkAllocateCommandBuffers(
-        logical, 
-        &allocate_info,
-        &out_buffer.m_handle
-    );
-
-    if (res != VK_SUCCESS) {
-        throw CmdBufferAllocationError(std::format(
-            "Vulkan buffer allocation error %s",
-            vk_error_str(res)
-        ));
-    }
-
-    return out_buffer;
-}
-
-// Free a command buffer in a command pool
-void Device::freeCmdBuffer(
-    CommandPool &cmd_pool,
-    CommandBuffer &cmd_buffer
-) {
-    vkFreeCommandBuffers(
-        logical, 
-        cmd_pool.m_handle, 
-        1, &cmd_buffer.m_handle
-    );
-
-    cmd_buffer.m_handle = VK_NULL_HANDLE;
 }
 
 /*
@@ -618,6 +446,7 @@ Buffer Device::createBuffer(
     bool bind_on_create
 ) {
     Buffer out_buffer;
+    out_buffer.m_device_p = this;
     
     out_buffer.m_usage_bits = usage_bits;
     out_buffer.m_memory_flags = memory_flags;
@@ -660,7 +489,7 @@ Buffer Device::createBuffer(
     );
 
     if (bind_on_create) 
-        bind(out_buffer, 0);
+        out_buffer.bind();
 
     return out_buffer;
 }
@@ -747,80 +576,6 @@ void Device::bufferResize(
     buffer.m_size = size;
 }
 
-// Bind the given buffer to the device with the given memory offset
-void Device::bind(Buffer &buffer, VkDeviceSize memory_offset)
-{
-    VkResult res = vkBindBufferMemory(
-        logical,
-        buffer.m_handle,
-        buffer.m_memory,
-        memory_offset
-    );
-
-    if (res != VK_SUCCESS) {
-        throw BufferBindError(std::format(
-            "Vulkan buffer bind error: {}", 
-            vk_error_str(res)
-        ));
-    }
-}
-
-// Map the buffer to a region of host memory and return a pointer to it
-void* Device::mapBuffer(
-    Buffer &buffer,
-    
-    VkDeviceSize offset,
-    VkDeviceSize size,
-
-    VkMemoryMapFlags map_flags
-) {
-    void *data;
-    
-    VkResult res = vkMapMemory(
-        logical,
-        buffer.m_memory,
-        offset, size,
-        map_flags, 
-        &data
-    );
-
-    if (res != VK_SUCCESS) {
-        throw BufferMapError(std::format(
-            "Vulkan buffer map error: {}",
-            vk_error_str(res)
-        ));
-    }
-
-    buffer.m_mapped = true;
-
-    return data;
-}
-
-// Unmap the given buffer 
-void Device::unmapBuffer(Buffer &buffer)
-{
-    vkUnmapMemory(logical, buffer.m_memory);
-    
-    buffer.m_mapped = false;
-}
-
-// Load the data at the given pointer to the buffer at the given offset
-void Device::loadBuffer(
-    Buffer &buffer,
-    VkMemoryMapFlags map_flags,
-
-    VkDeviceSize buffer_offset,
-    VkDeviceSize size,
-
-    void *data_p
-) {
-    void *buffer_data = mapBuffer(buffer, buffer_offset, size, map_flags);
-
-    std::memcpy(buffer_data, data_p, size);
-
-    unmapBuffer(buffer);
-}
-
 // Copy the content of one buffer to another
 // this operation is blocking
 void Device::copyBuffer(
@@ -855,7 +610,7 @@ void Device::copyBuffer(
     VkDeviceSize size
 ) {
     // Allocate the command buffer
-    CommandBuffer cmd_buffer = allocateCmdBuffer(m_transfer_cmd_pool);
+    CommandBuffer cmd_buffer = m_transfer_cmd_pool.allocateCmdBuffer();
     cmd_buffer.begin(true, false, false);
     
     VkBufferCopy copy_op = { };
@@ -873,18 +628,92 @@ void Device::copyBuffer(
     cmd_buffer.end();
     cmd_buffer.submit(
         transfer_queue,
-        m_transfer_fence,
+        m_transfer_fence.m_handle,
         0, VK_NULL_HANDLE,
         0, VK_NULL_HANDLE,
         0
     );
 
     // Wait for the operation to finish and free the command buffer
-    waitFence(m_transfer_fence);
+    m_transfer_fence.wait();
     
-    freeCmdBuffer(m_transfer_cmd_pool, cmd_buffer);
+    m_transfer_cmd_pool.freeCmdBuffer(cmd_buffer);
 
-    resetFence(m_transfer_fence);
+    m_transfer_fence.reset();
+}
+
+// PRIVATE ----------------------------
+
+/*
+ *
+ *      Memory functions
+ *
+ * */
+
+// Allocate device memory with the required property
+VkDeviceMemory Device::allocateMemory(
+    VkMemoryRequirements requirements,
+    VkMemoryPropertyFlags memory_flags
+) {
+    // Find a suitable memory type
+    u32 mem_type_index = findMemoryTypeIndex(
+        requirements.memoryTypeBits, 
+        memory_flags
+    );
+    
+    VkMemoryAllocateInfo alloc_info = { };
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.memoryTypeIndex = mem_type_index;
+    alloc_info.allocationSize = requirements.size;
+    
+    // Perform the allocation
+    VkDeviceMemory out_memory;
+    
+    VkResult res = vkAllocateMemory(
+        logical,
+        &alloc_info,
+        m_allocator,
+        &out_memory
+    );
+
+    if (res != VK_SUCCESS) {
+        throw DeviceMemoryError(std::format(
+            "Device memory allocation error: {}",
+            vk_error_str(res)
+        ));
+    } 
+    
+    return out_memory;
+}
+
+// Free the given device memory 
+void Device::freeMemory(VkDeviceMemory memory)
+{
+    vkFreeMemory(logical, memory, m_allocator);
+}
+
+// Find the index of a suitable memory type
+u32 Device::findMemoryTypeIndex(
+    u32 type_bits,
+    VkMemoryPropertyFlags flags
+) {
+    VkPhysicalDeviceMemoryProperties mem_props = m_memory_properties;
+    
+    for (u32 i = 0; i < mem_props.memoryTypeCount; i++) {
+        bool type_bits_compatible = type_bits & (1 << i); 
+
+        VkMemoryPropertyFlags available_flags =
+            mem_props.memoryTypes[i].propertyFlags; 
+        
+        bool property_compatible = (available_flags & flags) == flags;  
+
+        if (type_bits_compatible && property_compatible) {
+            return i;
+        }
+    }
+
+    // Throw an exception if no suitable type was found
+    throw DeviceMemoryError("No suitable memory type for allocation");
 }
 
 /*
@@ -1173,31 +1002,6 @@ CommandPool Device::createCmdPool(
     return createCmdPool(index, flags);
 }
 
-void Device::resetCmdPool(
-    CommandPool cmd_pool,
-    bool release_resources
-) {
-    VkCommandPoolResetFlags flag;
-    
-    if (release_resources)
-        flag = VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT; 
-    else
-        flag = 0;
-
-    VkResult res = vkResetCommandPool(
-        logical,
-        cmd_pool.m_handle,
-        flag
-    );
-
-    if (res != VK_SUCCESS) {
-        throw CommandPoolResetError(std::format(
-            "Command pool reset error: {}",
-            vk_error_str(res)
-        ));
-    }
-}
-
 // Destroy the given command pool
 void Device::destroyCmdPool(CommandPool cmd_pool)
 {
@@ -1459,6 +1263,7 @@ CommandPool Device::createCmdPool(
     VkCommandPoolCreateFlags flags
 ) {
     CommandPool out_pool;
+    out_pool.m_device_p = this;
     
     VkCommandPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

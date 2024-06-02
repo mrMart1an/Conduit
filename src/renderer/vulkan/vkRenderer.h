@@ -26,12 +26,12 @@ public:
 
 public:
     // Frame in flight data
-    struct FrameData {
+    struct InFlightData {
         CommandPool graphics_cmd_pool;
         CommandBuffer main_cmd_buffer;
 
         // Sync objects
-        VkFence render_fence;
+        Fence render_fence;
         VkSemaphore image_semaphore, render_semaphore;
     };
 
@@ -81,13 +81,13 @@ private:
      * */
 
     // Create and initialized all the frame in flight data
-    void createFrameDatas();
+    void createInFlightDatas();
     
     // Destroy all the frame in flight data
-    void destroyFrameData();
+    void destroyInFlightData();
 
     // Get the current frame in flight data
-    FrameData& getCurrentFrame();
+    InFlightData& getCurrentInFlightData();
 
     /*
      *
@@ -125,7 +125,7 @@ private:
     std::vector<RenderAttachment> m_swap_chain_attachements;
 
     // Frame in flight data 
-    std::vector<FrameData> m_frames_data;
+    std::vector<InFlightData> m_in_flight_data;
 
     // Dimensions of the renderer swap chain attachments
     u32 m_frame_width, m_frame_height;

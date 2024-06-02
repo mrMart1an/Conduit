@@ -76,9 +76,9 @@ void VkRenderer::initialize(
     ));
     
     // Create the frame in flight data
-    createFrameDatas();
+    createInFlightDatas();
     m_delete_queue.addDeleter(std::bind(
-        &VkRenderer::destroyFrameData,
+        &VkRenderer::destroyInFlightData,
         this
     ));
 
@@ -189,7 +189,7 @@ void VkRenderer::draw()
     if (!beginFrame()) 
         return; 
     
-    FrameData &frame_data = getCurrentFrame();
+    InFlightData &frame_data = getCurrentInFlightData();
 
     // Test triangle code
     m_graphics_pipeline.bind(frame_data.main_cmd_buffer);
@@ -225,9 +225,9 @@ bool VkRenderer::beginFrame()
     if (m_minimized)
         return false;
     
-    FrameData &frame_data = getCurrentFrame();
+    InFlightData &frame_data = getCurrentInFlightData();
     
-    m_device.waitFence(frame_data.render_fence);
+    frame_data.render_fence.wait();
     
     // If the swap chain is outdated recreate it
     if (m_swap_chain.outOfDate()) {
@@ -246,7 +246,7 @@ bool VkRenderer::beginFrame()
         return false;
     
     // Reset the rendering fence
-    m_device.resetFence(frame_data.render_fence);
+    frame_data.render_fence.reset();
         
     // Reset the main command buffer and start recording
     frame_data.main_cmd_buffer.reset();
@@ -288,7 +288,7 @@ bool VkRenderer::beginFrame()
 // End frame rendering
 void VkRenderer::endFrame()
 {
-    FrameData &frame_data = getCurrentFrame();
+    InFlightData &frame_data = getCurrentInFlightData();
     
     // End command buffer recording and render pass
     m_main_render_pass.end(frame_data.main_cmd_buffer);
@@ -297,7 +297,7 @@ void VkRenderer::endFrame()
     // Submit the rendering command buffer
     frame_data.main_cmd_buffer.submit(
         m_device.graphics_queue, 
-        frame_data.render_fence, 
+        frame_data.render_fence.hande(), 
         1, &frame_data.image_semaphore, 
         1, &frame_data.render_semaphore, 
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
@@ -311,7 +311,7 @@ void VkRenderer::endFrame()
 // presented successfully to the screen
 bool VkRenderer::presentFrame()
 {
-    FrameData &frame_data = getCurrentFrame();
+    InFlightData &frame_data = getCurrentInFlightData();
     
     // Present the swap chain image
     return m_swap_chain.presentImage(m_device, frame_data.render_semaphore);
@@ -324,12 +324,12 @@ bool VkRenderer::presentFrame()
  * */
 
 // Create and initialized all the frame in flight data
-void VkRenderer::createFrameDatas()
+void VkRenderer::createInFlightDatas()
 {
     u32 frame_in_flight = m_swap_chain.frameInFlight();
-    m_frames_data.resize(frame_in_flight);
+    m_in_flight_data.resize(frame_in_flight);
 
-    for (auto& frame_data : m_frames_data) {
+    for (auto& frame_data : m_in_flight_data) {
         // Create the sync object
         frame_data.render_fence = m_device.createFence(true);        
         frame_data.render_semaphore = m_device.createSemaphore();
@@ -341,26 +341,24 @@ void VkRenderer::createFrameDatas()
             VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
         );
 
-        frame_data.main_cmd_buffer = m_device.allocateCmdBuffer(
-            frame_data.graphics_cmd_pool
-        );
+        frame_data.main_cmd_buffer = 
+            frame_data.graphics_cmd_pool.allocateCmdBuffer();
     }
 }
 
 // Destroy all the frame in flight data
-void VkRenderer::destroyFrameData()
+void VkRenderer::destroyInFlightData()
 {
     vkDeviceWaitIdle(m_device.logical);
     
-    for (auto& frame_data : m_frames_data) {
+    for (auto& frame_data : m_in_flight_data) {
         // Destroy the sync object
         m_device.destroyFence(frame_data.render_fence);
         m_device.destroySemaphore(frame_data.render_semaphore);
         m_device.destroySemaphore(frame_data.image_semaphore);
 
         // Destroy command pool and buffers
-        m_device.freeCmdBuffer(
-            frame_data.graphics_cmd_pool,
+        frame_data.graphics_cmd_pool.freeCmdBuffer(
             frame_data.main_cmd_buffer
         );
 
@@ -369,11 +367,11 @@ void VkRenderer::destroyFrameData()
 }
 
 // Get the current frame in flight data
-VkRenderer::FrameData& VkRenderer::getCurrentFrame()
+VkRenderer::InFlightData& VkRenderer::getCurrentInFlightData()
 {
     u32 current_frame = m_swap_chain.currentFrame();
     
-    return m_frames_data.at(current_frame);
+    return m_in_flight_data.at(current_frame);
 }
 
 /*
