@@ -1042,6 +1042,8 @@ GraphicsPipeline Device::createGraphicsPipeline(
 
 	std::string vertex_shader_filepath,
 	std::string fragment_shader_filepath,
+
+	std::vector<VkDescriptorSetLayout> descriptor_set_layout,
 	
 	bool wireframe 
 ) {
@@ -1166,9 +1168,8 @@ GraphicsPipeline Device::createGraphicsPipeline(
     pipeline_layout_info.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
-    // TODO : descriptor set
-    pipeline_layout_info.setLayoutCount = 0;
-    pipeline_layout_info.pSetLayouts = VK_NULL_HANDLE;
+    pipeline_layout_info.setLayoutCount = descriptor_set_layout.size();
+    pipeline_layout_info.pSetLayouts = descriptor_set_layout.data();
 
     pipeline_layout_info.pushConstantRangeCount = 0;
     pipeline_layout_info.pPushConstantRanges = VK_NULL_HANDLE;

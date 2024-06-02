@@ -372,6 +372,8 @@ public:
 
     	std::string vertex_shader_filepath,
     	std::string fragment_shader_filepath,
+	
+	    std::vector<VkDescriptorSetLayout> descriptor_set_layout,
     	
     	bool wireframe = false
     );
