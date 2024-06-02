@@ -106,11 +106,12 @@ void VkRenderer::initialize(
     // Load test geometry in the buffer
     // Load test geometry to the geometry buffers
     std::vector<Vertex3D> vertices = { 
-        {{0., -0.5, 0.}, {1.,0.,0.}, {0., 0.}}, 
-        {{0.5, 0.5, 0.}, {1.,1.,0.}, {0., 0.}}, 
-        {{-0.5, 0.5, 0.}, {1.,0.,1.}, {0., 0.}}, 
+        {{-0.5, -0.5, 0.}, {0.,1.,0.}, {0., 0.}}, 
+        {{0.5, -0.5, 0.}, {0.,0.,1.}, {0., 0.}}, 
+        {{0.5, 0.5, 0.}, {0.,1.,0.}, {0., 0.}}, 
+        {{-0.5, 0.5, 0.}, {1.,0.,0.}, {0., 0.}}, 
     };
-    std::vector<u32> indices = { 0, 1, 2 };
+    std::vector<u32> indices = { 0, 1, 2, 0, 2, 3 };
 
     m_device.geometryBufferLoad(
         m_static_mesh_buffer,
@@ -213,7 +214,12 @@ void VkRenderer::draw()
     );
     
     // Issue draw call
-    vkCmdDrawIndexed(frame_data.main_cmd_buffer.handle(), 3, 1, 0, 0, 0);
+    vkCmdDrawIndexed(
+        frame_data.main_cmd_buffer.handle(),
+        6,
+        1,
+        0, 0, 0
+    );
 
     endFrame();
     presentFrame();
