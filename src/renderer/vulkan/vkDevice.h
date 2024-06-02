@@ -10,6 +10,7 @@
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
 
+#include "renderer/vulkan/sync/vkFence.h"
 #include "renderer/vulkan/vkCommandBuffer.h"
 #include "renderer/vulkan/vkCommandPool.h"
 #include "renderer/vulkan/vkRenderAttachment.h"
@@ -178,32 +179,8 @@ public:
         VkCommandPoolCreateFlags flags = 0
     );
 
-    // Reset a command pool
-    void resetCmdPool(
-        CommandPool cmd_pool,
-        bool release_resources = false
-    );
-
     // Destroy the given command pool
     void destroyCmdPool(CommandPool cmd_pool);
-
-    /*
-     *
-     *      Command buffer functions
-     *
-     * */
-
-    // Allocate a command buffer from a command pool
-    CommandBuffer allocateCmdBuffer(
-        CommandPool &cmd_pool,
-        bool primary = true
-    );
-
-    // Free a command buffer in a command pool
-    void freeCmdBuffer(
-        CommandPool &cmd_pool,
-        CommandBuffer &cmd_buffer
-    );
 
     /*
      *
@@ -252,37 +229,17 @@ public:
 
     // Create a fence, used for GPU to CPU synchronization 
     // If the signaled argument is true the fence is signaled on creation
-    VkFence createFence(bool signaled);
-
-    // Wait on the given fence
-    void waitFence(VkFence fence, u64 timeout = UINT64_MAX);
-
-    // Reset the given fence
-    void resetFence(VkFence fence);
+    Fence createFence(bool signaled);
 
     // Destroy the given fence
-    void destroyFence(VkFence &fence);
+    void destroyFence(Fence &fence);
 
     // Create a semaphore, used for GPU to GPU synchronization
     VkSemaphore createSemaphore();
 
     // Destroy the given semaphore
     void destroySemaphore(VkSemaphore &semaphore);
-    
-    /*
-     *
-     *      Memory functions
-     *
-     * */
 
-    // Allocate device memory with the required property
-    VkDeviceMemory allocateMemory(
-        VkMemoryRequirements requirements,
-        VkMemoryPropertyFlags memory_flags
-    );
-    
-    // Free the given device memory 
-    void freeMemory(VkDeviceMemory memory);
     
     /*
      *
@@ -307,9 +264,6 @@ public:
     // Destroy the given image
     void destroyImage(Image &image);
 
-    // Bind the given Image to the device with the given memory offset
-    void bind(Image &image, VkDeviceSize memory_offset = 0);
-    
     /*
      *
      *     Buffer functions
@@ -334,33 +288,6 @@ public:
     void bufferResize(
         Buffer &buffer,
         VkDeviceSize size
-    );
-    
-    // Bind the given buffer to the device with the given memory offset
-    void bind(Buffer &buffer, VkDeviceSize memory_offset = 0);
-    
-    // Map the buffer to a region of host memory and return a pointer to it
-    void* mapBuffer(
-        Buffer &buffer,
-        
-        VkDeviceSize offset,
-        VkDeviceSize size,
-
-        VkMemoryMapFlags map_flags
-    );
-
-    // Unmap the given buffer 
-    void unmapBuffer(Buffer &buffer);
-    
-    // Load the data at the given pointer to the buffer at the given offset
-    void loadBuffer(
-        Buffer &buffer,
-        VkMemoryMapFlags map_flags,
-    
-        VkDeviceSize buffer_offset,
-        VkDeviceSize size,
-    
-        void *data_p
     );
 
     // Copy the content of one buffer to another
@@ -469,6 +396,15 @@ private:
      *      Memory functions
      *
      * */
+        
+    // Allocate device memory with the required property
+    VkDeviceMemory allocateMemory(
+        VkMemoryRequirements requirements,
+        VkMemoryPropertyFlags memory_flags
+    );
+    
+    // Free the given device memory 
+    void freeMemory(VkDeviceMemory memory);
     
     // Find the index of a suitable memory type
     u32 findMemoryTypeIndex(
@@ -582,7 +518,7 @@ private:
     // Transfer operation command pool
     CommandPool m_transfer_cmd_pool;
     // Transfer operation fence
-    VkFence m_transfer_fence;
+    Fence m_transfer_fence;
     
     // Device delete queue
     DeleteQueue m_delete_queue;
@@ -677,14 +613,12 @@ void Device::geometryBufferLoad(
     );
 
     // Load the staging buffer with the data
-    loadBuffer(
-        vertex_staging, 
+    vertex_staging.loadBuffer(
         0, 
         0, vertex_data_size,
         vertices.data()
     );
-    loadBuffer(
-        index_staging, 
+    index_staging.loadBuffer(
         0, 
         0, index_data_size,
         indices.data()

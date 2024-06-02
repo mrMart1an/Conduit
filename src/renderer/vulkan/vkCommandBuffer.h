@@ -7,11 +7,11 @@
 
 namespace cndt::vulkan {
 
-class Device;
+class CommandPool;
 
 // Conduit vulkan command buffer abstraction
 class CommandBuffer {
-    friend class Device;
+    friend class CommandPool;
 
 public:
     CommandBuffer() = default;

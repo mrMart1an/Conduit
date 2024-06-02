@@ -14,6 +14,15 @@ class Image {
 public:
     Image() = default;
 
+    // Bind the given Image to the device with the given memory offset
+    void bind(VkDeviceSize memory_offset = 0);
+
+    /*
+     *
+     *      Getter
+     *
+     * */
+
     // Return the image handle
     VkImage handle() const { return m_handle; }
     // Return the image view handle
@@ -35,9 +44,12 @@ private:
     VkMemoryPropertyFlags m_memory_flags;
     
     VkDeviceMemory m_memory;
+    
+    // A pointer to the device that own the image
+    Device *m_device_p;
 };
 
 } // namespace cndt::vulkan
 
-
 #endif
+
