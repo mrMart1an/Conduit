@@ -444,6 +444,28 @@ public:
     { }
 };
 
+/*
+ *
+ *      Descriptor set exception
+ *
+ * */
+
+// Vulkan descriptor set general exception
+class DescriptorSetException : public VulkanException {
+public:
+    DescriptorSetException(std::string_view message) : 
+        VulkanException(message)
+    { }
+};
+
+// Vulkan descriptor set layout creation error
+class DescriptorSetLayoutBuildError : public DescriptorSetException {
+public:
+    DescriptorSetLayoutBuildError(std::string_view message) : 
+        DescriptorSetException(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif
