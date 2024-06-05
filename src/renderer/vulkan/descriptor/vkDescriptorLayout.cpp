@@ -36,10 +36,11 @@ void DescriptorLayoutBuilder::clear()
 }
 
 // Build the descriptor set layout from the builder stored binding list
-VkDescriptorSetLayout DescriptorLayoutBuilder::build(
+DescriptorLayout DescriptorLayoutBuilder::build(
     VkDescriptorSetLayoutCreateFlags flags
 ) {
-    VkDescriptorSetLayout out_layout;
+    DescriptorLayout out_layout;
+    out_layout.m_bindings = m_bindings;
     
     VkDescriptorSetLayoutCreateInfo info = { };
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -51,7 +52,7 @@ VkDescriptorSetLayout DescriptorLayoutBuilder::build(
         m_device_p->logical,
         &info,
         m_device_p->allocator(),
-        &out_layout
+        &out_layout.m_layout
     );
 
     if (res != VK_SUCCESS) {

@@ -81,13 +81,26 @@ void VkRenderer::initialize(
         &VkRenderer::destroyInFlightData,
         this
     ));
+    
+    // Create the uniform buffer descriptor set layout
+    auto layout_builder = m_device.createDescriptorLayoutBuilder();
+    layout_builder.addBinding(
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        VK_SHADER_STAGE_VERTEX_BIT
+    );
+
+    m_uniform_layout = layout_builder.build();
+    m_delete_queue.addDeleter([&]() {
+        m_device.destroyDescriptorLayout(m_uniform_layout);
+    });
 
     // Create a graphics pipeline
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
         "resources/shaders/builtin.vert.spv",
         "resources/shaders/builtin.frag.spv",
-        std::vector<VkDescriptorSetLayout>()
+        { m_uniform_layout.layout() }
     );
     m_delete_queue.addDeleter(std::bind(
         &Device::destroyGraphicsPipeline,

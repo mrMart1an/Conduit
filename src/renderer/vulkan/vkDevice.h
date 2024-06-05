@@ -393,6 +393,9 @@ public:
     // Create the descriptor layout builder
     DescriptorLayoutBuilder createDescriptorLayoutBuilder();
 
+    // Destroy the given descriptor set layout
+    void destroyDescriptorLayout(DescriptorLayout &layout);
+
     // Create a descriptor set allocator
     DescriptorAllocator createDescriptorAllocator(
         std::vector<DescriptorAllocator::PoolSizeRatio> pool_ratio
