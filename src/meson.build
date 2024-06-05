@@ -37,6 +37,7 @@ if(vulkan_enable.enabled())
         'renderer/vulkan/pipelines/vkPipeline.cpp',   
         
         'renderer/vulkan/descriptor/vkDescriptorLayout.cpp',   
+        'renderer/vulkan/descriptor/vkDescriptorAllocator.cpp',   
         
         'renderer/vulkan/storage/vkBuffer.cpp',   
         'renderer/vulkan/storage/vkImage.cpp',   

@@ -658,6 +658,27 @@ DescriptorLayoutBuilder Device::createDescriptorLayoutBuilder()
     return out_builder;
 }
     
+// Create a descriptor set allocator
+DescriptorAllocator Device::createDescriptorAllocator(
+    std::vector<DescriptorAllocator::PoolSizeRatio> pool_ratio
+) {
+    DescriptorAllocator out_allocator;
+    out_allocator.m_device_p = this;
+    out_allocator.m_ratios = pool_ratio;
+
+    out_allocator.m_in_use_pool = out_allocator.createPool();
+
+    return out_allocator;
+}
+
+// Destroy a descriptor allocator
+void Device::destroyDescriptorAllocator(DescriptorAllocator &allocator)
+{
+    allocator.destroyPools();
+    
+    allocator = DescriptorAllocator();
+}
+
 // PRIVATE ----------------------------
 
 /*
