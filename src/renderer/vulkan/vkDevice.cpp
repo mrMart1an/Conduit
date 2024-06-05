@@ -691,6 +691,15 @@ void Device::destroyDescriptorAllocator(DescriptorAllocator &allocator)
     allocator = DescriptorAllocator();
 }
 
+// Create a descriptor set writer
+DescriptorWriter Device::createDescriptorWriter()
+{
+    DescriptorWriter out_writer;
+    out_writer.m_device_p = this;
+    
+    return out_writer;
+}
+
 // PRIVATE ----------------------------
 
 /*
