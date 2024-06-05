@@ -34,6 +34,10 @@ public:
         // Sync objects
         Fence render_fence;
         VkSemaphore image_semaphore, render_semaphore;
+
+        // Uniform buffer
+        Buffer camera_model_uniform;
+        void* camera_model_mapped_p;
     };
 
 public:
