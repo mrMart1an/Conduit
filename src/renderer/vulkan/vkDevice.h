@@ -6,6 +6,7 @@
 
 #include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
+#include "renderer/vulkan/descriptor/vkDescriptorWriter.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
@@ -403,6 +404,9 @@ public:
 
     // Destroy a descriptor allocator
     void destroyDescriptorAllocator(DescriptorAllocator &allocator);
+
+    // Create a descriptor set writer
+    DescriptorWriter createDescriptorWriter();
     
     /*
      *
