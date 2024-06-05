@@ -1,5 +1,6 @@
 #include "renderer/vulkan/vkRenderer.h"
 #include "renderer/vulkan/vkDevice.h"
+#include "renderer/vulkan/vkUniformData.h"
 
 #include <functional>
 #include <vector>
@@ -349,20 +350,36 @@ void VkRenderer::createInFlightDatas()
     u32 frame_in_flight = m_swap_chain.frameInFlight();
     m_in_flight_data.resize(frame_in_flight);
 
-    for (auto& frame_data : m_in_flight_data) {
+    for (auto& data : m_in_flight_data) {
         // Create the sync object
-        frame_data.render_fence = m_device.createFence(true);        
-        frame_data.render_semaphore = m_device.createSemaphore();
-        frame_data.image_semaphore = m_device.createSemaphore();
+        data.render_fence = m_device.createFence(true);        
+        data.render_semaphore = m_device.createSemaphore();
+        data.image_semaphore = m_device.createSemaphore();
 
         // Create the command pool and buffers
-        frame_data.graphics_cmd_pool = m_device.createCmdPool(
+        data.graphics_cmd_pool = m_device.createCmdPool(
             Device::QueueType::Graphics,
             VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
         );
 
-        frame_data.main_cmd_buffer = 
-            frame_data.graphics_cmd_pool.allocateCmdBuffer();
+        data.main_cmd_buffer = 
+            data.graphics_cmd_pool.allocateCmdBuffer();
+
+        // Create and map the uniforms buffers
+        VkDeviceSize camera_model_size = sizeof(CameraModel);
+        
+        data.camera_model_uniform = m_device.createBuffer(
+            camera_model_size,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+            true
+        );
+        
+        data.camera_model_mapped_p = data.camera_model_uniform.mapBuffer(
+            0, camera_model_size,
+            0
+        );
     }
 }
 
@@ -371,18 +388,24 @@ void VkRenderer::destroyInFlightData()
 {
     vkDeviceWaitIdle(m_device.logical);
     
-    for (auto& frame_data : m_in_flight_data) {
+    for (auto& data : m_in_flight_data) {
+        // Unmap and destroy uniforms buffers
+        data.camera_model_uniform.unmapBuffer();
+        m_device.destroyBuffer(data.camera_model_uniform);
+
         // Destroy the sync object
-        m_device.destroyFence(frame_data.render_fence);
-        m_device.destroySemaphore(frame_data.render_semaphore);
-        m_device.destroySemaphore(frame_data.image_semaphore);
+        m_device.destroyFence(data.render_fence);
+        m_device.destroySemaphore(data.render_semaphore);
+        m_device.destroySemaphore(data.image_semaphore);
 
         // Destroy command pool and buffers
-        frame_data.graphics_cmd_pool.freeCmdBuffer(
-            frame_data.main_cmd_buffer
+        data.graphics_cmd_pool.freeCmdBuffer(
+            data.main_cmd_buffer
         );
 
-        m_device.destroyCmdPool(frame_data.graphics_cmd_pool);
+        m_device.destroyCmdPool(data.graphics_cmd_pool);
+
+        data = InFlightData();
     }
 }
 
