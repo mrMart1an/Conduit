@@ -52,6 +52,9 @@ VkDescriptorSet DescriptorAllocator::allocate(VkDescriptorSetLayout layout)
             &alloc_info,
             &out_set
         ));
+        
+    } else if (res != VK_SUCCESS) {
+        vk_check(res);
     }
 
     return out_set;

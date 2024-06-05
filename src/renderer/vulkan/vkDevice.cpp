@@ -658,6 +658,18 @@ DescriptorLayoutBuilder Device::createDescriptorLayoutBuilder()
     return out_builder;
 }
     
+// Destroy the given descriptor set layout
+void Device::destroyDescriptorLayout(DescriptorLayout &layout)
+{
+    vkDestroyDescriptorSetLayout(
+        logical,
+        layout.layout(),
+        m_allocator
+    );
+    
+    layout = DescriptorLayout();
+}
+
 // Create a descriptor set allocator
 DescriptorAllocator Device::createDescriptorAllocator(
     std::vector<DescriptorAllocator::PoolSizeRatio> pool_ratio

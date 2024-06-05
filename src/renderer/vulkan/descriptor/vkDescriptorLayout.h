@@ -11,6 +11,31 @@ namespace cndt::vulkan {
 
 class Device;
 
+class DescriptorLayoutBuilder;
+
+class DescriptorLayout {
+    friend class DescriptorLayoutBuilder;
+
+public:
+    DescriptorLayout() = default;
+    
+    // Get the vulkan layout
+    VkDescriptorSetLayout layout() const { return m_layout; };
+
+    // Get the layout bindings
+    const std::vector<VkDescriptorSetLayoutBinding>& bindings() const 
+    {
+        return m_bindings;    
+    } 
+
+private:
+    // Store the vulkan layout 
+    VkDescriptorSetLayout m_layout;
+
+    // Store the layout bindings
+    std::vector<VkDescriptorSetLayoutBinding> m_bindings;
+};
+
 // Vulkan descriptor set layout builder class
 class DescriptorLayoutBuilder {
     friend class Device;
@@ -28,7 +53,7 @@ public:
     void clear();
 
     // Build the descriptor set layout from the builder stored binding list
-    VkDescriptorSetLayout build(
+    DescriptorLayout build(
         VkDescriptorSetLayoutCreateFlags flags = 0
     );
 

@@ -5,6 +5,7 @@
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
 
+#include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/vkContext.h"
@@ -119,6 +120,8 @@ private:
     GraphicsPipeline m_graphics_pipeline;
 
     GeometryBuffer<Vertex3D> m_static_mesh_buffer;
+
+    DescriptorLayout m_uniform_layout;
 
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;
