@@ -466,6 +466,14 @@ public:
     { }
 };
 
+// Vulkan descriptor pool creation error
+class DescriptorAllocatorError : public DescriptorSetException {
+public:
+    DescriptorAllocatorError(std::string_view message) : 
+        DescriptorSetException(message)
+    { }
+};
+
 } // namespace cndt::vulkan
 
 #endif

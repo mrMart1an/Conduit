@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
@@ -391,6 +392,14 @@ public:
 
     // Create the descriptor layout builder
     DescriptorLayoutBuilder createDescriptorLayoutBuilder();
+
+    // Create a descriptor set allocator
+    DescriptorAllocator createDescriptorAllocator(
+        std::vector<DescriptorAllocator::PoolSizeRatio> pool_ratio
+    );
+
+    // Destroy a descriptor allocator
+    void destroyDescriptorAllocator(DescriptorAllocator &allocator);
     
     /*
      *
