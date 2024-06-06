@@ -2,10 +2,15 @@
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkUniformData.h"
 
+#include <cstring>
 #include <functional>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
 #include <vector>
-#include <vulkan/vulkan_core.h>
 
+#include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <vulkan/vulkan_core.h>
 namespace cndt::vulkan {
 
 /*
@@ -99,8 +104,8 @@ void VkRenderer::initialize(
     // Create a graphics pipeline
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
-        "resources/shaders/builtin.vert.spv",
-        "resources/shaders/builtin.frag.spv",
+        "/home/mart1an/Documents/programming/dev/cpp/conduit/build/resources/shaders/builtin.vert.spv",
+        "/home/mart1an/Documents/programming/dev/cpp/conduit/build/resources/shaders/builtin.frag.spv",
         { m_uniform_layout.layout() }
     );
     m_delete_queue.addDeleter(std::bind(
@@ -207,8 +212,44 @@ void VkRenderer::draw()
     
     InFlightData &frame_data = getCurrentInFlightData();
 
+    // Descriptor set
+    auto descriptor_set = frame_data.descriptor_allocator.allocate(
+        m_uniform_layout
+    );
+    frame_data.descriptor_writer.updateSet(descriptor_set);
+
+    CameraModel cam = {};
+    cam.model = glm::rotate(
+        glm::mat4(1.0f),
+        (float)((m_frame_count % 240)) / 240.f * glm::radians(360.f),
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    );
+    cam.view = glm::lookAt(
+        glm::vec3(2.0f, 2.0f, 2.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 1.0f)
+    );
+    cam.proj = glm::perspectiveZO(
+        glm::radians(45.0f),
+        m_frame_width / (float) m_frame_height,
+        0.1f, 10.0f
+    );
+    cam.proj[1][1] *= -1;
+    
+    std::memcpy(frame_data.camera_model_mapped_p, &cam, sizeof(CameraModel));
+    
     // Test triangle code
     m_graphics_pipeline.bind(frame_data.main_cmd_buffer);
+
+    // Bind the descriptor
+    vkCmdBindDescriptorSets(
+        frame_data.main_cmd_buffer.handle(), 
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        m_graphics_pipeline.layout(),
+        0, 1, 
+        &descriptor_set,
+        0, nullptr
+    );
     
     VkDeviceSize offsets[1] = { 0 };
     VkBuffer vertex_buf = m_static_mesh_buffer.vertex().handle(); 
@@ -266,8 +307,9 @@ bool VkRenderer::beginFrame()
     if (!was_acquired)
         return false;
     
-    // Reset the rendering fence
+    // Reset the rendering fence and descriptor allocator
     frame_data.render_fence.reset();
+    frame_data.descriptor_allocator.clearPools();
         
     // Reset the main command buffer and start recording
     frame_data.main_cmd_buffer.reset();
@@ -376,9 +418,26 @@ void VkRenderer::createInFlightDatas()
             true
         );
         
-        data.camera_model_mapped_p = data.camera_model_uniform.mapBuffer(
+        void *mapped_mem_p = data.camera_model_uniform.mapBuffer(
             0, camera_model_size,
             0
+        );
+        data.camera_model_mapped_p = (CameraModel*)mapped_mem_p; 
+
+        // Create the descriptor allocator
+        std::vector<DescriptorAllocator::PoolSizeRatio> ratio = {
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}  
+        };
+        data.descriptor_allocator = m_device.createDescriptorAllocator(ratio);
+
+        // Create descriptor writer
+        data.descriptor_writer = m_device.createDescriptorWriter();
+        data.descriptor_writer.writeBuffer(
+            0, 
+            data.camera_model_uniform.handle(), 
+            0,
+            camera_model_size,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
         );
     }
 }
@@ -389,6 +448,9 @@ void VkRenderer::destroyInFlightData()
     vkDeviceWaitIdle(m_device.logical);
     
     for (auto& data : m_in_flight_data) {
+        // Destroy the descriptor allocator
+        m_device.destroyDescriptorAllocator(data.descriptor_allocator);
+
         // Unmap and destroy uniforms buffers
         data.camera_model_uniform.unmapBuffer();
         m_device.destroyBuffer(data.camera_model_uniform);

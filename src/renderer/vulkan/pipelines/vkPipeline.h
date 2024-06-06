@@ -17,6 +17,18 @@ friend class Device;
 
 public:
     Pipeline() = default;
+
+    /*
+     *
+     *      Getter
+     *
+     * */
+
+    // Get the pipeline handle
+    VkPipeline handle() const { return m_handle; }
+    
+    // Get the pipeline layout
+    VkPipelineLayout layout() const { return m_layout; }
     
 protected:
     VkPipeline m_handle;

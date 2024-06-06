@@ -674,7 +674,7 @@ void Device::destroyDescriptorLayout(DescriptorLayout &layout)
 DescriptorAllocator Device::createDescriptorAllocator(
     std::vector<DescriptorAllocator::PoolSizeRatio> pool_ratio
 ) {
-    DescriptorAllocator out_allocator;
+    DescriptorAllocator out_allocator = { };
     out_allocator.m_device_p = this;
     out_allocator.m_ratios = pool_ratio;
 
@@ -694,7 +694,7 @@ void Device::destroyDescriptorAllocator(DescriptorAllocator &allocator)
 // Create a descriptor set writer
 DescriptorWriter Device::createDescriptorWriter()
 {
-    DescriptorWriter out_writer;
+    DescriptorWriter out_writer = { };
     out_writer.m_device_p = this;
     
     return out_writer;
@@ -1139,7 +1139,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
     rasterizer.lineWidth = 1.0f;
 
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;

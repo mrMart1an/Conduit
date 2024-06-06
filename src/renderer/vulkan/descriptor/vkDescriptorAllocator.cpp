@@ -13,7 +13,7 @@
 namespace cndt::vulkan {
 
 // Allocate a descriptor set
-VkDescriptorSet DescriptorAllocator::allocate(VkDescriptorSetLayout layout)
+VkDescriptorSet DescriptorAllocator::allocate(DescriptorLayout &layout)
 {
     // If the m_in_use_pool is equal to null handle
     // Create a new pool and use it
@@ -29,7 +29,9 @@ VkDescriptorSet DescriptorAllocator::allocate(VkDescriptorSetLayout layout)
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorPool = m_in_use_pool;
     alloc_info.descriptorSetCount = 1;
-    alloc_info.pSetLayouts = &layout;
+    
+    VkDescriptorSetLayout set_layout = layout.layout();
+    alloc_info.pSetLayouts = &set_layout;
 
     VkResult res = vkAllocateDescriptorSets(
         m_device_p->logical,

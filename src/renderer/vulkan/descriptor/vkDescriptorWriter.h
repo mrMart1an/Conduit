@@ -16,6 +16,8 @@ class DescriptorWriter {
     friend class Device;
     
 public:
+    DescriptorWriter() = default;
+    
     // Write an image to the given binding
     void writeImage(
         u32 binding,
