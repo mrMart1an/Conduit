@@ -3,6 +3,8 @@
 
 #include "conduit/defines.h"
 
+#include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
+
 #include <vector>
 
 #include <vulkan/vulkan_core.h>
@@ -30,7 +32,7 @@ public:
     DescriptorAllocator() = default;
     
     // Allocate a descriptor set
-    VkDescriptorSet allocate(VkDescriptorSetLayout layout);
+    VkDescriptorSet allocate(DescriptorLayout &layout);
     
     // Clear all the descriptor set allocated from the pool
 	void clearPools();

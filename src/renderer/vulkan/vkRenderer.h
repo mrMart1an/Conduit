@@ -5,6 +5,7 @@
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
 
+#include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
@@ -13,6 +14,7 @@
 #include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkSwapChain.h"
+#include "renderer/vulkan/vkUniformData.h"
 
 #include <vector>
 #include <vulkan/vulkan.h>
@@ -37,7 +39,11 @@ public:
 
         // Uniform buffer
         Buffer camera_model_uniform;
-        void* camera_model_mapped_p;
+        CameraModel* camera_model_mapped_p;
+
+        // descriptor allocator and writer
+        DescriptorAllocator descriptor_allocator;
+        DescriptorWriter descriptor_writer; // This doesn't need to be here
     };
 
 public:
