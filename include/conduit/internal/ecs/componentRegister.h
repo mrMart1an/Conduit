@@ -20,10 +20,24 @@ public:
     // Only one component per type can be assigned to an entity
     template <typename CompType, typename... Args>
     void attachComponent(Entity entity, Args... args);
-
+    
+    // Attach component to the entity,
+    // Copy the given component to the buffer
+    // Only one component per type can be assigned to an entity
+    template <typename CompType>
+    void attachComponent(Entity entity, CompType &component);
+    
     // Detach a component from the given entity
     template <typename CompType>
     void detachComponent(Entity entity);
+
+    // Detach all the components from the given entity
+    void detachAllComponets(Entity entity);
+
+    // Get an component buffer for the specific type
+    // if the component doesn't exist create it
+    template<class CompType>
+    std::weak_ptr<ComponentBuffer<CompType>> getComponentBuffer();
 
 private:
     // Add the component type to the register if it doesn't already exist
@@ -35,10 +49,29 @@ private:
     
     // Store generic unique pointer to the components buffers
     using TypeId = ComponentTypeRegister::TypeId;
-    using ComponentBufferPtr = std::unique_ptr<ComponentBufferBase>;
+    using ComponentBufferPtr = std::shared_ptr<ComponentBufferBase>;
     
     std::map<TypeId, ComponentBufferPtr> m_component_buffers;
 };
+
+// Get an component buffer for the specific type
+// if the component doesn't exist create it
+template<class CompType>
+std::weak_ptr<ComponentBuffer<CompType>> 
+ComponentRegister::getComponentBuffer()
+{
+    // Create the buffer if it doesn't already exist
+    addComponetType<CompType>();
+
+    // Cast the buffer shared pointer to a weak pointer
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    
+    auto type_id = ComponentTypeRegister::getTypeId<CompType>();
+    
+    return std::static_pointer_cast<ComponentBuffer<CompType>>(
+        m_component_buffers[type_id]
+    );
+}
 
 // Attach component to the entity,
 // construct the component with the provided arguments.
@@ -53,9 +86,35 @@ void ComponentRegister::attachComponent(Entity entity, Args... args)
     
     // Get a reference to the component buffer and add the component to it
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    ComponentBuffer<CompType>& buffer = m_component_buffers[type_id];
+    
+    std::shared_ptr<ComponentBuffer<CompType>> buffer =
+        std::static_pointer_cast<ComponentBuffer<CompType>>(
+            m_component_buffers[type_id]
+        );
 
-    buffer.attachComponent(entity, args...);
+    buffer->attachComponent(entity, args...);
+}
+    
+// Attach component to the entity,
+// Copy the given component to the buffer
+// Only one component per type can be assigned to an entity
+template <typename CompType>
+void ComponentRegister::attachComponent(Entity entity, CompType &component)
+{
+    // Create the buffer if it doesn't already exist
+    addComponetType<CompType>();
+    
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    
+    // Get a reference to the component buffer and add the component to it
+    auto type_id = ComponentTypeRegister::getTypeId<CompType>();
+    
+    std::shared_ptr<ComponentBuffer<CompType>> buffer =
+        std::static_pointer_cast<ComponentBuffer<CompType>>(
+            m_component_buffers[type_id]
+        );
+
+    buffer->attachComponent(entity, component);
 }
 
 // Detach a component from the given entity
@@ -70,9 +129,13 @@ void ComponentRegister::detachComponent(Entity entity)
     // Get a reference to the component buffer 
     // and remove the component from it
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    ComponentBuffer<CompType>& buffer = m_component_buffers[type_id];
+    
+    std::shared_ptr<ComponentBuffer<CompType>> buffer =
+        std::static_pointer_cast<ComponentBuffer<CompType>>(
+            m_component_buffers[type_id]
+        );
 
-    buffer.detachComponent(entity);
+    buffer->detachComponent(entity);
 }
 
 // Add the component type to the register if it doesn't already exist
@@ -96,7 +159,7 @@ void ComponentRegister::addComponetType()
     if (!type_exist) {
         std::lock_guard<std::shared_mutex> lock(m_mutex);
         
-        auto buffer = std::make_unique<ComponentBuffer<CompType>>();
+        auto buffer = std::make_shared<ComponentBuffer<CompType>>();
         m_component_buffers[type_id] = std::move(buffer);
     }
 }

@@ -17,6 +17,8 @@ core_src = [
 
 # Engine entity component system source files
 ecs_src = [
+    'ecs/commandBuffer.cpp',
+    'ecs/componentRegister.cpp',
     'ecs/entityRegister.cpp',
     'ecs/world.cpp'
 ]
