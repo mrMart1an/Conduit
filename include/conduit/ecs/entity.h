@@ -2,6 +2,7 @@
 #define CNDT_ECS_ENTITY_H
 
 #include "conduit/defines.h"
+#include <cstdint>
 
 namespace cndt {
 
@@ -19,8 +20,14 @@ public:
     using EntityId = u64;
     
 public:
+    // Public Entity constructor, return an invalid entity
+    Entity() : m_id(UINT64_MAX) { }
+
     // Get the unique entity id
     EntityId id() const { return m_id; }
+
+    // Return true if the entity is invalid
+    bool invalid() const { return (m_id == UINT64_MAX); };
     
     friend bool operator==(const Entity& lhs, const Entity& rhs) 
     { 
