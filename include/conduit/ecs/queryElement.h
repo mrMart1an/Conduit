@@ -19,11 +19,12 @@ public:
     // Get the entity associated to the components tuple
     Entity entity() const { return m_entity; }
 
-    // Get the components tuple using the dot operators
-    std::tuple<CompTypes&...> operator*() const 
-    { 
-        return m_components; 
-    }
+    // Get the components from the given type
+    template<typename CompType>
+    CompType& get() { return std::get<CompType&>(m_components); }
+
+    // Get the components tuple
+    std::tuple<CompTypes&...> getTuple() { return m_components; };
     
     friend bool operator== (const QueryElement& a, const QueryElement& b) 
         { return a.m_entity == b.m_entity; };

@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <mutex>
 #include <shared_mutex>
-#include <string>
-#include <utility>
 #include <vector>
 
 namespace cndt::internal {
@@ -50,7 +48,7 @@ public:
 
     // Get a reference to the component vector 
     std::vector<CompType>& componentVector() { return m_component_buffer; }
-
+    
     // Return the buffer version
     u64 version() const { return m_version; }
 

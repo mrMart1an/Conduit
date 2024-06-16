@@ -33,8 +33,8 @@ public:
         
         // Iterator default constructor
         iterator(
-            std::vector<QueryElement<CompTypes...>>::iterator m_elements_iter
-        ) : m_elements_iter(m_elements_iter) { } 
+            std::vector<QueryElement<CompTypes...>>::iterator elements_iter
+        ) : m_elements_iter(elements_iter) { } 
         
         // Prefix increment
         iterator& operator++() 
@@ -49,11 +49,11 @@ public:
         
         reference operator*() const 
         { 
-            return m_elements_iter; 
+            return *m_elements_iter; 
         }
         pointer operator->() 
         { 
-            return &m_elements_iter; 
+            return &(*m_elements_iter); 
         }
         
         friend bool operator== (const iterator& a, const iterator& b) 
@@ -78,6 +78,9 @@ public:
      
     // Get an iterator to the end of the components list
     iterator end();
+
+    // Return the number of element stored in the query
+    usize size() const { return m_elements.size(); }
 
 private:
     // Store a list of query element

@@ -2,7 +2,6 @@
 
 #include "conduit/ecs/world.h"
 #include "conduit/ecs/commandBuffer.h"
-#include "conduit/logging.h"
 
 #include <vector>
 
@@ -40,15 +39,56 @@ TEST(query_test, world_test) {
     // Create components
     for (int i = 0; i < 10; i++) {
         Entity e = entities.at(i);
-        world.attachComponent<CompFirst>(e, 1);
+        world.attachComponent<CompFirst>(e, 10 + i);
     }
     for (int i = 5; i < 15; i++) {
         Entity e = entities.at(i);
-        world.attachComponent<CompSecond>(e, 2);
+        world.attachComponent<CompSecond>(e, 20 + i);
+    }
+    
+    {
+        auto query_storage = world.createQuery<CompSecond, CompFirst>();
+        auto query = query_storage.createQuery();
+    
+        ASSERT_EQ(5, query.size());
+        for (auto element : query) {
+            ASSERT_EQ(element.entity().id(), element.get<CompFirst>().x - 10);
+            ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
+        }
+    }
+    
+    {
+        auto query_storage = world.createQuery<CompFirst, CompSecond>();
+        auto query = query_storage.createQuery();
+
+        ASSERT_EQ(5, query.size());
+        for (auto element : query) {
+            ASSERT_EQ(element.entity().id(), element.get<CompFirst>().x - 10);
+            ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
+        }
+    }
+    
+    {
+        auto query_storage = world.createQuery<CompFirst>();
+        auto query = query_storage.createQuery();
+
+        ASSERT_EQ(10, query.size());
+        for (auto element : query) {
+            ASSERT_EQ(element.entity().id(), element.get<CompFirst>().x - 10);
+        }
+    }
+    
+    {
+        auto query_storage = world.createQuery<CompSecond>();
+        auto query = query_storage.createQuery();
+
+        ASSERT_EQ(10, query.size());
+        for (auto element : query) {
+            ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
+        }
     }
 
-    auto query_storage = world.createQuery<CompFirst, CompSecond>();
-    auto query = query_storage.createQuery();
+
 }
 
 TEST(cmd_buffer_test, world_test) {
