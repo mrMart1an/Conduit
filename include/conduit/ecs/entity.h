@@ -38,10 +38,13 @@ public:
         return lhs.m_id != rhs.m_id; 
     }
     
-    // Ordering for std map
     friend bool operator<(const Entity& lhs, const Entity& rhs) 
     {
         return lhs.m_id < rhs.m_id;
+    }
+    friend bool operator>(const Entity& lhs, const Entity& rhs) 
+    {
+        return lhs.m_id > rhs.m_id;
     }
 
 private:

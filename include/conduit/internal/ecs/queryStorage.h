@@ -8,7 +8,6 @@
 #include "conduit/internal/ecs/componentBuffer.h"
 
 #include <array>
-#include <functional>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -63,7 +62,7 @@ private:
     QueryElement<CompTypes...> createElement(
         Entity entity,
 
-        usize index,
+        std::array<usize, components_count> indices,
         std::tuple<ComponentIter<CompTypes>...> components_iter,
         
         std::index_sequence<Is...>
@@ -139,6 +138,8 @@ auto QueryStorage<CompTypes...>::entityEnd(
 template <typename... CompTypes>
 void QueryStorage<CompTypes...>::updateQuery()
 {
+    m_elements.clear();
+
     // Entity iterator
     constexpr usize iter_count = components_count;
     constexpr std::index_sequence_for<CompTypes...> indices = {};
@@ -149,14 +150,81 @@ void QueryStorage<CompTypes...>::updateQuery()
     std::tuple<ComponentIter<CompTypes>...> components_iter = 
         componentsBegin(indices);
     
-    // Store an entity and the corresponding index in the buffer
-    std::array<std::pair<Entity, usize>, iter_count> index_list;
+    // Store a list of indices for the components iterator
+    std::array<usize, iter_count> index_list = {};
     
+    // Use the element 0 as the algorithm pivot point
     EntityIter& pivot = entity_iter[0];
+    EntityIter& pivot_end = entity_iter_end[0];
+    usize& pivot_index = index_list[0];
 
-    while (false) {
-        for (int i = 1; i < iter_count; i++) {
+    bool must_run = true;
+    while (must_run) {
+        Entity pivot_entity = *pivot;
+
+        bool element_found = true;
+        usize comp_i = 1;
+        while(comp_i < iter_count) {
+            EntityIter& iter = entity_iter[comp_i];
+            EntityIter& iter_end = entity_iter_end[comp_i];
+            usize& index = index_list[comp_i];
             
+            Entity entity = *iter;
+
+            // If the current component entity is smaller that the pivot
+            // component entity increment the components iterator
+            if (entity < pivot_entity) {
+                iter += 1;
+                index += 1;
+
+                if (iter == iter_end) {
+                    element_found = false;
+                    break;
+                } 
+
+                continue;
+            }
+            // If the pivot component entity is smaller 
+            // that the current component entity increment the pivot iterator
+            else if (entity > pivot_entity) {
+                pivot += 1;
+                pivot_index += 1;
+                
+                if (pivot == pivot_end) {
+                    element_found = false;
+                    break;
+                } 
+                
+                // Update the pivot entity and restart the loop 
+                // from the first non pivot component
+                pivot_entity = *pivot;
+                comp_i = 1;
+                
+                continue;
+            }
+            
+            comp_i += 1;
+        }
+
+        // If a component was found add it to the elements list
+        if (element_found) {
+            m_elements.push_back(createElement(
+                pivot_entity,
+                index_list,
+                components_iter,
+                indices
+            ));
+        } else {
+            break;
+        }
+
+        // Increment all the iterator to find the next component
+        for (usize i = 0; i < iter_count; i++) {
+            entity_iter[i] += 1;
+            index_list[i] += 1;
+
+            if (entity_iter[i] == entity_iter_end[i])
+                must_run = false;
         }
     }
 }
@@ -167,13 +235,13 @@ template <usize... Is>
 QueryElement<CompTypes...> QueryStorage<CompTypes...>::createElement(
     Entity entity,
 
-    usize index,
+    std::array<usize, components_count> indices,
     std::tuple<ComponentIter<CompTypes>...> comp_iter,
     
     std::index_sequence<Is...>
 ) {
-    std::tuple<CompTypes&...> components = std::make_tuple(
-        (std::ref(*(std::get<Is>(comp_iter) + index)))...
+    std::tuple<CompTypes&...> components = std::tie(
+        (*(std::get<Is>(comp_iter) + indices[Is]))...
     );
     
     return QueryElement<CompTypes...>(entity, components);
