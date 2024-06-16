@@ -3,7 +3,7 @@
 #define CNDT_ECS_COMPONENT_REG_H
 
 #include "conduit/ecs/entity.h"
-#include "conduit/internal/ecs/typeRegister.h"
+#include "conduit/internal/ecs/ComponentTypeRegister.h"
 #include "conduit/internal/ecs/componentBuffer.h"
 
 #include <map>
@@ -13,7 +13,6 @@
 namespace cndt::internal {
 
 class ComponentRegister {
-    
 public:
     // Attach component to the entity,
     // construct the component with the provided arguments.
@@ -150,8 +149,8 @@ void ComponentRegister::addComponetType()
     {
         std::shared_lock<std::shared_mutex> lock(m_mutex);
         
-        if (m_component_buffers.find(type_id) != m_component_buffers.end())
-            type_exist = true;
+        type_exist =
+            m_component_buffers.find(type_id) != m_component_buffers.end();
     }
 
     // If the component buffer doesn't exist lock the mutex and 
