@@ -47,8 +47,7 @@ TEST(query_test, world_test) {
     }
     
     {
-        auto query_storage = world.createQuery<CompSecond, CompFirst>();
-        auto query = query_storage.createQuery();
+        auto query = world.createQuery<CompSecond, CompFirst>();
     
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -58,8 +57,7 @@ TEST(query_test, world_test) {
     }
     
     {
-        auto query_storage = world.createQuery<CompFirst, CompSecond>();
-        auto query = query_storage.createQuery();
+        auto query = world.createQuery<CompFirst, CompSecond>();
 
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -69,8 +67,7 @@ TEST(query_test, world_test) {
     }
     
     {
-        auto query_storage = world.createQuery<CompFirst>();
-        auto query = query_storage.createQuery();
+        auto query = world.createQuery<CompFirst>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -79,8 +76,7 @@ TEST(query_test, world_test) {
     }
     
     {
-        auto query_storage = world.createQuery<CompSecond>();
-        auto query = query_storage.createQuery();
+        auto query = world.createQuery<CompSecond>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {

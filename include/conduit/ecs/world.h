@@ -3,12 +3,9 @@
 
 #include "conduit/ecs/entity.h"
 
-#include "conduit/internal/ecs/componentBuffer.h"
 #include "conduit/internal/ecs/componentRegister.h"
 #include "conduit/internal/ecs/entityRegister.h"
-#include "conduit/internal/ecs/queryStorage.h"
-#include <memory>
-#include <tuple>
+#include "conduit/internal/ecs/queryRegister.h"
 
 namespace cndt {
 
@@ -45,7 +42,7 @@ public:
     // the query will store a list of entity witch are associated 
     // with all of the given components
     template<typename... ComponentsTypes>
-    internal::QueryStorage<ComponentsTypes...> createQuery();
+    Query<ComponentsTypes...> createQuery();
 
     // Execute the commands from the given commands buffer
     void executeCmdBuffer(ECSCmdBuffer& cmd_buffer);
@@ -53,21 +50,18 @@ public:
 private:
     internal::EntityRegister m_entity_register;
     internal::ComponentRegister m_component_register;
+    internal::QueryRegister m_query_register;
 };
 
 // Create a query for the given arguments list
 // the query will store a list of entity witch are associated 
 // with all of the given components
 template<typename... ComponentsTypes>
-internal::QueryStorage<ComponentsTypes...> World::createQuery()
+Query<ComponentsTypes...> World::createQuery()
 {
-    auto prts = std::make_tuple(
-        m_component_register.getComponentBuffer<ComponentsTypes>()...
+    return m_query_register.getQuery<ComponentsTypes...>(
+        m_component_register
     );
-
-    internal::QueryStorage<ComponentsTypes...> out_query(prts);
-
-    return out_query;
 }
 
 // Attach component to the entity,
