@@ -7,8 +7,10 @@
 
 #include "conduit/internal/ecs/componentBuffer.h"
 
+#include <algorithm>
 #include <array>
 #include <memory>
+#include <shared_mutex>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -70,20 +72,18 @@ private:
 
     // Return of a tuple of components iterator 
     template <usize... Is>
-    auto componentsBegin(
-        std::index_sequence<Is...>
-    );
+    auto componentsBegin(std::index_sequence<Is...>);
 
     // Return an array of entity iterator at the beginning of the vector
     template <usize... Is>
-    auto entityBegin(
-        std::index_sequence<Is...>
-    );
+    auto entityBegin(std::index_sequence<Is...>);
     // Return an array of entity iterator at the end of the vector
     template <usize... Is>
-    auto entityEnd(
-        std::index_sequence<Is...>
-    );
+    auto entityEnd(std::index_sequence<Is...>);
+
+    // Return an array of components buffers locks
+    template <usize... Is>
+    auto componentsLocks(std::index_sequence<Is...>);
 
 private:
     std::tuple<std::weak_ptr<Buffer<CompTypes>>...> m_component_buffers;
@@ -94,45 +94,6 @@ private:
     // Buffers last version
     u64 m_last_version;
 };
-
-// Return of a tuple of components iterator 
-template <typename... CompTypes>
-template <usize... Is>
-auto QueryStorage<CompTypes...>::componentsBegin(
-    std::index_sequence<Is...>
-) {
-    return std::make_tuple(
-        (
-            std::get<Is>(m_component_buffers).lock()->componentVector().begin()
-        )...
-    );
-}
-
-// Return an array of entity iterator at the beginning of the vector
-template <typename... CompTypes>
-template <usize... Is>
-auto QueryStorage<CompTypes...>::entityBegin(
-    std::index_sequence<Is...>
-) {
-    std::array<EntityIter, components_count> entity_iter = {
-        (std::get<Is>(m_component_buffers).lock()->entityVector().begin())...
-    }; 
-    
-    return entity_iter; 
-}
-
-// Return an array of entity iterator at the end of the vector
-template <typename... CompTypes>
-template <usize... Is>
-auto QueryStorage<CompTypes...>::entityEnd(
-    std::index_sequence<Is...>
-) {
-    std::array<EntityIter, components_count> entity_iter = {
-        (std::get<Is>(m_component_buffers).lock()->entityVector().end())...
-    }; 
-    
-    return entity_iter; 
-}
 
 // Update the query element list
 template <typename... CompTypes>
@@ -229,6 +190,45 @@ void QueryStorage<CompTypes...>::updateQuery()
     }
 }
 
+// Return of a tuple of components iterator 
+template <typename... CompTypes>
+template <usize... Is>
+auto QueryStorage<CompTypes...>::componentsBegin(
+    std::index_sequence<Is...>
+) {
+    return std::make_tuple(
+        (
+            std::get<Is>(m_component_buffers).lock()->componentVector().begin()
+        )...
+    );
+}
+
+// Return an array of entity iterator at the beginning of the vector
+template <typename... CompTypes>
+template <usize... Is>
+auto QueryStorage<CompTypes...>::entityBegin(
+    std::index_sequence<Is...>
+) {
+    std::array<EntityIter, components_count> entity_iter = {
+        (std::get<Is>(m_component_buffers).lock()->entityVector().begin())...
+    }; 
+    
+    return entity_iter; 
+}
+
+// Return an array of entity iterator at the end of the vector
+template <typename... CompTypes>
+template <usize... Is>
+auto QueryStorage<CompTypes...>::entityEnd(
+    std::index_sequence<Is...>
+) {
+    std::array<EntityIter, components_count> entity_iter = {
+        (std::get<Is>(m_component_buffers).lock()->entityVector().end())...
+    }; 
+    
+    return entity_iter; 
+}
+
 // Create a query element 
 template <typename... CompTypes>
 template <usize... Is>
@@ -271,7 +271,26 @@ Query<CompTypes...> QueryStorage<CompTypes...>::createQuery()
         m_last_version = new_version;
     }
     
-    return Query<CompTypes...>(m_elements);
+    std::array<std::shared_lock<std::shared_mutex>, components_count> locks = 
+        componentsLocks(std::index_sequence_for<CompTypes...>{});
+    
+    return Query<CompTypes...>(
+        m_elements,
+        locks
+    );
+}
+
+// Return an array of components buffers locks
+template <typename... CompTypes>
+template <usize... Is>
+auto QueryStorage<CompTypes...>::componentsLocks(std::index_sequence<Is...>)
+{
+    std::array<std::shared_lock<std::shared_mutex>, components_count> locks = 
+    {
+        (std::get<Is>(m_component_buffers).lock()->lock())...
+    }; 
+    
+    return locks; 
 }
 
 } // namespace cndt::internal
