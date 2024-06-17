@@ -59,21 +59,21 @@ TEST(query_read_test, world_test) {
 
     // Single query test
     {
-        auto query_first = world.createQuery<CompFirst>();
+        auto query_first = world.getQuery<CompFirst>();
 
         ASSERT_EQ(15, query_first.size());
         for (auto element : query_first) {
             ASSERT_EQ(element.entity().id(), element.get<CompFirst>().x - 10);
         }
         
-        auto query_second = world.createQuery<CompSecond>();
+        auto query_second = world.getQuery<CompSecond>();
 
         ASSERT_EQ(15, query_second.size());
         for (auto element : query_second) {
             ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
         }
 
-        auto query_third = world.createQuery<CompThird>();
+        auto query_third = world.getQuery<CompThird>();
 
         ASSERT_EQ(10, query_third.size());
         for (auto element : query_third) {
@@ -83,7 +83,7 @@ TEST(query_read_test, world_test) {
     
     // Double query test
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
     
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -92,7 +92,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompFirst, CompSecond>();
+        auto query = world.getQuery<CompFirst, CompSecond>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -101,7 +101,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompFirst, CompThird>();
+        auto query = world.getQuery<CompFirst, CompThird>();
 
         ASSERT_EQ(8, query.size());
         for (auto element : query) {
@@ -110,7 +110,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompThird, CompSecond>();
+        auto query = world.getQuery<CompThird, CompSecond>();
 
         ASSERT_EQ(7, query.size());
         for (auto element : query) {
@@ -121,7 +121,7 @@ TEST(query_read_test, world_test) {
 
     // Triple query test
     {
-        auto query = world.createQuery<CompThird, CompSecond, CompFirst>();
+        auto query = world.getQuery<CompThird, CompSecond, CompFirst>();
     
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -131,7 +131,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompFirst, CompSecond, CompThird>();
+        auto query = world.getQuery<CompFirst, CompSecond, CompThird>();
     
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -141,7 +141,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompFirst, CompThird, CompSecond>();
+        auto query = world.getQuery<CompFirst, CompThird, CompSecond>();
     
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -151,7 +151,7 @@ TEST(query_read_test, world_test) {
         }
     }
     {
-        auto query = world.createQuery<CompSecond, CompThird, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompThird, CompFirst>();
     
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -163,7 +163,7 @@ TEST(query_read_test, world_test) {
 
     // Array operator test
     {
-        auto query = world.createQuery<CompSecond, CompThird, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompThird, CompFirst>();
     
         ASSERT_EQ(5, query.size());
         for (int i = 0; i < 5; i++) {
@@ -173,6 +173,39 @@ TEST(query_read_test, world_test) {
             ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
             ASSERT_EQ(element.entity().id(), element.get<CompThird>().a - 30);
         }
+    }
+}
+
+TEST(query_find_test, world_test) {
+    World world;
+
+    std::vector<Entity> entities;
+    
+    // Create entities
+    for (int i = 0; i < 10; i++) {
+        Entity e = world.newEntity();
+        entities.push_back(e);
+    }
+    
+    // Create components
+    for (int i = 0; i < 5; i++) {
+        Entity e = entities.at(i*2);
+        world.attachComponent<CompFirst>(e, 1);
+    }
+
+    auto query = world.getQuery<CompFirst>();
+
+    for (int i = 0; i < 5; i++) {
+        Entity e = entities.at(i*2);
+        ASSERT_NE(query.end(), query.find(e));
+
+        auto element = *query.find(e);
+        ASSERT_EQ(i*2, element.entity().id());
+    }
+    
+    for (int i = 0; i < 5; i++) {
+        Entity e = entities.at(i*2 + 1);
+        ASSERT_EQ(query.end(), query.find(e));
     }
 }
 
@@ -199,7 +232,7 @@ TEST(query_write_test, world_test) {
 
     // Read and write to the components
     {
-        auto query = world.createQuery<CompFirst, CompSecond>();
+        auto query = world.getQuery<CompFirst, CompSecond>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -216,7 +249,7 @@ TEST(query_write_test, world_test) {
     
     // Create a different query and test again
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -249,7 +282,7 @@ TEST(query_update_test, world_test) {
     }
 
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
 
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -265,7 +298,7 @@ TEST(query_update_test, world_test) {
     }
     
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
 
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -281,7 +314,7 @@ TEST(query_update_test, world_test) {
     }
     
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
 
         ASSERT_EQ(15, query.size());
         for (auto element : query) {
@@ -301,7 +334,7 @@ TEST(query_update_test, world_test) {
     }
     
     {
-        auto query = world.createQuery<CompSecond, CompFirst>();
+        auto query = world.getQuery<CompSecond, CompFirst>();
 
         ASSERT_EQ(5, query.size());
         for (auto element : query) {
@@ -336,7 +369,7 @@ TEST(cmd_buffer_test, world_test) {
 
     // Detach components
     {
-        auto query = world.createQuery<CompFirst>();
+        auto query = world.getQuery<CompFirst>();
         
         ASSERT_EQ(10, query.size());
         for (auto element : query) {
@@ -349,7 +382,7 @@ TEST(cmd_buffer_test, world_test) {
     world.executeCmdBuffer(cmd_buffer);
     
     {
-        auto query = world.createQuery<CompFirst>();
+        auto query = world.getQuery<CompFirst>();
         ASSERT_EQ(5, query.size());
     }
 }
