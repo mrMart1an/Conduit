@@ -42,7 +42,7 @@ public:
     // the query will store a list of entity witch are associated 
     // with all of the given components
     template<typename... ComponentsTypes>
-    Query<ComponentsTypes...> createQuery();
+    Query<ComponentsTypes...> getQuery();
 
     // Execute the commands from the given commands buffer
     void executeCmdBuffer(ECSCmdBuffer& cmd_buffer);
@@ -57,7 +57,7 @@ private:
 // the query will store a list of entity witch are associated 
 // with all of the given components
 template<typename... ComponentsTypes>
-Query<ComponentsTypes...> World::createQuery()
+Query<ComponentsTypes...> World::getQuery()
 {
     return m_query_register.getQuery<ComponentsTypes...>(
         m_component_register

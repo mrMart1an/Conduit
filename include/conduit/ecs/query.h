@@ -5,6 +5,7 @@
 
 #include "conduit/internal/ecs/componentBuffer.h"
 
+#include <algorithm>
 #include <array>
 #include <vector>
 
@@ -45,6 +46,10 @@ public:
     // Return the number of element stored in the query
     usize size() const { return m_elements.size(); }
 
+    // Return an iterator to the position of the given entity if 
+    // it's stored in the query or to the end if it isn't
+    const_iterator find(Entity entity);
+
     // Array operator overload
     QueryElement<CompTypes...> operator [] (usize i) const 
     {
@@ -58,6 +63,45 @@ private:
     // Components buffers shared lock
     std::array<BufferLock, components_count> m_locks;
 };
+
+// Return an iterator to the position of the given entity if 
+// it's stored in the query or to the end if it isn't
+template <typename... CompTypes>
+Query<CompTypes...>::const_iterator Query<CompTypes...>::find(Entity entity)
+{
+    // Custom compare functor
+    struct compare { 
+        bool operator()(
+            const QueryElement<CompTypes...>& value,
+            const Entity& key
+        ) { 
+            return (value.entity() < key); 
+        } 
+        
+        bool operator()(
+            const Entity& key,
+            const QueryElement<CompTypes...>& value
+        ) { 
+            return (key < value.entity()); 
+        } 
+    }; 
+    
+    // Find the vector lower bound with binary search
+    const_iterator lower_bound = std::lower_bound(
+        m_elements.cbegin(),
+        m_elements.cend(),
+        entity,
+        compare()
+    );
+
+    // Return a pointer to the end of the vector if the element doesn't exist
+    if (lower_bound == m_elements.cend()) 
+        return m_elements.cend();
+    if ((*lower_bound).entity() != entity)
+        return m_elements.cend();
+
+    return lower_bound;
+}
 
 // Get an iterator stating at the beginning of the components list
 template <typename... CompTypes>
