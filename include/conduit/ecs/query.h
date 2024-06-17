@@ -5,11 +5,12 @@
 
 #include "conduit/internal/ecs/componentBuffer.h"
 
+#include <array>
 #include <vector>
 
 namespace cndt {
 
-// TODO: make query thread safe
+// TODO: make query actually thread safe
 
 // ECS query
 template <typename... CompTypes>
@@ -70,8 +71,9 @@ public:
     // Query constructors 
     Query<CompTypes>() = default;
     Query<CompTypes>(
-        std::vector<QueryElement<CompTypes...>>& elements
-    ) : m_elements(elements) { }
+        std::vector<QueryElement<CompTypes...>>& elements,
+        std::array<BufferLock, components_count>& locks
+    ) : m_elements(elements), m_locks(std::move(locks)) { }
 
     // Get an iterator stating at the beginning of the components list
     iterator begin();
@@ -85,6 +87,9 @@ public:
 private:
     // Store a list of query element
     std::vector<QueryElement<CompTypes...>> &m_elements;
+
+    // Components buffers shared lock
+    std::array<BufferLock, components_count> m_locks;
 };
 
 // Get an iterator stating at the beginning of the components list
