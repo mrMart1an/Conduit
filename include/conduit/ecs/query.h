@@ -21,51 +21,12 @@ private:
     
     using BufferLock = std::shared_lock<std::shared_mutex>;
     
-public:
     static constexpr usize components_count = sizeof...(CompTypes);
 
-    // Query iterator
-    struct iterator {
-        using iterator_category = std::forward_iterator_tag;
-        using difference_type   = std::ptrdiff_t;
-        using value_type        = QueryElement<CompTypes...>;
-        using pointer           = value_type*;
-        using reference         = value_type&;
-        
-        // Iterator default constructor
-        iterator(
-            std::vector<QueryElement<CompTypes...>>::iterator elements_iter
-        ) : m_elements_iter(elements_iter) { } 
-        
-        // Prefix increment
-        iterator& operator++() 
-        { 
-            m_elements_iter += 1;
-            return *this; 
-        }  
-
-        // Postfix increment
-        iterator operator++(int) 
-            { iterator tmp = *this; ++(*this); return tmp; }
-        
-        reference operator*() const 
-        { 
-            return *m_elements_iter; 
-        }
-        pointer operator->() 
-        { 
-            return &(*m_elements_iter); 
-        }
-        
-        friend bool operator== (const iterator& a, const iterator& b) 
-            { return a.m_elements_iter == b.m_elements_iter; };
-        friend bool operator!= (const iterator& a, const iterator& b) 
-            { return a.m_elements_iter != b.m_elements_iter; };   
-        
-    private:
-        // Store an iterator over the elements list
-        std::vector<QueryElement<CompTypes...>>::iterator m_elements_iter;
-    }; 
+public:
+    // Use the underlying vector random access iterator as the query iterator
+    using const_iterator = 
+        std::vector<QueryElement<CompTypes...>>::const_iterator;
     
 public:
     // Query constructors 
@@ -76,13 +37,19 @@ public:
     ) : m_elements(elements), m_locks(std::move(locks)) { }
 
     // Get an iterator stating at the beginning of the components list
-    iterator begin();
+    const_iterator begin();
      
     // Get an iterator to the end of the components list
-    iterator end();
+    const_iterator end();
 
     // Return the number of element stored in the query
     usize size() const { return m_elements.size(); }
+
+    // Array operator overload
+    QueryElement<CompTypes...> operator [] (usize i) const 
+    {
+        return m_elements[i]; 
+    }
 
 private:
     // Store a list of query element
@@ -94,16 +61,16 @@ private:
 
 // Get an iterator stating at the beginning of the components list
 template <typename... CompTypes>
-Query<CompTypes...>::iterator Query<CompTypes...>::begin()
+Query<CompTypes...>::const_iterator Query<CompTypes...>::begin()
 {
-    return iterator(m_elements.begin());
+    return m_elements.cbegin();
 }
  
 // Get an iterator to the end of the components list
 template <typename... CompTypes>
-Query<CompTypes...>::iterator Query<CompTypes...>::end()
+Query<CompTypes...>::const_iterator Query<CompTypes...>::end()
 {
-    return iterator(m_elements.end());
+    return m_elements.cend();
 }
 
 } // namespace cndt

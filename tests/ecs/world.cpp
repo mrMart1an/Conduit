@@ -160,6 +160,20 @@ TEST(query_read_test, world_test) {
             ASSERT_EQ(element.entity().id(), element.get<CompThird>().a - 30);
         }
     }
+
+    // Array operator test
+    {
+        auto query = world.createQuery<CompSecond, CompThird, CompFirst>();
+    
+        ASSERT_EQ(5, query.size());
+        for (int i = 0; i < 5; i++) {
+            auto element = query[i];
+
+            ASSERT_EQ(element.entity().id(), element.get<CompFirst>().x - 10);
+            ASSERT_EQ(element.entity().id(), element.get<CompSecond>().r - 20);
+            ASSERT_EQ(element.entity().id(), element.get<CompThird>().a - 30);
+        }
+    }
 }
 
 TEST(query_write_test, world_test) {
