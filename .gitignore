@@ -7,8 +7,3 @@ runTest.sh
 buildDebug.sh
 buildRelease.sh
 
-subprojects/*
-!subprojects/glfw.wrap
-!subprojects/glm.wrap
-!subprojects/gtest.wrap
-
