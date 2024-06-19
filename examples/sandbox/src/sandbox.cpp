@@ -1,8 +1,11 @@
+#include "conduit/assets/assetHandle.h"
 #include "conduit/components/transform.h"
 
 #include "conduit/defines.h"
 
 #include "conduit/application.h"
+#include "conduit/logging.h"
+#include <memory>
 
 using namespace cndt;
 using namespace cndt::log::app;
