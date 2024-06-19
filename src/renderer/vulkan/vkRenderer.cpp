@@ -104,8 +104,8 @@ void VkRenderer::initialize(
     // Create a graphics pipeline
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
-        "/home/mart1an/Documents/programming/dev/cpp/conduit/build/resources/shaders/builtin.vert.spv",
-        "/home/mart1an/Documents/programming/dev/cpp/conduit/build/resources/shaders/builtin.frag.spv",
+        "resources/shaders/builtin.vert.spv",
+        "resources/shaders/builtin.frag.spv",
         { m_uniform_layout.layout() }
     );
     m_delete_queue.addDeleter(std::bind(

@@ -31,8 +31,8 @@ public:
     
 public:
     // Query constructors 
-    Query<CompTypes>() = default;
-    Query<CompTypes>(
+    Query() = default;
+    Query(
         std::vector<QueryElement<CompTypes...>>& elements,
         std::array<BufferLock, components_count>& locks
     ) : m_elements(elements), m_locks(std::move(locks)) { }

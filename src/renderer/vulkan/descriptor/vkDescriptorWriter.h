@@ -16,7 +16,9 @@ class DescriptorWriter {
     friend class Device;
     
 public:
-    DescriptorWriter() = default;
+    DescriptorWriter() : 
+        m_device_p(nullptr)
+    { };
     
     // Write an image to the given binding
     void writeImage(
