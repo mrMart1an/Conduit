@@ -255,11 +255,11 @@ void Context::logAvailableExtension()
     // Print the supported extension for debug purpose 
     log::core::trace("Supported Vulkan extensions:");
 
-    for (u32 i = 0; i < ext_count; i++) {
+    for (auto ext : extensions) {
         log::core::trace(
             "Extensions: (versions: {}) {}",
-            extensions[i].specVersion,
-            extensions[i].extensionName
+            ext.specVersion,
+            ext.extensionName
         );
     }
 }

@@ -5,6 +5,7 @@
 #include <string>
 #include <format>
 #include <string_view>
+#include <utility>
 
 namespace cndt::log {
 
@@ -50,37 +51,59 @@ public:
      
     // Take a string and format it with the provided arguments
     template <typename... Args>
-    void log(LogLevel lvl, std::string_view fmt_str, Args... args) const;
+    void log(
+        LogLevel lvl, 
+        std::format_string<Args...> fmt, 
+        Args&&... args
+    ) const;
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level trace
     template <typename... Args>
-    void trace(Args... args) const { log(LogLevel::Trace, args...); };
+    void trace(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Trace, fmt, std::forward<Args>(args)...); 
+    };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level debug
     template <typename... Args>
-    void debug(Args... args) const { log(LogLevel::Debug, args...); };
+    void debug(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Debug, fmt, std::forward<Args>(args)...); 
+    };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level info
     template <typename... Args>
-    void info(Args... args) const { log(LogLevel::Info, args...); };
+    void info(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Info, fmt, std::forward<Args>(args)...); 
+    };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level warning
     template <typename... Args>
-    void warn(Args... args) const { log(LogLevel::Warning, args...); };
+    void warn(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Warning, fmt, std::forward<Args>(args)...); 
+    };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level error
     template <typename... Args>
-    void error(Args... args) const { log(LogLevel::Error, args...); };
+    void error(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Error, fmt, std::forward<Args>(args)...);
+    };
     
     // Take a string and format it with the provided arguments
     // then log it to stdout with log level fatal
     template <typename... Args>
-    void fatal(Args... args) const { log(LogLevel::Fatal, args...); };
+    void fatal(std::format_string<Args...> fmt, Args&&... args) const 
+    { 
+        log(LogLevel::Fatal, fmt, std::forward<Args>(args)...); 
+    };
     
 private:
     // Return a string representation of the given logging level 
@@ -105,7 +128,11 @@ private:
 // Take a string and format it with the provided arguments, 
 // then log it to stdout
 template <typename... Args>
-void Logger::log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
+void Logger::log(
+    LogLevel lvl, 
+    std::format_string<Args...> fmt, 
+    Args&&... args
+) const {
     // Immediately return it the logging level is too low 
     if (lvl < m_log_level)
         return;
@@ -123,8 +150,7 @@ void Logger::log(LogLevel lvl, std::string_view fmt_str, Args... args) const {
     );
 
     // Format and print the message string
-    std::format_args fmt_args = std::make_format_args(args...);
-    std::cout << std::vformat(fmt_str, fmt_args) << std::endl;
+    std::cout << std::format(fmt, std::forward<Args>(args)...) << std::endl;
 }
 
 } // namespace internal

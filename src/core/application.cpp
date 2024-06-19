@@ -10,6 +10,7 @@
 
 #include "core/appRunner.h"
 
+#include <format>
 #include <memory>
 
 namespace cndt {
@@ -38,6 +39,10 @@ Application::~Application() {
 // Initialize the game engine 
 void Application::engineStartup()
 {
+    
+    char test[] = "what is going on";
+    std::cout << std::format("{}{}",12, test) << std::endl;
+
     Window::Config window_config(appName());
     
     // Create the glfw window handle

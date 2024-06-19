@@ -37,43 +37,49 @@ inline void setTimeFormatting(std::string time_fmt_str) {
 // Take a string and format it with the provided arguments
 // and log is as an trace message on the application logger
 template <typename... Args>
-inline void trace(Args... args) {
-    getDefaultAppLogger()->trace(args...);
+inline void trace(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->trace(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an debug message on the application logger
 template <typename... Args>
-inline void debug(Args... args) {
-    getDefaultAppLogger()->debug(args...);
+inline void debug(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->debug(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an info message on the application logger
 template <typename... Args>
-inline void info(Args... args) {
-    getDefaultAppLogger()->info(args...);
+inline void info(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->info(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an warning message on the application logger
 template <typename... Args>
-inline void warn(Args... args) {
-    getDefaultAppLogger()->warn(args...);
+inline void warn(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->warn(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an error message on the application logger
 template <typename... Args>
-inline void error(Args... args) {
-    getDefaultAppLogger()->error(args...);
+inline void error(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->error(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an fatal message on the application logger
 template <typename... Args>
-inline void fatal(Args... args) {
-    getDefaultAppLogger()->fatal(args...);
+inline void fatal(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultAppLogger()->fatal(fmt, std::forward<Args>(args)...);
 }
 
 } // namespace app
@@ -107,43 +113,49 @@ inline void setTimeFormatting(std::string time_fmt_str) {
 // Take a string and format it with the provided arguments
 // and log is as an trace message on the core logger
 template <typename... Args>
-void trace(Args... args) {
-    getDefaultCoreLogger()->trace(args...);
+void trace(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->trace(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an debug message on the core logger
 template <typename... Args>
-void debug(Args... args) {
-    getDefaultCoreLogger()->debug(args...);
+void debug(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->debug(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an info message on the core logger
 template <typename... Args>
-void info(Args... args) {
-    getDefaultCoreLogger()->info(args...);
+void info(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->info(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an warning message on the core logger
 template <typename... Args>
-void warn(Args... args) {
-    getDefaultCoreLogger()->warn(args...);
+void warn(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->warn(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an error message on the core logger
 template <typename... Args>
-void error(Args... args) {
-    getDefaultCoreLogger()->error(args...);
+void error(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->error(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
 // and log is as an fatal message on the core logger
 template <typename... Args>
-void fatal(Args... args) {
-    getDefaultCoreLogger()->fatal(args...);
+void fatal(std::format_string<Args...> fmt, Args&&... args) 
+{
+    getDefaultCoreLogger()->fatal(fmt, std::forward<Args>(args)...);
 }
 
 } // namespace core

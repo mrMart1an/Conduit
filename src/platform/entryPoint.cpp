@@ -18,7 +18,7 @@ int main(void) {
         app.run();
         
     } catch (std::exception &e) {
-        cndt::log::core::fatal("Exception: {}", e.what());
+        cndt::log::core::fatal("Exception: {}",  e.what());
     };
 
     return 0;
