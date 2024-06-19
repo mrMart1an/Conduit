@@ -127,6 +127,7 @@ configure_file(buildConfig.h.in buildConfig.h)
 
 add_subdirectory("./extern/glm")
 add_subdirectory("./extern/glfw")
+add_subdirectory("./extern/SPIRV-Cross")
 
 # Find graphics dependency
 # Vulkan is always necessary for shaders compilation
@@ -150,6 +151,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE glfw
     PRIVATE ${VULKAN_LIB}
     PRIVATE ${OPENGL_LIB}
+    PRIVATE spirv-cross-core
     PUBLIC glm
 )
 
