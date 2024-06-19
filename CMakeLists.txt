@@ -17,6 +17,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Build options
 # --------
 
+option(BUILD_EXAMPLES "Build the library examples" ON)
+option(BUILD_TESTS "Build the library tests" ON)
+
 option(VULKAN_BACKEND "Enable the Vulkan rendering backend" ON)
 option(OPENGL_BACKEND "Enable the OpenGL rendering backend" OFF)
 
@@ -166,4 +169,16 @@ add_dependencies(${PROJECT_NAME} build_shaders)
 # Compile the examples
 # --------
 
+if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_EXAMPLES)
 add_subdirectory("examples")
+endif()
+
+# --------
+# Compile the tests
+# --------
+
+if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_TESTS)
+    enable_testing()
+    add_subdirectory("tests")
+endif()
+
