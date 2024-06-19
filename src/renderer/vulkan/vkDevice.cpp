@@ -5,7 +5,6 @@
 #include "conduit/renderer/vertex.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/utils/vkAttributeDescriptor.h"
-#include "renderer/vulkan/utils/vkValidation.h"
 #include "renderer/vulkan/utils/vkExceptions.h"
 #include "renderer/vulkan/utils/vkUtils.h"
 
