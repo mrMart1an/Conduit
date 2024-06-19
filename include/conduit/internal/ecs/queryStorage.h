@@ -41,8 +41,8 @@ public:
 
 public:
     // Query constructors 
-    QueryStorage<CompTypes>() = default; 
-    QueryStorage<CompTypes>(
+    QueryStorage() = default; 
+    QueryStorage(
         std::tuple<std::weak_ptr<Buffer<CompTypes>>...> buffer_p
     ) : m_component_buffers(buffer_p), m_elements(), m_last_version() { }
 

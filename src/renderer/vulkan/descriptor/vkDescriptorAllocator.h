@@ -29,7 +29,11 @@ public:
     };
     
 public:
-    DescriptorAllocator() = default;
+    DescriptorAllocator() : 
+        m_in_use_pool(),
+        m_set_per_pool(0),
+        m_device_p(nullptr)
+    { };
     
     // Allocate a descriptor set
     VkDescriptorSet allocate(DescriptorLayout &layout);
