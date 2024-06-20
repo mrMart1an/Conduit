@@ -10,3 +10,6 @@
 [submodule "extern/SPIRV-Cross"]
 	path = extern/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "extern/json"]
+	path = extern/json
+	url = https://github.com/nlohmann/json.git
