@@ -1,0 +1,14 @@
+{
+    "shaders": {
+        "builtinVert": "resources/shaders/builtin.vert.spv",
+        "builtinFrag": "resources/shaders/builtin.frag.spv"
+    },
+    
+    "textures": {
+        "builtin": "resources/textures/builtin.png"
+    },
+    
+    "meshes": {
+        "builtin": "resources/meshes/builtin.obj"
+    }
+}
