@@ -17,6 +17,11 @@ set(CORE_SRC
     "${BASE_PATH}/core/deleteQueue.cpp"
 )
 
+# Assets manager source file
+set(ASSETS_SRC
+    "${BASE_PATH}/assets/assetLoader.cpp" 
+)
+
 # Engine entity component system source files
 set(ECS_SRC
     "${BASE_PATH}/ecs/commandBuffer.cpp"
@@ -80,6 +85,7 @@ set(ENGINE_SRC
     
     ${CORE_SRC}
     ${ECS_SRC}
+    ${ASSETS_SRC}
     ${EVENT_SRC}
     ${WINDOW_SRC}
     ${RENDERER_SRC}

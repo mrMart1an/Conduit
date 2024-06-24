@@ -154,8 +154,8 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE ${VULKAN_LIB}
     PRIVATE ${OPENGL_LIB}
     PRIVATE spirv-cross-core
-    PRIVATE nlohmann_json::nlohmann_json
     
+    PUBLIC nlohmann_json::nlohmann_json
     PUBLIC glm
 )
 
@@ -166,11 +166,11 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # --------
-# Compile the builtin shaders
+# Prepare the builtin resources 
 # --------
 
-add_subdirectory("resources/shaders")
-add_dependencies(${PROJECT_NAME} build_shaders)
+add_subdirectory("resources")
+add_dependencies(${PROJECT_NAME} builtin_res)
 
 # --------
 # Compile the examples
