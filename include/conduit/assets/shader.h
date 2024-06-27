@@ -10,8 +10,25 @@ namespace cndt {
 // Store a conduit shader asset
 class Shader {
 public:
+    // Shader type
+    enum class Type {
+        Undefined,
+        Vertex,
+        Fragment,
+        Geometry,
+        Tessellation,
+        Compute
+    };
+    
+public:
     Shader() = default;
-    Shader(std::vector<u32> spv_code) : m_spv_code(std::move(spv_code)) { }
+    Shader(
+        std::vector<u32> spv_code,
+        Type shader_type
+    ) : 
+        m_spv_code(std::move(spv_code)),
+        m_type(shader_type)
+    { }
 
     // Get the Spriv byte code
     // store the byte code size in the given usize variable
@@ -24,6 +41,8 @@ public:
 private:
     // Store the shader spriv code
     std::vector<u32> m_spv_code;
+
+    Type m_type;
 };
 
 } // namespace cndt

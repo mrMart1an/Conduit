@@ -7,7 +7,6 @@
 
 #include "conduit/internal/ecs/componentBuffer.h"
 
-#include <algorithm>
 #include <array>
 #include <memory>
 #include <shared_mutex>

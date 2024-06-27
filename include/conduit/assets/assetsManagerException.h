@@ -43,6 +43,14 @@ public:
     )) { }      
 };
 
+// Asset not found exception
+class AssetNotFound : public AssetException {
+public:
+    AssetNotFound(
+        std::string_view msg
+    ) : AssetException(msg) { }      
+};
+
 } // namespace cndt
 
 #endif
