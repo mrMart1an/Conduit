@@ -6,7 +6,7 @@
 namespace cndt::internal {
 
 // Conduit assert function declaration
-void assert(
+void cndt_assert(
     bool cond,
     std::string_view cond_str,
     std::string_view file,
