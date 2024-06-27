@@ -1,14 +1,30 @@
 {
     "shaders": {
-        "builtinVert": "resources/shaders/builtin.vert.spv",
-        "builtinFrag": "resources/shaders/builtin.frag.spv"
+        "builtinVert": {
+            "code_spv": "resources/shaders/builtin.vert.spv",
+            "code_glsl": "resources/shaders/builtin.vert",
+            
+            "type": "vertex"
+        },
+        "builtinFrag": {
+            "code_spv": "resources/shaders/builtin.frag.spv",
+            "code_glsl": "resources/shaders/builtin.frag",
+            
+            "type": "fragment"
+        } 
     },
     
     "textures": {
-        "builtin": "resources/textures/builtin.png"
+        "builtin": {
+            "src": "resources/textures/builtin.png",
+            "norm": null
+        }
     },
     
     "meshes": {
-        "builtin": "resources/meshes/builtin.obj"
+        "builtin": {
+            "type": "obj",
+            "src": "resources/meshes/builtin.obj"
+        }
     }
 }

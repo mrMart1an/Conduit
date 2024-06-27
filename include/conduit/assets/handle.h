@@ -1,7 +1,8 @@
 #ifndef CNDT_ASSET_HANDLE_H
 #define CNDT_ASSET_HANDLE_H
 
-#include "conduit/assets/assetStorage.h"
+#include "conduit/assets/assetInfo.h"
+#include "conduit/internal/assets/assetStorage.h"
 
 #include <algorithm>
 #include <memory>
@@ -40,6 +41,9 @@ public:
             
         return false;
     }
+
+    // Return a const reference asset info struct
+    const AssetInfo<AssetType>& info() const { return m_ptr->info(); }
      
     // Overload the dereferencing operator
     const AssetType& operator * () const 

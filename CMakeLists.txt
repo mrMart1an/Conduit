@@ -147,6 +147,7 @@ add_subdirectory("src")
 add_library(${PROJECT_NAME} STATIC ${ENGINE_SRC})
 
 target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/stdlibPch.h")
+target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/libPch.h")
 target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/cndtPch.h")
     
 target_link_libraries(${PROJECT_NAME}

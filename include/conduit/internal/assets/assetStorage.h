@@ -9,19 +9,22 @@
 
 namespace cndt {
 
+class AssetsManager;
+
 // Store the asset and the associated information
 template<typename AssetType>
 class AssetStorage {
+    friend class AssetsManager;
     
 public:
     AssetStorage(
-        std::string_view asset_name,
+        AssetInfo<AssetType> asset_info,
         std::unique_ptr<AssetType> asset
     ) : 
         m_asset(std::move(asset)),
-        m_info(asset_name)
+        m_info(asset_info)
     { };
-    AssetStorage() : 
+    AssetStorage() :
         m_asset(nullptr),
         m_info()
     { };
@@ -34,19 +37,32 @@ public:
                 m_info.assetName()
             );
         }
-            
+        
         return m_asset.get(); 
     }
 
+    // Get a const reference to the asset info
+    const AssetInfo<AssetType>& info() const { return m_info; }
+
+private:
     // Get a reference to the asset info
-    AssetInfo& info() { return m_info; }
+    AssetInfo<AssetType>& info() { return m_info; }
+    
+    // Update the stored asset
+    void updateAsset(
+        AssetInfo<AssetType> asset_info,
+        std::unique_ptr<AssetType> asset
+    ) {
+        m_asset = std::move(asset);
+        m_info = asset_info;
+    }   
     
 private:
     // Store the asset in a unique pointer
     std::unique_ptr<AssetType> m_asset;
     
     // Store the asset information
-    AssetInfo m_info;
+    AssetInfo<AssetType> m_info;
 };
 
 } // namespace cndt
