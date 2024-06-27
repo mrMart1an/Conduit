@@ -5,23 +5,23 @@
 
 #include <string_view>
 
-// Conduit assert macro
-#ifndef NDEBUG
-    #define CNDT_ASSERT(cond)   \
-        cndt::internal::assert(cond, #cond, __FILE__, __LINE__);
-#else
-    #define CNDT_ASSERT(cond, msg)
-#endif
-
 namespace cndt::internal {
 
 // Conduit assert function declaration
-void assert(
+void cndt_assert(
     bool cond,
     std::string_view cond_str,
     std::string_view file,
     i32 line
 );
+
+// Conduit assert macro
+#ifndef NDEBUG
+    #define CNDT_ASSERT(cond)   \
+        cndt::internal::cndt_assert(cond, #cond, __FILE__, __LINE__);
+#else
+    #define CNDT_ASSERT(cond, msg)
+#endif
 
 } // namespace cndt::internal
 
