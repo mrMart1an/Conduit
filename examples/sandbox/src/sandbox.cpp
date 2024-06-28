@@ -5,8 +5,8 @@
 #include "conduit/defines.h"
 
 #include "conduit/application.h"
-#include "conduit/internal/assets/assetLocator.h"
-#include "conduit/internal/assets/assetInfoParsers.h"
+#include "conduit/internal/assets/assetParser.h"
+#include "conduit/internal/assets/assetParserFuns.h"
 #include "conduit/logging.h"
 
 using namespace cndt;
@@ -18,7 +18,7 @@ public:
     std::string appName() const override { return "Sanbox app"; }
 
     void startup() override {
-        internal::AssetLocator<Shader, Texture, Mesh> loc(
+        internal::AssetParser<Shader, Texture, Mesh> loc(
             {
                 {"shaders" ,internal::parseShader},
                 {"textures", internal::parseTexture},
@@ -26,7 +26,7 @@ public:
             }
         );
 
-        AssetInfo<Shader> info = loc.getInfo<Shader>("builtinVert");
+        AssetInfo<Shader> info = loc.getInfo<Shader>("builtinFrag");
         log::core::info(
             "{} {}",
             info.pathSpv().string(),

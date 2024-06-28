@@ -1,5 +1,5 @@
-#ifndef CNDT_ASSET_LOCATOR_H
-#define CNDT_ASSET_LOCATOR_H
+#ifndef CNDT_ASSET_PARSER_H
+#define CNDT_ASSET_PARSER_H
 
 #include "conduit/assets/assetsManagerException.h"
 #include "conduit/assets/assetInfo.h"
@@ -20,7 +20,7 @@ namespace cndt::internal {
 using json = nlohmann::json;
 
 template<typename... AssetTypes>
-class AssetLocator {
+class AssetParser {
 private:
     static constexpr const char* builtin_table_path =
         "resources/builtin_table.json";
@@ -67,10 +67,10 @@ public:
 
     
     // Create the asset allocator using only the builtin asset table
-    AssetLocator(ParserFuns parser_funs);
+    AssetParser(ParserFuns parser_funs);
     // Create the asset allocator using 
     // the builtin asset table and a user defined asset table
-    AssetLocator(
+    AssetParser(
         std::filesystem::path asset_table_path,
         
         ParserFuns parser_funs
@@ -113,7 +113,7 @@ private:
 // Load the table from a json file
 template<typename... AssetTypes>
 template<typename AssetType>
-AssetLocator<AssetTypes...>::Table<AssetType>::Table(
+AssetParser<AssetTypes...>::Table<AssetType>::Table(
     json type_table,
     std::function<AssetInfo<AssetType>(std::string_view, json)> parser_fun
 ) {
@@ -130,7 +130,7 @@ AssetLocator<AssetTypes...>::Table<AssetType>::Table(
 template<typename... AssetTypes>
 template<typename AssetType>
 std::optional<AssetInfo<AssetType>>
-AssetLocator<AssetTypes...>::Table<AssetType>::getInfo(
+AssetParser<AssetTypes...>::Table<AssetType>::getInfo(
     std::string_view asset_name
 ) {
     if(m_table_map.find(asset_name) != m_table_map.end()) {
@@ -148,7 +148,7 @@ AssetLocator<AssetTypes...>::Table<AssetType>::getInfo(
 
 // Create the asset allocator using only the builtin asset table
 template<typename... AssetTypes>
-AssetLocator<AssetTypes...>::AssetLocator(
+AssetParser<AssetTypes...>::AssetParser(
     ParserFuns parser_funs
 ) {
     m_type_names = {
@@ -167,7 +167,7 @@ AssetLocator<AssetTypes...>::AssetLocator(
 // Create the asset allocator using 
 // the builtin asset table and a user defined asset table
 template<typename... AssetTypes>
-AssetLocator<AssetTypes...>::AssetLocator(
+AssetParser<AssetTypes...>::AssetParser(
     std::filesystem::path asset_table_path,
     
     ParserFuns parser_funs
@@ -200,7 +200,7 @@ struct IndexOf;
 // Throw an asset not found exception if the asset doesn't exist 
 template<typename... AssetTypes>
 template<typename AssetType>
-AssetInfo<AssetType> AssetLocator<AssetTypes...>::getInfo(
+AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
     std::string_view asset_name
 ) {
     // Look for the asset in the user asset table
@@ -233,7 +233,7 @@ AssetInfo<AssetType> AssetLocator<AssetTypes...>::getInfo(
 // Create a tables tuple from the given file path
 template<typename... AssetTypes>
 template <usize... Is>
-AssetLocator<AssetTypes...>::Tables AssetLocator<AssetTypes...>::createTable(
+AssetParser<AssetTypes...>::Tables AssetParser<AssetTypes...>::createTable(
     std::filesystem::path table_path,
     
     ParserFuns parser_funs,
