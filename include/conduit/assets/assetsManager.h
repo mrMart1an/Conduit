@@ -4,7 +4,7 @@
 #include "conduit/assets/handle.h"
 #include "conduit/assets/shader.h"
 
-#include "conduit/internal/assets/assetsCache.h"
+#include "conduit/internal/assets/assetParser.h"
 
 #include <string_view>
 
@@ -24,7 +24,7 @@ public:
     Handle<AssetType> get(std::string_view asset_name);
 
 private:
-    internal::AssetsCache<Shader> m_shader_cache;
+    internal::AssetParser<Shader, Texture, Mesh> m_parser;
 };
 
 } // namespace cndt
