@@ -5,9 +5,9 @@
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/vkDevice.h"
 
-#include <format>
-
 #include <vulkan/vulkan_core.h>
+
+#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -56,7 +56,7 @@ DescriptorLayout DescriptorLayoutBuilder::build(
     );
 
     if (res != VK_SUCCESS) {
-        throw DescriptorSetLayoutBuildError(std::format(
+        throw DescriptorSetLayoutBuildError(fmt::format(
             "Descriptor set layout creation error: {}",
             vk_error_str(res)
         ));

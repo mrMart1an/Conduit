@@ -3,11 +3,12 @@
 
 #include "renderer/vulkan/utils/vkExceptions.h"
 
-#include <format>
 #include <source_location>
 
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vk_enum_string_helper.h>
+
+#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -16,7 +17,7 @@ static std::string vk_error_str(
     VkResult result,
     std::source_location src_loc = std::source_location::current()
 ) {
-    return std::format(
+    return fmt::format(
         "({}) in {} at line: {}",
         string_VkResult(result),
         src_loc.file_name(),
@@ -31,7 +32,7 @@ constexpr void vk_check(
 ) {
     if (result != VK_SUCCESS) {
         throw UnexpectedError(
-            std::format(
+            fmt::format(
                 "Unexpected vulkan error {}",
                 vk_error_str(result, src_loc)
             )

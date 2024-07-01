@@ -11,9 +11,10 @@
 #include <optional>
 #include <tuple>
 #include <unordered_map>
+#include <utility>
 
 #include <nlohmann/json.hpp>
-#include <utility>
+#include <fmt/format.h>
 
 namespace cndt::internal {
 
@@ -223,7 +224,7 @@ AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
     } 
 
     // If the asset was not found in any table throw an exception
-    throw AssetNotFound(std::format(
+    throw AssetNotFound(fmt::format(
         "{} asset \"{}\" not found",
         m_type_names[IndexOf<AssetType, AssetTypes...>::value],
         asset_name
@@ -241,7 +242,7 @@ AssetParser<AssetTypes...>::Tables AssetParser<AssetTypes...>::createTable(
     std::index_sequence<Is...>
 ) {
     if(!std::filesystem::exists(table_path)) {
-        throw AssetTableNotFound(std::format(
+        throw AssetTableNotFound(fmt::format(
             "Asset table at: {} not found",
             table_path.string()
         ));
@@ -260,7 +261,7 @@ AssetParser<AssetTypes...>::Tables AssetParser<AssetTypes...>::createTable(
         );
         
     } catch (std::exception &e) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Asset table ({}) parse error: {}",
             table_path.string(),
             e.what()

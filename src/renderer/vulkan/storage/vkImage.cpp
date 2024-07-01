@@ -3,6 +3,8 @@
 
 #include "renderer/vulkan/storage/vkImage.h"
 
+#include <fmt/format.h>
+
 namespace cndt::vulkan {
 
 // Bind the  given Image to the device
@@ -16,7 +18,7 @@ void Image::bind(VkDeviceSize memory_offset)
     );
 
     if (res != VK_SUCCESS) {
-        throw ImageBindError(std::format(
+        throw ImageBindError(fmt::format(
             "Vulkan image bind error: {}",
             vk_error_str(res)
         ));

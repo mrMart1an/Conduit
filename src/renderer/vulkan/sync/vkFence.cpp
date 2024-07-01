@@ -7,6 +7,8 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include <fmt/format.h>
+
 namespace cndt::vulkan {
 
 // Wait to the fence to be signaled
@@ -20,7 +22,7 @@ void Fence::wait(u64 timeout)
     );
 
     if (res != VK_SUCCESS) {
-        throw FenceWaitError(std::format(
+        throw FenceWaitError(fmt::format(
             "Vulkan fence wait error {}",
             vk_error_str(res)
         ));
@@ -36,7 +38,7 @@ void Fence::reset()
     );
     
     if (res != VK_SUCCESS) {
-        throw FenceResetError(std::format(
+        throw FenceResetError(fmt::format(
             "Vulkan fence reset error {}",
             vk_error_str(res)
         ));

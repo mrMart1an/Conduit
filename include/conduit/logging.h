@@ -5,6 +5,8 @@
 
 #include "conduit/internal/logger.h"
 
+#include <fmt/base.h>
+
 namespace cndt::log {
 
 // Application level logging functions
@@ -37,7 +39,7 @@ inline void setTimeFormatting(std::string time_fmt_str) {
 // Take a string and format it with the provided arguments
 // and log is as an trace message on the application logger
 template <typename... Args>
-inline void trace(std::format_string<Args...> fmt, Args&&... args) 
+inline void trace(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->trace(fmt, std::forward<Args>(args)...);
 }
@@ -45,7 +47,7 @@ inline void trace(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an debug message on the application logger
 template <typename... Args>
-inline void debug(std::format_string<Args...> fmt, Args&&... args) 
+inline void debug(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->debug(fmt, std::forward<Args>(args)...);
 }
@@ -53,7 +55,7 @@ inline void debug(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an info message on the application logger
 template <typename... Args>
-inline void info(std::format_string<Args...> fmt, Args&&... args) 
+inline void info(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->info(fmt, std::forward<Args>(args)...);
 }
@@ -61,7 +63,7 @@ inline void info(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an warning message on the application logger
 template <typename... Args>
-inline void warn(std::format_string<Args...> fmt, Args&&... args) 
+inline void warn(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->warn(fmt, std::forward<Args>(args)...);
 }
@@ -69,7 +71,7 @@ inline void warn(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an error message on the application logger
 template <typename... Args>
-inline void error(std::format_string<Args...> fmt, Args&&... args) 
+inline void error(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->error(fmt, std::forward<Args>(args)...);
 }
@@ -77,7 +79,7 @@ inline void error(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an fatal message on the application logger
 template <typename... Args>
-inline void fatal(std::format_string<Args...> fmt, Args&&... args) 
+inline void fatal(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultAppLogger()->fatal(fmt, std::forward<Args>(args)...);
 }
@@ -113,7 +115,7 @@ inline void setTimeFormatting(std::string time_fmt_str) {
 // Take a string and format it with the provided arguments
 // and log is as an trace message on the core logger
 template <typename... Args>
-void trace(std::format_string<Args...> fmt, Args&&... args) 
+void trace(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->trace(fmt, std::forward<Args>(args)...);
 }
@@ -121,7 +123,7 @@ void trace(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an debug message on the core logger
 template <typename... Args>
-void debug(std::format_string<Args...> fmt, Args&&... args) 
+void debug(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->debug(fmt, std::forward<Args>(args)...);
 }
@@ -129,7 +131,7 @@ void debug(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an info message on the core logger
 template <typename... Args>
-void info(std::format_string<Args...> fmt, Args&&... args) 
+void info(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->info(fmt, std::forward<Args>(args)...);
 }
@@ -137,7 +139,7 @@ void info(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an warning message on the core logger
 template <typename... Args>
-void warn(std::format_string<Args...> fmt, Args&&... args) 
+void warn(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->warn(fmt, std::forward<Args>(args)...);
 }
@@ -145,7 +147,7 @@ void warn(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an error message on the core logger
 template <typename... Args>
-void error(std::format_string<Args...> fmt, Args&&... args) 
+void error(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->error(fmt, std::forward<Args>(args)...);
 }
@@ -153,7 +155,7 @@ void error(std::format_string<Args...> fmt, Args&&... args)
 // Take a string and format it with the provided arguments
 // and log is as an fatal message on the core logger
 template <typename... Args>
-void fatal(std::format_string<Args...> fmt, Args&&... args) 
+void fatal(fmt::format_string<Args...> fmt, Args&&... args) 
 {
     getDefaultCoreLogger()->fatal(fmt, std::forward<Args>(args)...);
 }

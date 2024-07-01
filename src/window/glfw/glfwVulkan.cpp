@@ -9,11 +9,12 @@
 
 #include "glfwWindow.h"
 
+#include <vector>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <vector>
-#include <format>
+#include <fmt/format.h>
 
 namespace cndt::glfw {
 
@@ -32,7 +33,7 @@ VkSurfaceKHR GlfwWindow::getVkSurface(
     );
 
     if (res != VK_SUCCESS) {
-        throw vulkan::SurfaceInitError(std::format(
+        throw vulkan::SurfaceInitError(fmt::format(
             "Glfw vulkan surface creation failed: {}", 
             vulkan::vk_error_str(res)
         ));

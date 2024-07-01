@@ -6,9 +6,9 @@
 #include "renderer/vulkan/vkSwapChain.h"
 
 #include <algorithm>
-#include <format>
 
 #include <vulkan/vulkan_core.h>
+#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -112,7 +112,7 @@ void SwapChain::initialize(
     );
 
     if (res != VK_SUCCESS) {
-        throw SwapChainInitError(std::format(
+        throw SwapChainInitError(fmt::format(
             "Swap chain creation error: {}",
             vk_error_str(res)
         ));
@@ -245,7 +245,7 @@ bool SwapChain::acquireNextImage(
         return true;
         
     } else if (res != VK_SUCCESS) {
-        throw SwapChainImageAcquireError(std::format(
+        throw SwapChainImageAcquireError(fmt::format(
             "Swap chain image acquisition error: {}",
             vk_error_str(res)
         ));
@@ -287,7 +287,7 @@ bool SwapChain::presentImage(Device &device, VkSemaphore render_done)
         return false;
         
     } else if (res != VK_SUCCESS) {
-        throw SwapChainPresentError(std::format(
+        throw SwapChainPresentError(fmt::format(
             "Swap chain image presentation error: {}",
             vk_error_str(res)
         ));
@@ -335,7 +335,7 @@ void SwapChain::createImageViews(Context &context, Device &device)
         );
         
         if (res) {
-            throw SwapChainViewError(std::format(
+            throw SwapChainViewError(fmt::format(
                 "Swap chain image view creation error: {}",
                 vk_error_str(res)
             ));
