@@ -5,9 +5,9 @@
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 
-#include <format>
 #include <vector>
 
+#include <fmt/format.h>
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -77,7 +77,7 @@ void DescriptorAllocator::clearPools()
         );
         
         if (reset_res != VK_SUCCESS) {
-            throw DescriptorAllocatorError(std::format(
+            throw DescriptorAllocatorError(fmt::format(
                 "Descriptor pool reset error: {}",
                 vk_error_str(reset_res)
             ));
@@ -150,7 +150,7 @@ VkDescriptorPool DescriptorAllocator::createPool()
     );
 
     if (res != VK_SUCCESS) {
-        throw DescriptorAllocatorError(std::format(
+        throw DescriptorAllocatorError(fmt::format(
             "Create descriptor pool error: {}",
             vk_error_str(res)
         ));

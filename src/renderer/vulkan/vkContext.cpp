@@ -12,9 +12,9 @@
 
 #include <functional>
 #include <vector>
-#include <format>
 
 #include <vulkan/vulkan_core.h>
+#include <fmt/format.h>
 
 #include "buildConfig.h"
 
@@ -123,7 +123,7 @@ void Context::initInstance(const char* application_title, Window *window_p)
 
     if (res != VK_SUCCESS) {
         throw InstanceInitError(
-            std::format("vkCreateInstance error: {}", vk_error_str(res))
+            fmt::format("vkCreateInstance error: {}", vk_error_str(res))
         );
     }
     

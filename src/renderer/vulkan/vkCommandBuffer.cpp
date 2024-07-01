@@ -5,9 +5,8 @@
 
 #include "renderer/vulkan/vkCommandBuffer.h"
 
-#include <format>
-
 #include <vulkan/vulkan_core.h>
+#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -33,7 +32,7 @@ void CommandBuffer::begin(
     VkResult res = vkBeginCommandBuffer(m_handle, &begin_info); 
 
     if (res != VK_SUCCESS) {
-        throw CmdBufferBeginError(std::format(
+        throw CmdBufferBeginError(fmt::format(
             "command buffer begin error {}",
             vk_error_str(res)
         ));
@@ -46,7 +45,7 @@ void CommandBuffer::end()
     VkResult res = vkEndCommandBuffer(m_handle); 
     
     if (res != VK_SUCCESS) {
-        throw CmdBufferEndError(std::format(
+        throw CmdBufferEndError(fmt::format(
             "command buffer end error {}",
             vk_error_str(res)
         ));
@@ -59,7 +58,7 @@ void CommandBuffer::reset()
     VkResult res = vkResetCommandBuffer(m_handle, 0);
     
     if (res != VK_SUCCESS) {
-        throw CmdBufferResetError(std::format(
+        throw CmdBufferResetError(fmt::format(
             "command buffer reset error {}",
             vk_error_str(res)
         ));
@@ -99,7 +98,7 @@ void CommandBuffer::submit(
     );
 
     if (res != VK_SUCCESS) {
-        throw CmdBufferSubmitError(std::format(
+        throw CmdBufferSubmitError(fmt::format(
             "command buffer queue submit error %s",
             vk_error_str(res)
         ));

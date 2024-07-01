@@ -3,7 +3,7 @@
 
 #include "conduit/defines.h"
 
-#include <format>
+#include <fmt/core.h>
 
 namespace cndt {
 
@@ -36,7 +36,7 @@ public:
     AssetUnavailable(
         std::string_view msg,
         std::string_view asset_name
-    ) : AssetException(std::format(
+    ) : AssetException(fmt::format(
         "asset {}: {}",
         asset_name,
         msg

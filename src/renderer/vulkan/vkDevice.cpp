@@ -16,12 +16,12 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include <format>
 #include <functional>
 #include <string_view>
 #include <vector>
 
 #include <vulkan/vulkan_core.h>
+#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -142,7 +142,7 @@ RenderPass Device::createRenderPass(
     );
     
     if (res != VK_SUCCESS) {
-        throw RenderPassCreationError(std::format(
+        throw RenderPassCreationError(fmt::format(
             "Render pass creation error {}",
             vk_error_str(res)
         ));
@@ -203,7 +203,7 @@ RenderAttachment Device::createRenderAttachment(
     ); 
     
     if (res != VK_SUCCESS) {
-        throw RenderAttachmentCreationError(std::format(
+        throw RenderAttachmentCreationError(fmt::format(
             "frame buffer creation error {}",
             vk_error_str(res)
         ));
@@ -262,7 +262,7 @@ Fence Device::createFence(bool signaled)
     );
     
     if (res != VK_SUCCESS) {
-        throw FenceInitError(std::format(
+        throw FenceInitError(fmt::format(
             "Vulkan fence initialization error {}",
             vk_error_str(res)
         ));
@@ -295,7 +295,7 @@ VkSemaphore Device::createSemaphore()
     );
     
     if (res != VK_SUCCESS) {
-        throw SemaphoreInitError(std::format(
+        throw SemaphoreInitError(fmt::format(
             "Vulkan semaphore initialization error {}",
             vk_error_str(res)
         ));
@@ -367,7 +367,7 @@ Image Device::createImage(
     );
 
     if (res != VK_SUCCESS) {
-        throw ImageCreateError(std::format(
+        throw ImageCreateError(fmt::format(
             "Image handle creation error: {}",
             vk_error_str(res)
         ));
@@ -406,7 +406,7 @@ Image Device::createImage(
     );
 
     if (view_res != VK_SUCCESS) {
-        throw ImageCreateError(std::format(
+        throw ImageCreateError(fmt::format(
             "image view creation error {}",
             vk_error_str(view_res)
         ));
@@ -469,7 +469,7 @@ Buffer Device::createBuffer(
     );
 
     if (res != VK_SUCCESS) {
-        throw BufferCreateError(std::format(
+        throw BufferCreateError(fmt::format(
             "Vulkan buffer create error: {}",
             vk_error_str(res)
         ));
@@ -530,7 +530,7 @@ void Device::bufferResize(
     );
     
     if (buf_res != VK_SUCCESS) {
-        throw BufferCreateError(std::format(
+        throw BufferCreateError(fmt::format(
             "Vulkan buffer resize error: {}",
             vk_error_str(buf_res)
         ));
@@ -553,7 +553,7 @@ void Device::bufferResize(
     VkResult bind_res = vkBindBufferMemory(logical, new_buffer, new_memory, 0);
 
     if (bind_res != VK_SUCCESS) {
-        throw BufferBindError(std::format(
+        throw BufferBindError(fmt::format(
             "Vulkan buffer resize bind error: {}", 
             vk_error_str(bind_res)
         ));
@@ -734,7 +734,7 @@ VkDeviceMemory Device::allocateMemory(
     );
 
     if (res != VK_SUCCESS) {
-        throw DeviceMemoryError(std::format(
+        throw DeviceMemoryError(fmt::format(
             "Device memory allocation error: {}",
             vk_error_str(res)
         ));
@@ -866,7 +866,7 @@ void Device::createLogicalDevice(Context *context_p)
     );
 
     if (res != VK_SUCCESS) {
-        throw DeviceInitError(std::format(
+        throw DeviceInitError(fmt::format(
             "vkCreateDevice error: {}",
             vk_error_str(res)
         ));
@@ -909,7 +909,7 @@ ShaderModule Device::createShaderModule(
         
         // Throw exception on failure
         if (input_file.fail()) {
-            throw ShaderModuleFileError(std::format(
+            throw ShaderModuleFileError(fmt::format(
                 "Vulkan shader module file access error, file: {}",
                 filepath
             ));
@@ -924,7 +924,7 @@ ShaderModule Device::createShaderModule(
         
         input_file.close();
     } catch (const std::ifstream::failure& e) {
-        throw ShaderModuleFileError(std::format(
+        throw ShaderModuleFileError(fmt::format(
             "Vulkan shader module file access error ({}), file: {}",
             e.what(),
             filepath
@@ -949,7 +949,7 @@ ShaderModule Device::createShaderModule(
     );
 
     if (res != VK_SUCCESS) {
-        throw ShaderModuleFileError(std::format(
+        throw ShaderModuleFileError(fmt::format(
             "Vulkan shader module creation error ({}), file: {}",
             vk_error_str(res),
             filepath
@@ -1227,7 +1227,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
         destroyShaderModule(out_pipeline.m_vertex_stage);
         destroyShaderModule(out_pipeline.m_fragment_stage);
         
-        throw PipelineCreationError(std::format(
+        throw PipelineCreationError(fmt::format(
             "Pipeline layout creation error: {}",
             vk_error_str(res_layout)
         ));
@@ -1282,7 +1282,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
         destroyShaderModule(out_pipeline.m_vertex_stage);
         destroyShaderModule(out_pipeline.m_fragment_stage);
         
-        throw PipelineCreationError(std::format(
+        throw PipelineCreationError(fmt::format(
             "Pipeline creation error: {}",
             vk_error_str(res_pipeline)
         ));
@@ -1337,7 +1337,7 @@ CommandPool Device::createCmdPool(
     );
     
     if (res != VK_SUCCESS) {
-        throw CommandPoolInitError(std::format(
+        throw CommandPoolInitError(fmt::format(
             "vkCreateCommandPool (queue family: {}) error: {}",
             queue_family_index,
             vk_error_str(res)

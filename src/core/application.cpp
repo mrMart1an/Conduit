@@ -10,7 +10,6 @@
 
 #include "core/appRunner.h"
 
-#include <format>
 #include <memory>
 
 namespace cndt {

@@ -128,8 +128,11 @@ configure_file(buildConfig.h.in buildConfig.h)
 add_subdirectory("./extern/glm")
 add_subdirectory("./extern/glfw")
 add_subdirectory("./extern/SPIRV-Cross")
+add_subdirectory("./extern/fmt")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory("./extern/json")
+
+find_package(fmt)
 
 # Find graphics dependency
 # Vulkan is always necessary for shaders compilation
@@ -157,6 +160,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE spirv-cross-core
     
     PUBLIC nlohmann_json::nlohmann_json
+    PUBLIC fmt::fmt
     PUBLIC glm
 )
 

@@ -3,6 +3,8 @@
 
 #include "renderer/vulkan/vkCommandPool.h"
 
+#include <fmt/format.h>
+
 namespace cndt::vulkan {
 
 // Reset the command pool 
@@ -22,7 +24,7 @@ void CommandPool::reset(bool release_resources)
     );
 
     if (res != VK_SUCCESS) {
-        throw CommandPoolResetError(std::format(
+        throw CommandPoolResetError(fmt::format(
             "Command pool reset error: {}",
             vk_error_str(res)
         ));
@@ -51,7 +53,7 @@ CommandBuffer CommandPool::allocateCmdBuffer(bool primary)
     );
 
     if (res != VK_SUCCESS) {
-        throw CmdBufferAllocationError(std::format(
+        throw CmdBufferAllocationError(fmt::format(
             "Vulkan buffer allocation error %s",
             vk_error_str(res)
         ));

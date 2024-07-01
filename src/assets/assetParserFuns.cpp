@@ -5,9 +5,9 @@
 #include "conduit/assets/assetInfo.h"
 
 #include <filesystem>
-#include <format>
 
 #include <nlohmann/json.hpp>
+#include <fmt/format.h>
 
 namespace cndt::internal {
 
@@ -25,14 +25,14 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
 
     // Test path validity
     if (!std::filesystem::exists(code_spv)) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "File \"{}\" for shader asset \"{}\" not found",
             code_spv.string(),
             name
         ));
     }
     if (!std::filesystem::exists(code_glsl)) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "File \"{}\" for shader asset \"{}\" not found",
             code_glsl.string(),
             name
@@ -55,7 +55,7 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
         type = Shader::Type::Compute;
         
     else {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Asset shader \"{}\" unknow type: \"{}\"",
             name,
             type_str
@@ -99,14 +99,14 @@ AssetInfo<Texture> parseTexture(std::string_view name, json element)
 
     // Test path validity
     if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Source file \"{}\" for texture asset \"{}\" not found",
             src.string(),
             name
         ));
     }
     if (!std::filesystem::exists(norm) && !norm.empty()) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Normal file \"{}\" for texture asset \"{}\" not found",
             norm.string(),
             name
@@ -142,7 +142,7 @@ AssetInfo<Mesh> parseMesh(std::string_view name, json element)
     
     // Test path validity
     if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Source file \"{}\" for mesh asset \"{}\" not found",
             src.string(),
             name
@@ -157,7 +157,7 @@ AssetInfo<Mesh> parseMesh(std::string_view name, json element)
         type = AssetInfo<Mesh>::FileType::Obj;
         
     else {
-        throw AssetTableParseError(std::format(
+        throw AssetTableParseError(fmt::format(
             "Asset mesh \"{}\" unknow file type: \"{}\"",
             name,
             type_str
