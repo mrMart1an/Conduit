@@ -11,7 +11,7 @@ typedef struct VkSurfaceKHR_T* VkSurfaceKHR;
 // Define the vulkan instance type without importing the header
 typedef struct VkInstance_T* VkInstance;
 // Define the vulkan allocation callbacks type without importing the header
-typedef struct VkAllocationCallbacks VkAllocationCallbacks ;
+typedef struct VkAllocationCallbacks VkAllocationCallbacks;
 
 namespace cndt {
 
@@ -107,26 +107,6 @@ protected:
 
     // Pool the window event and send them to the event bus
     virtual void poolEvents() = 0;
-};
-
-/*
- *
- *      Window exception type
- *
- * */
-
-// Window generic exception
-class WindowException : public Exception {
-public:
-    WindowException(std::string_view message) : Exception(message) { }
-    WindowException() : Exception("Window exception") { }
-};
-
-// Window initialization exception
-class WindowInitError : public WindowException {
-public:
-    WindowInitError(std::string_view message) : WindowException(message) { }
-    WindowInitError() : WindowException("Window init exception") { }
 };
 
 } // namespace cndt

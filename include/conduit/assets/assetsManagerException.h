@@ -1,7 +1,7 @@
 #ifndef CNDT_ASSET_MANAGER_EXCEPTION_H
 #define CNDT_ASSET_MANAGER_EXCEPTION_H
 
-#include "conduit/defines.h"
+#include "conduit/exception.h"
 
 #include <fmt/core.h>
 

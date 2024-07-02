@@ -3,9 +3,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <exception>
-#include <string>
-#include <string_view>
 
 /*
  *
@@ -89,28 +86,6 @@ STATIC_ASSERT(sizeof(f64) == 8);
 
 STATIC_ASSERT(sizeof(b8)  == 1);
 STATIC_ASSERT(sizeof(b32) == 4);
-
-/*
- *
- *      Conduit default exception type
- *
- * */
-
-// Conduit generic exception
-class Exception : public std::exception {
-public:
-    Exception(std::string_view message) : m_message(message) { }
-    Exception() : m_message("Conduit exception") { }
-    
-    virtual const char* what() const throw() 
-    {
-        return m_message.c_str();   
-    }
-    
-private:
-    // Store the exception message
-    std::string m_message;
-};
 
 }
 
