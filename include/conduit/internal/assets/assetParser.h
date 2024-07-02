@@ -234,7 +234,8 @@ AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
 // Create a tables tuple from the given file path
 template<typename... AssetTypes>
 template <usize... Is>
-AssetParser<AssetTypes...>::Tables AssetParser<AssetTypes...>::createTable(
+typename AssetParser<AssetTypes...>::Tables
+AssetParser<AssetTypes...>::createTable(
     std::filesystem::path table_path,
     
     ParserFuns parser_funs,

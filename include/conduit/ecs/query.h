@@ -27,7 +27,7 @@ private:
 public:
     // Use the underlying vector random access iterator as the query iterator
     using const_iterator = 
-        std::vector<QueryElement<CompTypes...>>::const_iterator;
+        typename std::vector<QueryElement<CompTypes...>>::const_iterator;
     
 public:
     // Query constructors 
@@ -67,7 +67,8 @@ private:
 // Return an iterator to the position of the given entity if 
 // it's stored in the query or to the end if it isn't
 template <typename... CompTypes>
-Query<CompTypes...>::const_iterator Query<CompTypes...>::find(Entity entity)
+typename Query<CompTypes...>::const_iterator
+Query<CompTypes...>::find(Entity entity)
 {
     // Custom compare functor
     struct compare { 
@@ -105,14 +106,14 @@ Query<CompTypes...>::const_iterator Query<CompTypes...>::find(Entity entity)
 
 // Get an iterator stating at the beginning of the components list
 template <typename... CompTypes>
-Query<CompTypes...>::const_iterator Query<CompTypes...>::begin()
+typename Query<CompTypes...>::const_iterator Query<CompTypes...>::begin()
 {
     return m_elements.cbegin();
 }
  
 // Get an iterator to the end of the components list
 template <typename... CompTypes>
-Query<CompTypes...>::const_iterator Query<CompTypes...>::end()
+typename Query<CompTypes...>::const_iterator Query<CompTypes...>::end()
 {
     return m_elements.cend();
 }

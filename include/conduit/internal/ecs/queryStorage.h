@@ -32,7 +32,7 @@ private:
     using BufferLock = std::shared_lock<std::shared_mutex>;
     
     template<typename CompType>
-    using ComponentIter = std::vector<CompType>::iterator;
+    using ComponentIter = typename std::vector<CompType>::iterator;
     using EntityIter = std::vector<Entity>::iterator;
 
 public:

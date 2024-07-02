@@ -26,8 +26,8 @@ public:
 template <typename CompType>
 class ComponentBuffer : public ComponentBufferBase {
 private:
-    using EntityIterator = std::vector<Entity>::iterator;
-    using ComponentIterator = std::vector<CompType>::iterator;
+    using EntityIterator = typename std::vector<Entity>::iterator;
+    using ComponentIterator = typename std::vector<CompType>::iterator;
     
 public:
     ComponentBuffer() = default;
@@ -88,7 +88,7 @@ private:
 
 // Check if a component is stored for the given entity
 template <typename CompType>
-ComponentBuffer<CompType>::EntityIterator
+typename ComponentBuffer<CompType>::EntityIterator
 ComponentBuffer<CompType>::componentUpperBound(Entity entity) 
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
