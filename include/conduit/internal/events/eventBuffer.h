@@ -145,7 +145,8 @@ void EventBuffer<EventType>::append(const EventType& event) {
 
 // Return a reference to the events in the current update vectors
 template <class EventType>
-EventBuffer<EventType>::Buffer EventBuffer<EventType>::getCurrentEvents() {
+typename EventBuffer<EventType>::Buffer 
+EventBuffer<EventType>::getCurrentEvents() {
     if (updateIsOdd()) {
         return Buffer(&m_events_odd, m_mutex);
     } else {
@@ -155,7 +156,8 @@ EventBuffer<EventType>::Buffer EventBuffer<EventType>::getCurrentEvents() {
 
 // Return a reference to the events in the last update vectors
 template <class EventType>
-EventBuffer<EventType>::Buffer EventBuffer<EventType>::getOldEvents() {
+typename EventBuffer<EventType>::Buffer
+EventBuffer<EventType>::getOldEvents() {
     if (!updateIsOdd()) {
         return Buffer(&m_events_odd, m_mutex);
     } else {
