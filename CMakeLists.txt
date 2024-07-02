@@ -132,8 +132,6 @@ add_subdirectory("./extern/fmt")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory("./extern/json")
 
-find_package(fmt)
-
 # Find graphics dependency
 # Vulkan is always necessary for shaders compilation
 find_package(Vulkan REQUIRED)
