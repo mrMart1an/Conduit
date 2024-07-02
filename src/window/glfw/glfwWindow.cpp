@@ -2,6 +2,7 @@
 
 #include "conduit/events/eventWriter.h"
 #include "conduit/window/window.h"
+#include "conduit/window/windowException.h"
 
 #include "window/glfw/glfwWindow.h"
 

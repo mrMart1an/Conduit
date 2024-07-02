@@ -1,6 +1,8 @@
 #ifndef CNDT_VK_EXCEPTIONS
 #define CNDT_VK_EXCEPTIONS
 
+#include "conduit/renderer/rendererException.h"
+
 #include "conduit/renderer/renderer.h"
 
 namespace cndt::vulkan {
