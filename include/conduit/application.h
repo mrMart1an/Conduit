@@ -1,6 +1,7 @@
 #ifndef CNDT_APPLICATION_H
 #define CNDT_APPLICATION_H
 
+#include "conduit/assets/assetsManager.h"
 #include "conduit/defines.h"
 
 #include "conduit/ecs/world.h"
@@ -55,7 +56,10 @@ private:
 
 protected:
     bool m_run_application;
-    
+
+    // Asset manager
+    AssetsManager m_asset_manager;
+
     // Application event bus
     EventBus m_event_bus;
 
