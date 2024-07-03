@@ -1,6 +1,7 @@
 #include "conduit/assets/assetsManager.h"
 
 #include "conduit/internal/assets/assetParserFuns.h"
+#include "conduit/internal/assets/assetLoaderFuns.h"
 
 namespace cndt {
 
@@ -11,6 +12,13 @@ AssetsManager::AssetsManager() :
             {"shaders" ,internal::parseShader},
             {"textures", internal::parseTexture},
             {"meshes", internal::parseMesh}
+        }
+    ),
+    m_cache(
+        {
+            internal::loadShader, 
+            internal::loadTexture,
+            internal::loadMesh
         }
     )
 { }
@@ -24,6 +32,13 @@ AssetsManager::AssetsManager(std::filesystem::path asset_table_path) :
             {"shaders" ,internal::parseShader},
             {"textures", internal::parseTexture},
             {"meshes", internal::parseMesh}
+        }
+    ),
+    m_cache(
+        {
+            internal::loadShader, 
+            internal::loadTexture,
+            internal::loadMesh
         }
     )
 { }
