@@ -59,9 +59,9 @@ namespace internal {
 
 // Logger constructor
 Logger::Logger(
-    std::string name,
+    std::string_view name,
     LogLevel log_level,
-    std::string time_fmt_str,
+    std::string_view time_fmt_str,
     bool enable_color
 ) :
     m_logger_name(name), 
@@ -71,7 +71,7 @@ Logger::Logger(
 { }
 
 // Return a string representation of the logging level 
-std::string Logger::levelToString(LogLevel level) const {
+const std::string_view Logger::levelToString(LogLevel level) const {
     const usize color_str_offset = m_terminal_color ? log_level_str_count : 0;
     const usize str_index = static_cast<int>(level) + (color_str_offset); 
     

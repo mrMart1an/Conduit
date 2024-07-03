@@ -12,7 +12,7 @@ namespace cndt::log {
 
 // Log message log level
 enum class LogLevel {
-    Trace = 0,
+    Trace,
     Debug,
     Info,
     Warning,
@@ -25,9 +25,9 @@ namespace internal {
 class Logger {
 public:
     Logger(
-        std::string name,
-        LogLevel log_lvl,
-        std::string time_fmt_str = "%H:%M:%S",
+        std::string_view name,
+        LogLevel log_lvl = LogLevel::Trace,
+        std::string_view time_fmt_str = "%H:%M:%S",
         bool enable_color = true
     );
 
@@ -108,14 +108,14 @@ public:
     
 private:
     // Return a string representation of the given logging level 
-    std::string levelToString(LogLevel level) const;
+    const std::string_view levelToString(LogLevel level) const;
     
     // Return a string containing the formatted current time
     std::string currentTimeString() const;
     
 private:
     // The name of the logger used in the header
-    std::string m_logger_name;
+    std::string_view m_logger_name;
     
     // Time formatting string for the time formatting in the header
     std::string m_time_fmt;
@@ -139,7 +139,7 @@ void Logger::log(
         return;
 
     // Get the logging level string and the time string
-    std::string level_str = levelToString(lvl);
+    const std::string_view level_str = levelToString(lvl);
     std::string time_str = currentTimeString();
 
     // Print the log header

@@ -163,8 +163,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} 
-    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
     PRIVATE "src"
+
+    PUBLIC "${CMAKE_CURRENT_BINARY_DIR}"
     PUBLIC "include"
 )
 
