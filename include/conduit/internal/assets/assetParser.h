@@ -56,7 +56,7 @@ private:
         );
         
     private:
-        using Key = std::string_view;
+        using Key = std::string;
         
         // Store the table in memory at all times
         std::unordered_map<Key, AssetInfo<AssetType>> m_table_map;
@@ -118,7 +118,7 @@ AssetParser<AssetTypes...>::Table<AssetType>::Table(
     std::function<AssetInfo<AssetType>(std::string_view, json)> parser_fun
 ) {
     for (auto& element : type_table.items()) {
-        m_table_map[element.key()] = parser_fun(
+        m_table_map[std::string(element.key())] = parser_fun(
             element.key(),
             element.value()
         );
@@ -133,8 +133,10 @@ std::optional<AssetInfo<AssetType>>
 AssetParser<AssetTypes...>::Table<AssetType>::getInfo(
     std::string_view asset_name
 ) {
-    if(m_table_map.find(asset_name) != m_table_map.end()) {
-        return m_table_map[asset_name];
+    std::string key(asset_name);
+
+    if(m_table_map.find(key) != m_table_map.end()) {
+        return m_table_map[key];
     }
     
     return std::nullopt;

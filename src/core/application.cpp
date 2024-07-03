@@ -1,3 +1,4 @@
+#include "conduit/assets/assetsManager.h"
 #include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/application.h"
@@ -10,6 +11,7 @@
 
 #include "core/appRunner.h"
 
+#include <functional>
 #include <memory>
 
 namespace cndt {
@@ -23,6 +25,7 @@ namespace cndt {
 // Base application constructor
 Application::Application() :
     m_run_application(true),
+    m_asset_manager(),
     m_event_bus(),
     m_ecs_world(),
     m_window(),
@@ -38,9 +41,9 @@ Application::~Application() {
 // Initialize the game engine 
 void Application::engineStartup()
 {
+    // Create the glfw window handle
     Window::Config window_config(appName());
     
-    // Create the glfw window handle
     m_window = std::make_unique<glfw::GlfwWindow>(
         m_event_bus.getEventWriter()
     );
@@ -54,7 +57,7 @@ void Application::engineStartup()
     // Create and initialize the renderer 
     m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
     m_renderer->initialize(appName().c_str(), m_window.get());
-    
+
     m_delete_queue.addDeleter(std::bind(
         &Renderer::shutdown, m_renderer.get()
     ));
