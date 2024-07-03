@@ -1,5 +1,5 @@
-#ifndef CNDT_ASSET_INFO_PARSER_H
-#define CNDT_ASSET_INFO_PARSER_H
+#ifndef CNDT_ASSET_PARSER_FUNS_H
+#define CNDT_ASSET_PARSER_FUNS_H
 
 #include "conduit/assets/assetInfo.h"
 

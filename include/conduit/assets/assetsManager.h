@@ -5,6 +5,7 @@
 #include "conduit/assets/shader.h"
 
 #include "conduit/internal/assets/assetParser.h"
+#include "conduit/internal/assets/assetsCache.h"
 
 #include <string_view>
 
@@ -25,7 +26,18 @@ public:
 
 private:
     internal::AssetParser<Shader, Texture, Mesh> m_parser;
+    internal::AssetsCache<Shader, Texture, Mesh> m_cache;
 };
+    
+// Get an asset handle from the given asset name or file path
+template<typename AssetType>
+Handle<AssetType> AssetsManager::get(std::string_view asset_name)
+{
+    return m_cache.getHandle<AssetType>(
+        m_parser,
+        asset_name
+    );
+}
 
 } // namespace cndt
 

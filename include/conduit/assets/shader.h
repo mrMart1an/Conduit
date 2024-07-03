@@ -23,7 +23,7 @@ public:
 public:
     Shader() = default;
     Shader(
-        std::vector<u32> spv_code,
+        std::vector<u32>& spv_code,
         Type shader_type
     ) : 
         m_spv_code(std::move(spv_code)),
@@ -37,6 +37,9 @@ public:
         code_size  = m_spv_code.size();
         return m_spv_code.data(); 
     }
+
+    // Return the shader type
+    Type type() const { return m_type; }
     
 private:
     // Store the shader spriv code

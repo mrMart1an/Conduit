@@ -22,6 +22,7 @@ set(ASSETS_SRC
     "${BASE_PATH}/assets/assetManager.cpp" 
     "${BASE_PATH}/assets/assetManagerShader.cpp" 
     "${BASE_PATH}/assets/assetParserFuns.cpp" 
+    "${BASE_PATH}/assets/assetLoaderFuns.cpp" 
 )
 
 # Engine entity component system source files

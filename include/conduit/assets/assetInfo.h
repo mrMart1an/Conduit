@@ -9,12 +9,8 @@
 
 namespace cndt {
 
-class AssetsManager;
-
 // Store the asset base information
 class AssetInfoBase {
-    friend class AssetsManager;
-    
 public:
     AssetInfoBase(std::string_view asset_name) : 
         m_available(false),
@@ -36,7 +32,6 @@ public:
     // Return the asset name
     std::string_view assetName() const { return m_asset_name; }
 
-private:
     // Increment the asset version 
     void incrementVersion() { m_version += 1; }
     

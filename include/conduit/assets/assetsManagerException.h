@@ -54,6 +54,21 @@ public:
     ) : AssetException(msg, std::forward<Args>(args)...) { }      
 };
 
+/*
+ *
+ *      Shader loading exceptions
+ *
+ * */
+
+class ShaderLoadingError : public AssetException {
+public:
+    template<typename... Args>
+    ShaderLoadingError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : AssetException(msg, std::forward<Args>(args)...) { }      
+};
+
+
 } // namespace cndt
 
 #endif
