@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include <fmt/format.h>
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -77,10 +76,10 @@ void DescriptorAllocator::clearPools()
         );
         
         if (reset_res != VK_SUCCESS) {
-            throw DescriptorAllocatorError(fmt::format(
+            throw DescriptorAllocatorError(
                 "Descriptor pool reset error: {}",
                 vk_error_str(reset_res)
-            ));
+            );
         }
 
         m_free_pools.push_back(pool);
@@ -150,10 +149,10 @@ VkDescriptorPool DescriptorAllocator::createPool()
     );
 
     if (res != VK_SUCCESS) {
-        throw DescriptorAllocatorError(fmt::format(
+        throw DescriptorAllocatorError(
             "Create descriptor pool error: {}",
             vk_error_str(res)
-        ));
+        );
     }
     
     // Increase the set per pool variable for the next pool creation

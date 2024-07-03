@@ -32,14 +32,11 @@ constexpr void vk_check(
 ) {
     if (result != VK_SUCCESS) {
         throw UnexpectedError(
-            fmt::format(
-                "Unexpected vulkan error {}",
-                vk_error_str(result, src_loc)
-            )
+            "Unexpected vulkan error {}",
+            vk_error_str(result, src_loc)
         );
     }
 }
-
 
 } // namespace cndt::vulkan
 

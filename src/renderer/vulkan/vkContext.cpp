@@ -14,7 +14,6 @@
 #include <vector>
 
 #include <vulkan/vulkan_core.h>
-#include <fmt/format.h>
 
 #include "buildConfig.h"
 
@@ -29,7 +28,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 ) {
     switch (severity_lvl) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: {
-            cndt::log::app::debug("[vulkan] {}", callback_data_p->pMessage);
+            cndt::log::app::trace("[vulkan] {}", callback_data_p->pMessage);
             break;
         }
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: {
@@ -62,7 +61,7 @@ void Context::initialize(
     Window *window_p,
     const VkAllocationCallbacks *allocator_p
 ) {
-    log::core::debug("Initializing vulkan context");
+    log::core::info("Initializing vulkan context");
 
     // Assign the custom allocator
     allocator = allocator_p;
@@ -77,7 +76,7 @@ void Context::initialize(
 // Shutdown the vulkan context
 void Context::shutdown() 
 {
-    log::core::debug("Destroying vulkan context");
+    log::core::info("Destroying vulkan context");
     m_delete_queue.callDeleter();
 }
 
@@ -123,7 +122,8 @@ void Context::initInstance(const char* application_title, Window *window_p)
 
     if (res != VK_SUCCESS) {
         throw InstanceInitError(
-            fmt::format("vkCreateInstance error: {}", vk_error_str(res))
+            "vkCreateInstance error: {}", 
+            vk_error_str(res)
         );
     }
     

@@ -5,6 +5,9 @@
 
 #include "conduit/renderer/renderer.h"
 
+#include <fmt/base.h>
+#include <utility>
+
 namespace cndt {
 
 /*
@@ -16,12 +19,14 @@ namespace cndt {
 // Renderer generic exception
 class RendererException : public Exception {
 public:
-    RendererException(std::string_view message, RendererBackend backend) 
-        : Exception(message), m_backend(backend) { }
-    RendererException(RendererBackend backend) 
-        : Exception("Renderer exception"), m_backend(backend) { }
-    RendererException() 
-        : Exception("Renderer exception"), m_backend(RendererBackend::None) { }
+    template<typename... Args>
+    RendererException(
+        RendererBackend backend,
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        Exception(msg, std::forward<Args>(args)...),
+        m_backend(backend) 
+    { }
 
     // Return the backend type
     RendererBackend backend() const { return m_backend; };
@@ -31,7 +36,7 @@ public:
         switch (m_backend) {
             case RendererBackend::None: 
                 return "None";
-            case RendererBackend::OpenGl: 
+            case RendererBackend::OpenGL: 
                 return "OpenGl";
             case RendererBackend::Vulkan: 
                 return "Vulkan";
@@ -44,15 +49,18 @@ protected:
 
 class UnsupportedBackend : public RendererException {
 public:
-    UnsupportedBackend(std::string_view message, RendererBackend backend) : 
-        RendererException(message, backend)
-    { }
-    UnsupportedBackend(RendererBackend backend) : 
-        RendererException("Unsupported renderer backend", backend) 
+    template<typename... Args>
+    UnsupportedBackend(
+        RendererBackend backend,
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RendererException(
+            backend,
+            msg, std::forward<Args>(args)...
+        )
     { }
 };
 
 } // namespace cndt
-
 
 #endif

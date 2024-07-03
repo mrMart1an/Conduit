@@ -5,6 +5,8 @@
 
 #include "conduit/renderer/renderer.h"
 
+#include <fmt/base.h>
+
 namespace cndt::vulkan {
 
 /*
@@ -16,22 +18,25 @@ namespace cndt::vulkan {
 // Renderer generic exception
 class VulkanException : public RendererException {
 public:
-    VulkanException(std::string_view message) : 
-        RendererException(message, RendererBackend::Vulkan)
-    { }
-    VulkanException() : 
-        RendererException("Renderer exception", RendererBackend::Vulkan) 
+    template<typename... Args>
+    VulkanException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RendererException(
+            RendererBackend::Vulkan,
+            msg, std::forward<Args>(args)...
+        )
     { }
 };
 
 // Unexpected vulkan error
 class UnexpectedError : public VulkanException {
 public:
-    UnexpectedError(std::string_view message) : 
-        VulkanException(message)
-    { }
-    UnexpectedError() : 
-        VulkanException("Unexpected vulkan error") 
+    template<typename... Args>
+    UnexpectedError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -44,43 +49,55 @@ public:
 // Initialization stage error
 class InitializationError : public VulkanException {
 public:
-    InitializationError(std::string_view message) : 
-        VulkanException(message)
-    { }
-    InitializationError() : 
-        VulkanException("Vulkan initialization error")
+    template<typename... Args>
+    InitializationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan instance initialization error
 class InstanceInitError : public InitializationError {
 public:
-    InstanceInitError(std::string_view message) : 
-        InitializationError(message)
+    template<typename... Args>
+    InstanceInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        InitializationError(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan surface initialization error
 class SurfaceInitError : public InitializationError {
 public:
-    SurfaceInitError(std::string_view message) : 
-        InitializationError(message)
+    template<typename... Args>
+    SurfaceInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        InitializationError(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan physical device initialization error
 class PhysicalDeviceError : public InitializationError {
 public:
-    PhysicalDeviceError(std::string_view message) : 
-        InitializationError(message)
+    template<typename... Args>
+    PhysicalDeviceError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        InitializationError(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan logical device initialization error
 class DeviceInitError : public InitializationError {
 public:
-    DeviceInitError(std::string_view message) : 
-        InitializationError(message)
+    template<typename... Args>
+    DeviceInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        InitializationError(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -93,40 +110,55 @@ public:
 // Vulkan generic sync object exception
 class SyncObjectException : public VulkanException {
 public:
-    SyncObjectException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    SyncObjectException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan fence initialization error
 class FenceInitError : public SyncObjectException {
 public:
-    FenceInitError(std::string_view message) : 
-        SyncObjectException(message)
+    template<typename... Args>
+    FenceInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SyncObjectException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan fence wait error
 class FenceWaitError : public SyncObjectException {
 public:
-    FenceWaitError(std::string_view message) : 
-        SyncObjectException(message)
+    template<typename... Args>
+    FenceWaitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SyncObjectException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan fence reset error
 class FenceResetError : public SyncObjectException {
 public:
-    FenceResetError(std::string_view message) : 
-        SyncObjectException(message)
+    template<typename... Args>
+    FenceResetError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SyncObjectException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan semaphore initialization error
 class SemaphoreInitError : public SyncObjectException {
 public:
-    SemaphoreInitError(std::string_view message) : 
-        SyncObjectException(message)
+    template<typename... Args>
+    SemaphoreInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SyncObjectException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -139,24 +171,33 @@ public:
 // Vulkan command pool generic exception
 class CommandPoolException : public VulkanException {
 public:
-    CommandPoolException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    CommandPoolException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command pool initialization error
 class CommandPoolInitError : public CommandPoolException {
 public:
-    CommandPoolInitError(std::string_view message) : 
-        CommandPoolException(message)
+    template<typename... Args>
+    CommandPoolInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CommandPoolException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command pool reset error
 class CommandPoolResetError : public CommandPoolException {
 public:
-    CommandPoolResetError(std::string_view message) : 
-        CommandPoolException(message)
+    template<typename... Args>
+    CommandPoolResetError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CommandPoolException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -169,16 +210,22 @@ public:
 // Generic vulkan device exception
 class DeviceException : public VulkanException {
 public:
-    DeviceException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    DeviceException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan device memory allocation exception
 class DeviceMemoryError : public DeviceException {
 public:
-    DeviceMemoryError(std::string_view message) : 
-        DeviceException(message)
+    template<typename... Args>
+    DeviceMemoryError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        DeviceException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -191,32 +238,44 @@ public:
 // Generic buffer exception
 class BufferException : public VulkanException {
 public:
-    BufferException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    BufferException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan buffer creation exception
 class BufferCreateError : public BufferException {
 public:
-    BufferCreateError(std::string_view message) : 
-        BufferException(message)
+    template<typename... Args>
+    BufferCreateError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        BufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan buffer bind exception
 class BufferBindError : public BufferException {
 public:
-    BufferBindError(std::string_view message) : 
-        BufferException(message)
+    template<typename... Args>
+    BufferBindError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        BufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan buffer map exception
 class BufferMapError : public BufferException {
 public:
-    BufferMapError(std::string_view message) : 
-        BufferException(message)
+    template<typename... Args>
+    BufferMapError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        BufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -229,24 +288,33 @@ public:
 // Generic image exception
 class ImageException : public VulkanException {
 public:
-    ImageException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    ImageException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan image creation exception
 class ImageCreateError : public ImageException {
 public:
-    ImageCreateError(std::string_view message) : 
-        ImageException(message)
+    template<typename... Args>
+    ImageCreateError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        ImageException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan image bind exception
 class ImageBindError : public ImageException {
 public:
-    ImageBindError(std::string_view message) : 
-        ImageException(message)
+    template<typename... Args>
+    ImageBindError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        ImageException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -259,48 +327,66 @@ public:
 // Generic command buffer exception
 class CmdBufferException : public VulkanException {
 public:
-    CmdBufferException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    CmdBufferException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer allocation exception
 class CmdBufferAllocationError : public CmdBufferException {
 public:
-    CmdBufferAllocationError(std::string_view message) : 
-        CmdBufferException(message)
+    template<typename... Args>
+    CmdBufferAllocationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer begin exception
 class CmdBufferBeginError : public CmdBufferException {
 public:
-    CmdBufferBeginError(std::string_view message) : 
-        CmdBufferException(message)
+    template<typename... Args>
+    CmdBufferBeginError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer end exception
 class CmdBufferEndError : public CmdBufferException {
 public:
-    CmdBufferEndError(std::string_view message) : 
-        CmdBufferException(message)
+    template<typename... Args>
+    CmdBufferEndError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer reset exception
 class CmdBufferResetError : public CmdBufferException {
 public:
-    CmdBufferResetError(std::string_view message) : 
-        CmdBufferException(message)
+    template<typename... Args>
+    CmdBufferResetError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer submit exception
 class CmdBufferSubmitError : public CmdBufferException {
 public:
-    CmdBufferSubmitError(std::string_view message) : 
-        CmdBufferException(message)
+    template<typename... Args>
+    CmdBufferSubmitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -313,16 +399,22 @@ public:
 // Generic render pass exception
 class RenderPassException : public VulkanException {
 public:
-    RenderPassException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    RenderPassException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer submit exception
 class RenderPassCreationError : public RenderPassException {
 public:
-    RenderPassCreationError(std::string_view message) : 
-        RenderPassException(message)
+    template<typename... Args>
+    RenderPassCreationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RenderPassException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -335,16 +427,22 @@ public:
 // Generic render pass exception
 class RenderAttachmentException : public VulkanException {
 public:
-    RenderAttachmentException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    RenderAttachmentException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan command buffer submit exception
 class RenderAttachmentCreationError : public RenderAttachmentException {
 public:
-    RenderAttachmentCreationError(std::string_view message) : 
-        RenderAttachmentException(message)
+    template<typename... Args>
+    RenderAttachmentCreationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RenderAttachmentException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -357,40 +455,55 @@ public:
 // Generic swap chain exception
 class SwapChainException : public VulkanException {
 public:
-    SwapChainException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    SwapChainException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan swap chain initialization error exception
 class SwapChainInitError : public SwapChainException {
 public:
-    SwapChainInitError(std::string_view message) : 
-        SwapChainException(message)
+    template<typename... Args>
+    SwapChainInitError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SwapChainException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan swap chain image view error exception
 class SwapChainViewError : public SwapChainException {
 public:
-    SwapChainViewError(std::string_view message) : 
-        SwapChainException(message)
+    template<typename... Args>
+    SwapChainViewError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SwapChainException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan swap chain image acquisition error exception
 class SwapChainImageAcquireError : public SwapChainException {
 public:
-    SwapChainImageAcquireError(std::string_view message) : 
-        SwapChainException(message)
+    template<typename... Args>
+    SwapChainImageAcquireError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SwapChainException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan swap chain image presentation error exception
 class SwapChainPresentError : public SwapChainException {
 public:
-    SwapChainPresentError(std::string_view message) : 
-        SwapChainException(message)
+    template<typename... Args>
+    SwapChainPresentError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        SwapChainException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -403,24 +516,33 @@ public:
 // Generic shader module exception
 class ShaderModuleException : public VulkanException {
 public:
-    ShaderModuleException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    ShaderModuleException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan shader module file access error
 class ShaderModuleFileError : public ShaderModuleException {
 public:
-    ShaderModuleFileError(std::string_view message) : 
-        ShaderModuleException(message)
+    template<typename... Args>
+    ShaderModuleFileError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        ShaderModuleException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan shader module creation error
 class ShaderModuleCreateError : public ShaderModuleException {
 public:
-    ShaderModuleCreateError(std::string_view message) : 
-        ShaderModuleException(message)
+    template<typename... Args>
+    ShaderModuleCreateError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        ShaderModuleException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -433,16 +555,22 @@ public:
 // Generic pipeline exception
 class PipelineException : public VulkanException {
 public:
-    PipelineException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    PipelineException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan pipeline create error
 class PipelineCreationError : public PipelineException {
 public:
-    PipelineCreationError(std::string_view message) : 
-        PipelineException(message)
+    template<typename... Args>
+    PipelineCreationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        PipelineException(msg, std::forward<Args>(args)...)
     { }
 };
 
@@ -455,24 +583,33 @@ public:
 // Vulkan descriptor set general exception
 class DescriptorSetException : public VulkanException {
 public:
-    DescriptorSetException(std::string_view message) : 
-        VulkanException(message)
+    template<typename... Args>
+    DescriptorSetException(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        VulkanException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan descriptor set layout creation error
 class DescriptorSetLayoutBuildError : public DescriptorSetException {
 public:
-    DescriptorSetLayoutBuildError(std::string_view message) : 
-        DescriptorSetException(message)
+    template<typename... Args>
+    DescriptorSetLayoutBuildError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        DescriptorSetException(msg, std::forward<Args>(args)...)
     { }
 };
 
 // Vulkan descriptor pool creation error
 class DescriptorAllocatorError : public DescriptorSetException {
 public:
-    DescriptorAllocatorError(std::string_view message) : 
-        DescriptorSetException(message)
+    template<typename... Args>
+    DescriptorAllocatorError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        DescriptorSetException(msg, std::forward<Args>(args)...)
     { }
 };
 

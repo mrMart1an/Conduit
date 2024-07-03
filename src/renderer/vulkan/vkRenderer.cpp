@@ -4,13 +4,14 @@
 
 #include <cstring>
 #include <functional>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/fwd.hpp>
 #include <vector>
 
-#include "glm/glm.hpp"
+#include <glm/fwd.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <vulkan/vulkan_core.h>
+
 namespace cndt::vulkan {
 
 /*

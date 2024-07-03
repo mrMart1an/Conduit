@@ -65,7 +65,6 @@ private:
     using Tables = std::tuple<Table<AssetTypes>...>;
 
 public:
-
     
     // Create the asset allocator using only the builtin asset table
     AssetParser(ParserFuns parser_funs);
@@ -224,11 +223,11 @@ AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
     } 
 
     // If the asset was not found in any table throw an exception
-    throw AssetNotFound(fmt::format(
+    throw AssetNotFound(
         "{} asset \"{}\" not found",
         m_type_names[IndexOf<AssetType, AssetTypes...>::value],
         asset_name
-    ));
+    );
 }
 
 // Create a tables tuple from the given file path
@@ -243,10 +242,10 @@ AssetParser<AssetTypes...>::createTable(
     std::index_sequence<Is...>
 ) {
     if(!std::filesystem::exists(table_path)) {
-        throw AssetTableNotFound(fmt::format(
-            "Asset table at: {} not found",
+        throw AssetTableNotFound(
+            "Asset table at: \"{}\" not found",
             table_path.string()
-        ));
+        );
     }
     
     try {
@@ -262,11 +261,11 @@ AssetParser<AssetTypes...>::createTable(
         );
         
     } catch (std::exception &e) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Asset table ({}) parse error: {}",
             table_path.string(),
             e.what()
-        ));
+        );
     }
 }
 

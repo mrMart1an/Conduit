@@ -24,7 +24,7 @@ GlfwWindow::~GlfwWindow()
 {
     if (m_init_status != Status::Uninitialized) {
         log::core::warn(
-            "GlfwWindow::~GlfwWindow -> destructor called before shutdown"
+            "GlfwWindow destructor called before shutdown"
         );
         
         shutdown();
@@ -35,12 +35,8 @@ GlfwWindow::~GlfwWindow()
 void GlfwWindow::initialize(Config config)
 {
     if (!glfwInit()) {
-        log::core::error(
-            "GlfwWindow::GlfwWindow -> glfw initialization failed"
-        );
-        
         throw WindowInitError(
-            "GlfwWindow::GlfwWindow -> glfw initialization failed"
+            "GlfwWindow init error: glfw initialization failed"
         );
         
     } else {
@@ -68,15 +64,11 @@ void GlfwWindow::initialize(Config config)
 
     // Check if the window was create successfully 
     if (m_glfw_window == nullptr) {
-        log::core::error(
-            "GlfwWindow::GlfwWindow -> glfw window creation failed"
-        );
-        
         // Terminate the glfw session and throw an init exception
         glfwTerminate();
         
         throw WindowInitError(
-            "GlfwWindow::GlfwWindow -> glfw window creation failed"
+            "GlfwWindow init error: glfw window creation failed"
         );
         
     } else {

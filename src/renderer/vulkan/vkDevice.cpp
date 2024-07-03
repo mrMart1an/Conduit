@@ -21,7 +21,6 @@
 #include <vector>
 
 #include <vulkan/vulkan_core.h>
-#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -30,7 +29,7 @@ void Device::initialize(
     Context *context_p,
     PhysicalDeviceRequirement physical_device_requirement
 ) {
-    log::core::debug("Creating vulkan device");
+    log::core::info("Creating vulkan device");
 
     m_allocator = context_p->allocator;
 
@@ -72,7 +71,7 @@ void Device::initialize(
 // Shutdown vulkan device
 void Device::shutdown()
 {
-    log::core::debug("Destroying vulkan device");
+    log::core::info("Destroying vulkan device");
 
     // Empty the delete queue
     m_delete_queue.callDeleter();
@@ -142,10 +141,10 @@ RenderPass Device::createRenderPass(
     );
     
     if (res != VK_SUCCESS) {
-        throw RenderPassCreationError(fmt::format(
+        throw RenderPassCreationError(
             "Render pass creation error {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_pass;
@@ -203,10 +202,10 @@ RenderAttachment Device::createRenderAttachment(
     ); 
     
     if (res != VK_SUCCESS) {
-        throw RenderAttachmentCreationError(fmt::format(
+        throw RenderAttachmentCreationError(
             "frame buffer creation error {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_attachment;
@@ -262,10 +261,10 @@ Fence Device::createFence(bool signaled)
     );
     
     if (res != VK_SUCCESS) {
-        throw FenceInitError(fmt::format(
+        throw FenceInitError(
             "Vulkan fence initialization error {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_fence;
@@ -295,10 +294,10 @@ VkSemaphore Device::createSemaphore()
     );
     
     if (res != VK_SUCCESS) {
-        throw SemaphoreInitError(fmt::format(
+        throw SemaphoreInitError(
             "Vulkan semaphore initialization error {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_semaphore;
@@ -367,10 +366,10 @@ Image Device::createImage(
     );
 
     if (res != VK_SUCCESS) {
-        throw ImageCreateError(fmt::format(
+        throw ImageCreateError(
             "Image handle creation error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     // Allocate the image memory
@@ -406,10 +405,10 @@ Image Device::createImage(
     );
 
     if (view_res != VK_SUCCESS) {
-        throw ImageCreateError(fmt::format(
+        throw ImageCreateError(
             "image view creation error {}",
             vk_error_str(view_res)
-        ));
+        );
     }
     
     // Bind the image if necessary
@@ -469,10 +468,10 @@ Buffer Device::createBuffer(
     );
 
     if (res != VK_SUCCESS) {
-        throw BufferCreateError(fmt::format(
+        throw BufferCreateError(
             "Vulkan buffer create error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     // Allocate the device memory
@@ -530,10 +529,10 @@ void Device::bufferResize(
     );
     
     if (buf_res != VK_SUCCESS) {
-        throw BufferCreateError(fmt::format(
+        throw BufferCreateError(
             "Vulkan buffer resize error: {}",
             vk_error_str(buf_res)
-        ));
+        );
     }
     
     // Allocate the device memory
@@ -553,10 +552,10 @@ void Device::bufferResize(
     VkResult bind_res = vkBindBufferMemory(logical, new_buffer, new_memory, 0);
 
     if (bind_res != VK_SUCCESS) {
-        throw BufferBindError(fmt::format(
+        throw BufferBindError(
             "Vulkan buffer resize bind error: {}", 
             vk_error_str(bind_res)
-        ));
+        );
     }
     
     // Copy the old buffer content in the new one
@@ -734,10 +733,10 @@ VkDeviceMemory Device::allocateMemory(
     );
 
     if (res != VK_SUCCESS) {
-        throw DeviceMemoryError(fmt::format(
+        throw DeviceMemoryError(
             "Device memory allocation error: {}",
             vk_error_str(res)
-        ));
+        );
     } 
     
     return out_memory;
@@ -866,10 +865,10 @@ void Device::createLogicalDevice(Context *context_p)
     );
 
     if (res != VK_SUCCESS) {
-        throw DeviceInitError(fmt::format(
+        throw DeviceInitError(
             "vkCreateDevice error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 }
 
@@ -909,10 +908,10 @@ ShaderModule Device::createShaderModule(
         
         // Throw exception on failure
         if (input_file.fail()) {
-            throw ShaderModuleFileError(fmt::format(
+            throw ShaderModuleFileError(
                 "Vulkan shader module file access error, file: {}",
                 filepath
-            ));
+            );
         }
 
         // Store the file content in a vector
@@ -924,11 +923,11 @@ ShaderModule Device::createShaderModule(
         
         input_file.close();
     } catch (const std::ifstream::failure& e) {
-        throw ShaderModuleFileError(fmt::format(
+        throw ShaderModuleFileError(
             "Vulkan shader module file access error ({}), file: {}",
             e.what(),
             filepath
-        ));
+        );
     }
     
     // Prepare the shader create info
@@ -949,11 +948,11 @@ ShaderModule Device::createShaderModule(
     );
 
     if (res != VK_SUCCESS) {
-        throw ShaderModuleFileError(fmt::format(
+        throw ShaderModuleFileError(
             "Vulkan shader module creation error ({}), file: {}",
             vk_error_str(res),
             filepath
-        ));
+        );
     }
 
     // Stage create info
@@ -1227,10 +1226,10 @@ GraphicsPipeline Device::createGraphicsPipeline(
         destroyShaderModule(out_pipeline.m_vertex_stage);
         destroyShaderModule(out_pipeline.m_fragment_stage);
         
-        throw PipelineCreationError(fmt::format(
+        throw PipelineCreationError(
             "Pipeline layout creation error: {}",
             vk_error_str(res_layout)
-        ));
+        );
     }
     
     // Create the pipeline info
@@ -1282,10 +1281,10 @@ GraphicsPipeline Device::createGraphicsPipeline(
         destroyShaderModule(out_pipeline.m_vertex_stage);
         destroyShaderModule(out_pipeline.m_fragment_stage);
         
-        throw PipelineCreationError(fmt::format(
+        throw PipelineCreationError(
             "Pipeline creation error: {}",
             vk_error_str(res_pipeline)
-        ));
+        );
     }
     
     return out_pipeline;
@@ -1337,11 +1336,11 @@ CommandPool Device::createCmdPool(
     );
     
     if (res != VK_SUCCESS) {
-        throw CommandPoolInitError(fmt::format(
+        throw CommandPoolInitError(
             "vkCreateCommandPool (queue family: {}) error: {}",
             queue_family_index,
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_pool;
