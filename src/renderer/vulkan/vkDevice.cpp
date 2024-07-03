@@ -1595,20 +1595,10 @@ Device::QueueFamilyIndices Device::getQueueIndices(
 
     // Replace the stored queue with the dedicated one if they were found
     if (dedicated_compute_queue != (u32)-1) {
-        log::core::trace(
-            "Dedicated compute queue family found, index: {}",
-            dedicated_compute_queue
-        );
-        
         compute_family = dedicated_compute_queue;
     }
     
     if (dedicated_transfer_queue != (u32)-1) {
-        log::core::trace(
-            "Dedicated transfer queue family found, index: {}",
-            dedicated_transfer_queue
-        );
-        
         transfer_family = dedicated_transfer_queue;
     }
 
