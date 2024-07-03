@@ -26,13 +26,14 @@ std::unique_ptr<Renderer> Renderer::getRenderer(RendererBackend backend)
         );
         #endif
 
-    } else if (backend == RendererBackend::OpenGl) {
+    } else if (backend == RendererBackend::OpenGL) {
         throw UnsupportedBackend(
-            "getRenderer: OpenGl is currently not supported", backend
+            backend,
+            "getRenderer: OpenGl is currently not supported"
         );
         
     } else {
-        throw UnsupportedBackend("getRenderer: unsupported backend", backend);
+        throw UnsupportedBackend(backend, "getRenderer: unsupported backend");
     } 
 }
 

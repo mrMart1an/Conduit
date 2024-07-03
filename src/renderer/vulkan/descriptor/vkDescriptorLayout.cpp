@@ -7,8 +7,6 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include <fmt/format.h>
-
 namespace cndt::vulkan {
 
 // Add a binding to the builder binding list
@@ -56,10 +54,10 @@ DescriptorLayout DescriptorLayoutBuilder::build(
     );
 
     if (res != VK_SUCCESS) {
-        throw DescriptorSetLayoutBuildError(fmt::format(
+        throw DescriptorSetLayoutBuildError(
             "Descriptor set layout creation error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     return out_layout;

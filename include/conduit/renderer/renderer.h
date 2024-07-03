@@ -6,14 +6,13 @@
 #include "conduit/window/window.h"
 
 #include <memory>
-#include <string_view>
 
 namespace cndt {
 
 // Renderer backend enum
 enum class RendererBackend {
     None = 0,
-    OpenGl,
+    OpenGL,
     Vulkan
 };
 

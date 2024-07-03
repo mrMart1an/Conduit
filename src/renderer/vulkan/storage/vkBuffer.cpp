@@ -5,8 +5,6 @@
 
 #include <cstring>
 
-#include <fmt/format.h>
-
 namespace cndt::vulkan {
 
 // Bind the given buffer to the device with the given memory offset
@@ -20,10 +18,10 @@ void Buffer::bind(VkDeviceSize memory_offset)
     );
 
     if (res != VK_SUCCESS) {
-        throw BufferBindError(fmt::format(
+        throw BufferBindError(
             "Vulkan buffer bind error: {}", 
             vk_error_str(res)
-        ));
+        );
     }
 }
 
@@ -45,10 +43,10 @@ void* Buffer::mapBuffer(
     );
 
     if (res != VK_SUCCESS) {
-        throw BufferMapError(fmt::format(
+        throw BufferMapError(
             "Vulkan buffer map error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     m_mapped = true;

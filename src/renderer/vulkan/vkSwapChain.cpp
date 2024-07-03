@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include <vulkan/vulkan_core.h>
-#include <fmt/format.h>
 
 namespace cndt::vulkan {
 
@@ -112,10 +111,10 @@ void SwapChain::initialize(
     );
 
     if (res != VK_SUCCESS) {
-        throw SwapChainInitError(fmt::format(
+        throw SwapChainInitError(
             "Swap chain creation error: {}",
             vk_error_str(res)
-        ));
+        );
     }
 
     // Retrieve the swap chain images
@@ -245,10 +244,10 @@ bool SwapChain::acquireNextImage(
         return true;
         
     } else if (res != VK_SUCCESS) {
-        throw SwapChainImageAcquireError(fmt::format(
+        throw SwapChainImageAcquireError(
             "Swap chain image acquisition error: {}",
             vk_error_str(res)
-        ));
+        );
     }
     
     return true;
@@ -287,10 +286,10 @@ bool SwapChain::presentImage(Device &device, VkSemaphore render_done)
         return false;
         
     } else if (res != VK_SUCCESS) {
-        throw SwapChainPresentError(fmt::format(
+        throw SwapChainPresentError(
             "Swap chain image presentation error: {}",
             vk_error_str(res)
-        ));
+        );
     }
     
     // Update the current frame counter
@@ -335,10 +334,10 @@ void SwapChain::createImageViews(Context &context, Device &device)
         );
         
         if (res) {
-            throw SwapChainViewError(fmt::format(
+            throw SwapChainViewError(
                 "Swap chain image view creation error: {}",
                 vk_error_str(res)
-            ));
+            );
         }
 
         // Add the view to the vector

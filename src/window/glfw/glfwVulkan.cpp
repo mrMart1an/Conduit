@@ -33,10 +33,10 @@ VkSurfaceKHR GlfwWindow::getVkSurface(
     );
 
     if (res != VK_SUCCESS) {
-        throw vulkan::SurfaceInitError(fmt::format(
+        throw vulkan::SurfaceInitError(
             "Glfw vulkan surface creation failed: {}", 
             vulkan::vk_error_str(res)
-        ));
+        );
     }
 
     return out_surface;
@@ -57,7 +57,7 @@ std::vector<const char*> GlfwWindow::getVkExtensions()
 
     if (ext_count < 1) {
         throw vulkan::UnexpectedError(
-            "glfwGetRequiredInstanceExtensions zero extensions"
+            "glfwGetRequiredInstanceExtensions returned zero extensions"
         );
     }
 

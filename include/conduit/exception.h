@@ -3,14 +3,27 @@
 
 #include <exception>
 #include <string>
-#include <string_view>
+#include <utility>
+
+#include <fmt/format.h>
 
 namespace cndt {
 
 // Conduit generic exception
 class Exception : public std::exception {
 public:
-    Exception(std::string_view message) : m_message(message) { }
+    template<typename... Args>
+    Exception(fmt::format_string<Args...> msg, Args&&... args) : 
+        m_message() 
+    { 
+        try {
+            m_message = fmt::format(msg, std::forward<Args>(args)...);
+        } catch (...) { 
+            // If an exception is throw in the format function  
+            // store a replacment string
+            m_message = "Exception in exception formater!";
+        }
+    }
     Exception() : m_message("Conduit exception") { }
     
     virtual const char* what() const throw() 

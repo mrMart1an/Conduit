@@ -25,18 +25,18 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
 
     // Test path validity
     if (!std::filesystem::exists(code_spv)) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "File \"{}\" for shader asset \"{}\" not found",
             code_spv.string(),
             name
-        ));
+        );
     }
     if (!std::filesystem::exists(code_glsl)) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "File \"{}\" for shader asset \"{}\" not found",
             code_glsl.string(),
             name
-        ));
+        );
     }
 
     // Get the shader type
@@ -55,11 +55,11 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
         type = Shader::Type::Compute;
         
     else {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Asset shader \"{}\" unknow type: \"{}\"",
             name,
             type_str
-        ));
+        );
     }
 
     // Debug log
@@ -99,18 +99,18 @@ AssetInfo<Texture> parseTexture(std::string_view name, json element)
 
     // Test path validity
     if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Source file \"{}\" for texture asset \"{}\" not found",
             src.string(),
             name
-        ));
+        );
     }
     if (!std::filesystem::exists(norm) && !norm.empty()) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Normal file \"{}\" for texture asset \"{}\" not found",
             norm.string(),
             name
-        ));
+        );
     }
     
     // Debug log
@@ -142,11 +142,11 @@ AssetInfo<Mesh> parseMesh(std::string_view name, json element)
     
     // Test path validity
     if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Source file \"{}\" for mesh asset \"{}\" not found",
             src.string(),
             name
-        ));
+        );
     }
     
     // Get the shader type
@@ -157,11 +157,11 @@ AssetInfo<Mesh> parseMesh(std::string_view name, json element)
         type = AssetInfo<Mesh>::FileType::Obj;
         
     else {
-        throw AssetTableParseError(fmt::format(
+        throw AssetTableParseError(
             "Asset mesh \"{}\" unknow file type: \"{}\"",
             name,
             type_str
-        ));
+        );
     }
     
     return AssetInfo<Mesh>(

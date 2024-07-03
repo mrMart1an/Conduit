@@ -33,7 +33,7 @@ public:
     const AssetType* asset() const { 
         if (!m_info.isAvailable()) {
             throw AssetUnavailable(
-                "Pointer access attempted",
+                "Pointer access attempted on unavailable asset \"{}\"",
                 m_info.assetName()
             );
         }

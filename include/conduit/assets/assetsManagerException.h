@@ -3,7 +3,9 @@
 
 #include "conduit/exception.h"
 
-#include <fmt/core.h>
+#include <utility>
+
+#include "fmt/base.h"
 
 namespace cndt {
 
@@ -11,44 +13,45 @@ namespace cndt {
 class AssetException : public Exception {
 public:
     AssetException() : Exception("Unknow asset exception") { }      
-    AssetException(std::string_view msg) : Exception(msg) { }      
+
+    template<typename... Args>
+    AssetException(fmt::format_string<Args...> msg, Args&&... args) 
+    : Exception(msg, std::forward<Args>(args)...) { }      
 };
 
 // Asset table not found exception
 class AssetTableNotFound : public AssetException {
 public:
-    AssetTableNotFound(
-        std::string_view msg
-    ) : AssetException(msg) { }      
+    template<typename... Args>
+    AssetTableNotFound(fmt::format_string<Args...> msg, Args&&... args) 
+    : AssetException(msg, std::forward<Args>(args)...) { }      
 };
 
 // Asset table parse exception
 class AssetTableParseError : public AssetException {
 public:
+    template<typename... Args>
     AssetTableParseError(
-        std::string_view msg
-    ) : AssetException(msg) { }      
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : AssetException(msg, std::forward<Args>(args)...) { }      
 };
 
 // Asset unavailable exception
 class AssetUnavailable : public AssetException {
 public:
+    template<typename... Args>
     AssetUnavailable(
-        std::string_view msg,
-        std::string_view asset_name
-    ) : AssetException(fmt::format(
-        "asset {}: {}",
-        asset_name,
-        msg
-    )) { }      
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : AssetException(msg, std::forward<Args>(args)...) { }      
 };
 
 // Asset not found exception
 class AssetNotFound : public AssetException {
 public:
+    template<typename... Args>
     AssetNotFound(
-        std::string_view msg
-    ) : AssetException(msg) { }      
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : AssetException(msg, std::forward<Args>(args)...) { }      
 };
 
 } // namespace cndt
