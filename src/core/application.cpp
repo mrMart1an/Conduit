@@ -39,24 +39,26 @@ Application::~Application() {
 };
 
 // Initialize the game engine 
-void Application::engineStartup()
+void Application::engineStartup(EngineConfig config)
 {
     // Create the glfw window handle
-    Window::Config window_config(appName());
-    
     m_window = std::make_unique<glfw::GlfwWindow>(
         m_event_bus.getEventWriter()
     );
     
-    m_window->initialize(window_config);
+    m_window->initialize(config.window, appName().c_str());
     
     m_delete_queue.addDeleter(std::bind(
         &Window::shutdown, m_window.get()
     ));
 
     // Create and initialize the renderer 
-    m_renderer = Renderer::getRenderer(RendererBackend::Vulkan);
-    m_renderer->initialize(appName().c_str(), m_window.get());
+    m_renderer = Renderer::getRenderer(config.renderer);
+    m_renderer->initialize(
+        config.renderer,
+        appName().c_str(),
+        m_window.get()
+    );
 
     m_delete_queue.addDeleter(std::bind(
         &Renderer::shutdown, m_renderer.get()

@@ -1,3 +1,4 @@
+#include "conduit/renderer/backendEnum.h"
 #include "conduit/renderer/renderer.h"
 #include "conduit/renderer/rendererException.h"
 
@@ -13,8 +14,11 @@ namespace cndt {
 
 // Get a pointer to an uninitialized renderer object
 // for the given implementation
-std::unique_ptr<Renderer> Renderer::getRenderer(RendererBackend backend)
-{
+std::unique_ptr<Renderer> Renderer::getRenderer(
+    EngineConfig::Renderer config
+) {
+    RendererBackend backend = config.backend.value_or(RendererBackend::None);
+
     if (backend == RendererBackend::Vulkan) {
         #ifdef CNDT_VULKAN_BACKEND
         

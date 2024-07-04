@@ -3,7 +3,8 @@
 
 #include "conduit/defines.h"
 
-#include <string>
+#include "conduit/config/engineConfig.h"
+
 #include <vector>
 
 // Define the vulkan surface type without importing the header
@@ -30,39 +31,6 @@ public:
         i32 window_width, window_height;      
         // Frame buffer size in pixels
         i32 buffer_width, buffer_height;      
-    };
-    
-protected:
-    // Window configuration struct
-    struct Config {
-        Config(
-            std::string_view title,
-            i32 width = 800, i32 height = 600,
-            bool fullscreen = false,
-            bool resizable = false,
-            bool floating = false
-        ) : 
-            title(title),
-            width(width), height(height),
-            fullscreen(fullscreen),
-            resizable(resizable),
-            floating(floating)
-        { }
-        
-        // Window title
-        std::string title;
-
-        // Window dimension,
-        // if the window is set to fullscreen, these value will be used
-        // as the window dimension on fullscreen exit
-        i32 width, height;
-
-        // Ignore the provided width and height and make the window fullscreen
-        bool fullscreen;
-        // The window will be resizable by the user
-        bool resizable;
-        // The window will always float on top of other window
-        bool floating;
     };
     
 public:
@@ -100,7 +68,10 @@ public:
 
 protected:
     // Window initialization function
-    virtual void initialize(Config config) = 0;
+    virtual void initialize(
+        EngineConfig::Window config,
+        const char* title
+    ) = 0;
 
     // Window shutdown function 
     virtual void shutdown() = 0;

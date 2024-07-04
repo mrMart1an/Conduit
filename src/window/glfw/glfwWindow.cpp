@@ -1,3 +1,4 @@
+#include "conduit/config/engineConfig.h"
 #include "conduit/logging.h"
 
 #include "conduit/events/eventWriter.h"
@@ -32,8 +33,10 @@ GlfwWindow::~GlfwWindow()
 }
 
 // Glfw window initialization function
-void GlfwWindow::initialize(Config config)
-{
+void GlfwWindow::initialize(
+    EngineConfig::Window config,
+    const char* title
+) {
     if (!glfwInit()) {
         throw WindowInitError(
             "GlfwWindow init error: glfw initialization failed"
@@ -48,17 +51,23 @@ void GlfwWindow::initialize(Config config)
     glfwSetErrorCallback(callback_error);
     
     // Window creation hints
-    glfwWindowHint(GLFW_RESIZABLE, config.resizable ? GLFW_TRUE : GLFW_FALSE);
-    glfwWindowHint(GLFW_FLOATING, config.floating ? GLFW_TRUE : GLFW_FALSE);   
+    glfwWindowHint(
+        GLFW_RESIZABLE,
+        config.resizable.value_or(false) ? GLFW_TRUE : GLFW_FALSE
+    );
+    glfwWindowHint(
+        GLFW_FLOATING,
+        config.floating.value_or(false) ? GLFW_TRUE : GLFW_FALSE
+    );   
 
     // Disable OpenGL context creation
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     
     // Create the glfw window handler
     m_glfw_window = glfwCreateWindow(
-        config.width, 
-        config.height,
-        config.title.c_str(),
+        config.width.value_or(800), 
+        config.height.value_or(600),
+        title,
         NULL, NULL
     );
 
@@ -95,7 +104,7 @@ void GlfwWindow::initialize(Config config)
     );
     
     // Set fullscreen if requested
-    setFullscreen(config.fullscreen);
+    setFullscreen(config.start_fullscreen.value_or(false));
 
     // Set the callback data pointer to the current window object
     glfwSetWindowUserPointer(m_glfw_window, this);

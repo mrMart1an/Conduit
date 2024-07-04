@@ -22,7 +22,9 @@ namespace cndt::vulkan {
 
 // Initialize the renderer implementation
 void VkRenderer::initialize(
+    EngineConfig::Renderer,
     const char *app_title,
+
     Window *window_p
 ) {
     // Store the swap chain attachments dimension

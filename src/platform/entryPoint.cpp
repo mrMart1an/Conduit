@@ -1,3 +1,4 @@
+#include "conduit/config/engineConfig.h"
 #include "conduit/application.h"
 #include "conduit/logging.h"
 
@@ -13,9 +14,14 @@
 int main(void) {
     try {
         cndt::AppRunner app = cndt::getEntryClass();
+
+        // Get the configuration
+        // TODO add config file and command line argument parser 
+        cndt::EngineConfig config;
+        config.setDefault();
         
         // Run the application
-        app.run();
+        app.run(config);
         
     } catch (std::exception &e) {
         cndt::log::core::fatal("Exception: {}",  e.what());
