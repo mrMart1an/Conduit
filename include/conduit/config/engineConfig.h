@@ -5,6 +5,7 @@
 
 #include "conduit/renderer/backendEnum.h"
 
+#include <filesystem>
 #include <optional>
 
 namespace cndt {
@@ -48,6 +49,15 @@ struct EngineConfig {
 
         std::optional<RendererBackend> backend;
     } renderer;
+
+    // Store the asset manager settings
+    struct Assets {
+        Assets() :
+            user_table_path(std::nullopt)
+        { }
+
+        std::optional<std::filesystem::path> user_table_path;
+    } assets;
 
     // Fill all the field with the default values
     void setDefault();

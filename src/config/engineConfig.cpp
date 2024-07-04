@@ -14,6 +14,9 @@ void EngineConfig::setDefault()
 
     // Renderer default settings
     renderer.backend = RendererBackend::Vulkan;
+
+    // Asset manager settings
+    assets.user_table_path = std::nullopt;
 }
 
 // Merge the configuration struct with another one,
@@ -40,6 +43,10 @@ void EngineConfig::merge(EngineConfig& config)
     // Merge renderer settings
     if (config.renderer.backend.has_value())
         renderer.backend = config.renderer.backend;
+
+    // Assets manager settings
+    if (config.assets.user_table_path.has_value())
+        assets.user_table_path = config.assets.user_table_path;
 }
 
 } // namespace cndt
