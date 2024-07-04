@@ -2,6 +2,7 @@
 #define CNDT_APPLICATION_H
 
 #include "conduit/assets/assetsManager.h"
+#include "conduit/config/engineConfig.h"
 #include "conduit/defines.h"
 
 #include "conduit/ecs/world.h"
@@ -28,6 +29,9 @@ protected:
     // Return a string as the application name
     virtual std::string appName() const { return "Conduit application"; };
 
+    // Return the application defined engine config
+    virtual EngineConfig engineConfig() const { return EngineConfig(); }
+
     // Application startup function,
     // called after engine initialization and before stating the main loop
     virtual void startup() = 0;
@@ -43,7 +47,7 @@ protected:
 // These functions shouldn't be called by the used defined application class
 private:
     // Initialize the game engine 
-    void engineStartup();
+    void engineStartup(EngineConfig config);
 
     // Shutdown the game engine
     void engineShutdown();

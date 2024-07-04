@@ -1,6 +1,8 @@
 #ifndef CNDT_APP_RUNNER_H
 #define CNDT_APP_RUNNER_H
 
+#include "conduit/config/engineConfig.h"
+
 #include <memory>
 
 namespace cndt {
@@ -14,7 +16,7 @@ public:
     AppRunner(std::unique_ptr<Application> application);
 
     // Start the application
-    void run();
+    void run(EngineConfig config);
     
 private:
     // Store the application class in a unique pointer

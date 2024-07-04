@@ -25,6 +25,11 @@ set(ASSETS_SRC
     "${BASE_PATH}/assets/assetLoaderFuns.cpp" 
 )
 
+# Config manager source file
+set(CONFIG_SRC
+    "${BASE_PATH}/config/engineConfig.cpp" 
+)
+
 # Engine entity component system source files
 set(ECS_SRC
     "${BASE_PATH}/ecs/commandBuffer.cpp"
@@ -85,10 +90,10 @@ set(PLATFORM_SRC
 
 # Define the engine_source variable
 set(ENGINE_SRC
-    
     ${CORE_SRC}
     ${ECS_SRC}
     ${ASSETS_SRC}
+    ${CONFIG_SRC}
     ${EVENT_SRC}
     ${WINDOW_SRC}
     ${RENDERER_SRC}

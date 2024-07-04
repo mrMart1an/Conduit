@@ -1,6 +1,7 @@
 #ifndef CNDT_VK_RENDERER_H
 #define CNDT_VK_RENDERER_H
 
+#include "conduit/config/engineConfig.h"
 #include "conduit/renderer/vertex.h"
 #include "conduit/window/window.h"
 #include "conduit/renderer/renderer.h"
@@ -59,7 +60,9 @@ public:
 protected:
     // Initialize the renderer implementation
     void initialize(
+        EngineConfig::Renderer config,
         const char *app_title,
+
         Window *window_p
     ) override;
     

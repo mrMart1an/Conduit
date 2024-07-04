@@ -1,6 +1,7 @@
 #ifndef CNDT_GLFW_WINDOW_H
 #define CNDT_GLFW_WINDOW_H
 
+#include "conduit/config/engineConfig.h"
 #include "conduit/events/eventWriter.h"
 #include "conduit/window/window.h"
 
@@ -43,7 +44,10 @@ public:
     
 private:
     // Initialize the glfw window
-    void initialize(Config config) override;
+    void initialize(
+        EngineConfig::Window config,
+        const char* title
+    ) override;
 
     // Shutdown the glfw window
     void shutdown() override;

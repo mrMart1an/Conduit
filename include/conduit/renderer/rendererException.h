@@ -3,7 +3,7 @@
 
 #include "conduit/exception.h"
 
-#include "conduit/renderer/renderer.h"
+#include "conduit/renderer/backendEnum.h"
 
 #include <fmt/base.h>
 #include <utility>
