@@ -41,6 +41,13 @@ Application::~Application() {
 // Initialize the game engine 
 void Application::engineStartup(EngineConfig config)
 {
+    // Load the assets manager user table if needed
+    if (config.assets.user_table_path.has_value()) {
+        m_asset_manager = AssetsManager(
+            config.assets.user_table_path.value()
+        );
+    }
+
     // Create the glfw window handle
     m_window = std::make_unique<glfw::GlfwWindow>(
         m_event_bus.getEventWriter()
