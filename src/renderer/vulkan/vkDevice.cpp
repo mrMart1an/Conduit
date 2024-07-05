@@ -20,6 +20,7 @@
 #include <string_view>
 #include <vector>
 
+#include "vk_mem_alloc.h"
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -39,6 +40,12 @@ void Device::initialize(
     // Create the logical device
     createLogicalDevice(context_p);
     m_delete_queue.addDeleter(std::bind(&Device::destroyLogicalDevice, this));
+
+    // Initialize the vma allocator
+    initializeVmaAllocator(context_p->instance);
+    m_delete_queue.addDeleter([&]() {
+        shutdownVmaAllocator();
+    });
 
     // Retrieve the device queue
     retrieveQueue();
@@ -770,6 +777,44 @@ u32 Device::findMemoryTypeIndex(
 
     // Throw an exception if no suitable type was found
     throw DeviceMemoryError("No suitable memory type for allocation");
+}
+
+/*
+ *
+ *      Vulkan memory allocator functions
+ *
+ * */
+
+// Initialize the device vma allocator
+void Device::initializeVmaAllocator(VkInstance instance)
+{
+    VmaAllocatorCreateInfo allocator_info = {};
+
+    allocator_info.instance = instance;
+    allocator_info.physicalDevice = physical;
+    allocator_info.device = logical;
+
+    allocator_info.pHeapSizeLimit = nullptr;
+    allocator_info.pAllocationCallbacks = nullptr;
+    allocator_info.pDeviceMemoryCallbacks = nullptr;
+
+    allocator_info.flags = 0;
+
+    // Create the allocator and check the result
+    VkResult res = vmaCreateAllocator(&allocator_info, &m_vma_allocator);
+
+    if (res != VK_SUCCESS) {
+        throw DeviceInitError(
+            "Vma allocar initialization failed: {}",
+            vk_error_str(res)
+        );
+    }
+}
+
+// Shutdown the device vma allocator
+void Device::shutdownVmaAllocator()
+{
+    vmaDestroyAllocator(m_vma_allocator);
 }
 
 /*

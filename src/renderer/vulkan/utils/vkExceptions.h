@@ -3,8 +3,6 @@
 
 #include "conduit/renderer/rendererException.h"
 
-#include "conduit/renderer/renderer.h"
-
 #include <fmt/base.h>
 
 namespace cndt::vulkan {

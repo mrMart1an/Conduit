@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 namespace cndt::vulkan {
@@ -458,11 +459,23 @@ private:
      *
      * */
     
-    // Create the command pool  
+    // Create the command pool
     CommandPool createCmdPool(
         u32 queue_family_index,
         VkCommandPoolCreateFlags flags
     );
+
+    /*
+     *
+     *      Vulkan memory allocator functions
+     *
+     * */
+
+    // Initialize the device vma allocator
+    void initializeVmaAllocator(VkInstance instance);
+
+    // Shutdown the device vma allocator
+    void shutdownVmaAllocator();
 
     /*
      *
@@ -536,6 +549,8 @@ public:
 private:
     // Store custom allocator callbacks
     const VkAllocationCallbacks *m_allocator;
+
+    VmaAllocator m_vma_allocator;
 
     // Queue family indices 
     QueueFamilyIndices m_queue_indices;
