@@ -69,6 +69,8 @@ if(VULKAN_BACKEND)
         "${BASE_PATH}/renderer/vulkan/vkRenderer.cpp"   
         "${BASE_PATH}/renderer/vulkan/vkRenderPass.cpp"   
         "${BASE_PATH}/renderer/vulkan/vkSwapChain.cpp"
+
+        "${BASE_PATH}/renderer/vulkan/vmaUsage.cpp"
     )
 endif()
 
@@ -80,6 +82,8 @@ endif()
 set(RENDERER_SRC
     ${VULKAN_SRC}
     ${OPENGL_SRC}
+
+    "${BASE_PATH}/renderer/buffer.cpp"
     "${BASE_PATH}/renderer/renderer.cpp"
 )
 
