@@ -1,6 +1,9 @@
 #ifndef CNDT_VK_BUFFER_H
 #define CNDT_VK_BUFFER_H
 
+#include "conduit/renderer/buffer.h"
+
+#include "vk_mem_alloc.h"
 #include <vulkan/vulkan.h>
 
 namespace cndt::vulkan {
@@ -14,28 +17,29 @@ class Buffer {
 public:
     Buffer() = default;
 
-    // Bind the given buffer to the device with the given memory offset
-    void bind(VkDeviceSize memory_offset = 0);
-    
     // Map the buffer to a region of host memory and return a pointer to it
-    void* mapBuffer(
-        VkDeviceSize offset,
-        VkDeviceSize size,
-
-        VkMemoryMapFlags map_flags
-    );
+    // and perform cache maintenance if necessary    
+    void* map();
 
     // Unmap the given buffer 
-    void unmapBuffer();
+    // and perform cache maintenance if necessary    
+    void unmap();
     
-    // Load the data at the given pointer to the buffer at the given offset
-    void loadBuffer(
-        VkMemoryMapFlags map_flags,
-    
-        VkDeviceSize buffer_offset,
-        VkDeviceSize size,
-    
-        void *data_p
+    // Load the data in the src pointer to the buffer with the given
+    // destination offset
+    void copyMemToBuf(
+        void *src_data_p,
+
+        VkDeviceSize dest_offset,
+        VkDeviceSize size
+    );
+
+    // Copy the buffer data at the src offset in the destination data pointer
+    void copyBufToMem(
+        void *dst_data_p,
+
+        VkDeviceSize src_offset,
+        VkDeviceSize size
     );
 
     /*
@@ -48,7 +52,7 @@ public:
     VkBuffer handle() const { return m_handle; }
 
     // Return the size of the buffer
-    VkDeviceSize size() const { return m_size; };
+    VkDeviceSize size() const { return m_info.size; };
 
     // Return true if the buffer is mapped
     bool mapped() const { return m_mapped; };
@@ -56,13 +60,11 @@ public:
 private:
     VkBuffer m_handle;
     
-    VkDeviceSize m_size;
-    
-    VkBufferUsageFlagBits m_usage_bits;
-    VkMemoryPropertyFlags m_memory_flags;
-    
-    VkDeviceMemory m_memory;
-    
+    VmaAllocation m_allocation;
+    VmaAllocationInfo m_allocation_info;
+
+    GpuBufferInfo m_info;
+
     bool m_mapped;
 
     // A pointer to the device that own the buffer

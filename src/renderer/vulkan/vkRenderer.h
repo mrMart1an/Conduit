@@ -15,9 +15,9 @@
 #include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkSwapChain.h"
-#include "renderer/vulkan/vkUniformData.h"
 
 #include <vector>
+
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
@@ -40,7 +40,6 @@ public:
 
         // Uniform buffer
         Buffer camera_model_uniform;
-        CameraModel* camera_model_mapped_p;
 
         // descriptor allocator and writer
         DescriptorAllocator descriptor_allocator;

@@ -9,6 +9,54 @@ namespace cndt {
 
 class Renderer;
 
+// GPU buffer create info
+struct GpuBufferInfo {
+public:
+    // Buffer memory domain enum
+    enum class Domain {
+        // Memory for efficient device access, prefer host visible  
+        // Automatically select the best memory type 
+        Device,
+        // Host visible memory
+        // Automatically select the best memory type 
+        Host,
+
+        // Host visible cached memory
+        HostCached,
+        // Host visible coherent memory
+        HostCoherent
+    };
+
+    // Buffer usage enum with constexpr
+    using UsageEnum = u32;
+
+    struct Usage {
+        static constexpr UsageEnum None          = 0;
+
+        static constexpr UsageEnum TransferSrc   = BIT(0);
+        static constexpr UsageEnum TransferDst   = BIT(1);
+
+        static constexpr UsageEnum UniformBuffer = BIT(2);
+        static constexpr UsageEnum StorageBuffer = BIT(3);
+        static constexpr UsageEnum VertexBuffer  = BIT(4);
+        static constexpr UsageEnum IndexBuffer   = BIT(5);
+
+        Usage() = delete;
+    };
+
+    // Buffer size type
+    using BufferSize = usize;
+
+public:
+    // Buffer memory domain
+    Domain domain = Domain::Device;
+    // Buffer usage
+    UsageEnum usage = Usage::None;
+
+    // Buffer size 
+    BufferSize size = 0;
+};
+
 // Ref counted GPU renderer buffer
 class GpuBufferRef {
     friend class Renderer;
