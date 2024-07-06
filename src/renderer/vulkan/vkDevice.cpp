@@ -331,9 +331,7 @@ Image Device::createImage(
     bool linear_tiling,
 
     VkImageUsageFlagBits usage_bits,
-    VkMemoryPropertyFlags memory_property,
-
-    bool bind_on_create
+    VkMemoryPropertyFlags memory_property
 ) {
     Image out_image;
     out_image.m_device_p = this;
@@ -387,11 +385,6 @@ Image Device::createImage(
         &requirements
     );
 
-    out_image.m_memory = allocateMemory(
-        requirements,
-        memory_property
-    );
-    
     // Create image view
     VkImageViewCreateInfo view_info = { };
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -418,10 +411,6 @@ Image Device::createImage(
         );
     }
     
-    // Bind the image if necessary
-    if (bind_on_create) 
-        out_image.bind();
-    
     return out_image;
 }
 
@@ -431,8 +420,6 @@ void Device::destroyImage(Image &image)
     vkDestroyImageView(logical, image.m_view, m_allocator);
     vkDestroyImage(logical, image.m_handle, m_allocator);
     
-    freeMemory(image.m_memory);
-
     image = Image();
 }
 
@@ -443,35 +430,82 @@ void Device::destroyImage(Image &image)
  * */
 
 // Create a new buffer with the given requirement
-Buffer Device::createBuffer(
-    VkDeviceSize size,
-    
-    VkBufferUsageFlagBits usage_bits,
-    VkMemoryPropertyFlags memory_flags,
-    
-    bool bind_on_create
-) {
+Buffer Device::createBuffer(GpuBufferInfo& info)
+ {
     Buffer out_buffer;
+
     out_buffer.m_device_p = this;
+    out_buffer.m_info = info;
     
-    out_buffer.m_usage_bits = usage_bits;
-    out_buffer.m_memory_flags = memory_flags;
-    
-    out_buffer.m_size = size;
     out_buffer.m_mapped = false;
 
     // Create the buffer
     VkBufferCreateInfo buffer_info = { };
     buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_info.size = size;
-    buffer_info.usage = usage_bits;
     buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    buffer_info.size = info.size;
 
-    VkResult res = vkCreateBuffer(
-        logical,
-        &buffer_info, 
-        m_allocator, 
-        &out_buffer.m_handle
+    // Find buffer usage
+    buffer_info.usage = 0;
+
+    if (info.usage & GpuBufferInfo::Usage::TransferDst)
+        buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    if (info.usage & GpuBufferInfo::Usage::TransferSrc)
+        buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    if (info.usage & GpuBufferInfo::Usage::StorageBuffer)
+        buffer_info.usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    if (info.usage & GpuBufferInfo::Usage::UniformBuffer)
+        buffer_info.usage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    if (info.usage & GpuBufferInfo::Usage::VertexBuffer)
+        buffer_info.usage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    if (info.usage & GpuBufferInfo::Usage::IndexBuffer)
+        buffer_info.usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+    // Allocation info
+    VmaAllocationCreateInfo alloc_create_info = { };
+
+    if (info.domain == GpuBufferInfo::Domain::Device) {
+        alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+
+    } else if (info.domain == GpuBufferInfo::Domain::Host) {
+        alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO;
+
+        // Always create host visible memory with the create mapped flag
+        alloc_create_info.flags =
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
+            VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        
+    } else if (info.domain == GpuBufferInfo::Domain::HostCached) {
+        alloc_create_info.requiredFlags = 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+
+        // Always create host visible memory with the create mapped flag
+        alloc_create_info.flags =
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
+            VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+    } else if (info.domain == GpuBufferInfo::Domain::HostCoherent) {
+        alloc_create_info.requiredFlags = 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+        // Always create host visible memory with the create mapped flag
+        alloc_create_info.flags =
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
+            VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    }
+
+    // Create the buffer and the allocation
+    VkResult res = vmaCreateBuffer(
+        m_vma_allocator,
+        &buffer_info,
+        &alloc_create_info,
+        &out_buffer.m_handle,
+        &out_buffer.m_allocation,
+        &out_buffer.m_allocation_info
     );
 
     if (res != VK_SUCCESS) {
@@ -481,33 +515,17 @@ Buffer Device::createBuffer(
         );
     }
 
-    // Allocate the device memory
-    VkMemoryRequirements requirements;
-    vkGetBufferMemoryRequirements(
-        logical,
-        out_buffer.m_handle,
-        &requirements
-    );
-
-    out_buffer.m_memory = allocateMemory(
-        requirements,
-        out_buffer.m_memory_flags
-    );
-
-    if (bind_on_create) 
-        out_buffer.bind();
-
     return out_buffer;
 }
 
 // Destroy the given buffer
 void Device::destroyBuffer(Buffer &buffer) 
 {
-    if (buffer.m_handle != VK_NULL_HANDLE)
-        vkDestroyBuffer(logical, buffer.m_handle, m_allocator);
-    
-    if (buffer.m_memory != VK_NULL_HANDLE)
-        freeMemory(buffer.m_memory);
+    vmaDestroyBuffer(
+        m_vma_allocator,
+        buffer.m_handle,
+        buffer.m_allocation
+    );
 
     buffer = Buffer();
 }
@@ -518,68 +536,7 @@ void Device::bufferResize(
     Buffer &buffer,
     VkDeviceSize size
 ) {
-    VkBuffer new_buffer;
-    VkDeviceMemory new_memory;
-
-    // Create the buffer
-    VkBufferCreateInfo buffer_info = { };
-    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_info.size = size;
-    buffer_info.usage = buffer.m_usage_bits;
-    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VkResult buf_res = vkCreateBuffer(
-        logical,
-        &buffer_info, 
-        m_allocator, 
-        &new_buffer
-    );
-    
-    if (buf_res != VK_SUCCESS) {
-        throw BufferCreateError(
-            "Vulkan buffer resize error: {}",
-            vk_error_str(buf_res)
-        );
-    }
-    
-    // Allocate the device memory
-    VkMemoryRequirements requirements;
-    vkGetBufferMemoryRequirements(
-        logical,
-        buffer.m_handle,
-        &requirements
-    );
-
-    new_memory = allocateMemory(
-        requirements,
-        buffer.m_memory_flags
-    );
-    
-    // Bind the buffer and copy the content of the old one in the new one
-    VkResult bind_res = vkBindBufferMemory(logical, new_buffer, new_memory, 0);
-
-    if (bind_res != VK_SUCCESS) {
-        throw BufferBindError(
-            "Vulkan buffer resize bind error: {}", 
-            vk_error_str(bind_res)
-        );
-    }
-    
-    // Copy the old buffer content in the new one
-    copyBuffer(
-        0, buffer.m_handle,
-        0, new_buffer,
-        buffer.m_size
-    );
-
-    // Destroy the old buffer memory and handle
-    freeMemory(buffer.m_memory);   
-    vkDestroyBuffer(logical, buffer.m_handle, m_allocator);
-
-    // Assign the new buffer and memory
-    buffer.m_handle = new_buffer;
-    buffer.m_memory = new_memory;
-    buffer.m_size = size;
+// TODO buffer resize
 }
 
 // Copy the content of one buffer to another
@@ -706,78 +663,6 @@ DescriptorWriter Device::createDescriptorWriter()
 }
 
 // PRIVATE ----------------------------
-
-/*
- *
- *      Memory functions
- *
- * */
-
-// Allocate device memory with the required property
-VkDeviceMemory Device::allocateMemory(
-    VkMemoryRequirements requirements,
-    VkMemoryPropertyFlags memory_flags
-) {
-    // Find a suitable memory type
-    u32 mem_type_index = findMemoryTypeIndex(
-        requirements.memoryTypeBits, 
-        memory_flags
-    );
-    
-    VkMemoryAllocateInfo alloc_info = { };
-    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc_info.memoryTypeIndex = mem_type_index;
-    alloc_info.allocationSize = requirements.size;
-    
-    // Perform the allocation
-    VkDeviceMemory out_memory;
-    
-    VkResult res = vkAllocateMemory(
-        logical,
-        &alloc_info,
-        m_allocator,
-        &out_memory
-    );
-
-    if (res != VK_SUCCESS) {
-        throw DeviceMemoryError(
-            "Device memory allocation error: {}",
-            vk_error_str(res)
-        );
-    } 
-    
-    return out_memory;
-}
-
-// Free the given device memory 
-void Device::freeMemory(VkDeviceMemory memory)
-{
-    vkFreeMemory(logical, memory, m_allocator);
-}
-
-// Find the index of a suitable memory type
-u32 Device::findMemoryTypeIndex(
-    u32 type_bits,
-    VkMemoryPropertyFlags flags
-) {
-    VkPhysicalDeviceMemoryProperties mem_props = m_memory_properties;
-    
-    for (u32 i = 0; i < mem_props.memoryTypeCount; i++) {
-        bool type_bits_compatible = type_bits & (1 << i); 
-
-        VkMemoryPropertyFlags available_flags =
-            mem_props.memoryTypes[i].propertyFlags; 
-        
-        bool property_compatible = (available_flags & flags) == flags;  
-
-        if (type_bits_compatible && property_compatible) {
-            return i;
-        }
-    }
-
-    // Throw an exception if no suitable type was found
-    throw DeviceMemoryError("No suitable memory type for allocation");
-}
 
 /*
  *

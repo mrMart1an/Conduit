@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "conduit/renderer/buffer.h"
 #include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/descriptor/vkDescriptorWriter.h"
@@ -260,9 +261,7 @@ public:
         bool linear_tiling,
 
         VkImageUsageFlagBits usage_bits,
-        VkMemoryPropertyFlags memory_property,
-
-        bool bind_on_create
+        VkMemoryPropertyFlags memory_property
     );
 
     // Destroy the given image
@@ -275,14 +274,7 @@ public:
      * */
 
     // Create a new buffer with the given requirement
-    Buffer createBuffer(
-        VkDeviceSize size,
-        
-        VkBufferUsageFlagBits usage_bits,
-        VkMemoryPropertyFlags memory_flags,
-        
-        bool bind_on_create
-    );
+    Buffer createBuffer(GpuBufferInfo& info);
 
     // Destroy the given buffer
     void destroyBuffer(Buffer &buffer);
@@ -421,29 +413,11 @@ public:
     // Get the allocator callbacks pointer
     const VkAllocationCallbacks *allocator() const { return m_allocator; }
 
+    // Get the vma allocator
+    VmaAllocator vmaAllocator() const { return m_vma_allocator; } 
+
 private:
-    
-    /*
-     *
-     *      Memory functions
-     *
-     * */
-        
-    // Allocate device memory with the required property
-    VkDeviceMemory allocateMemory(
-        VkMemoryRequirements requirements,
-        VkMemoryPropertyFlags memory_flags
-    );
-    
-    // Free the given device memory 
-    void freeMemory(VkDeviceMemory memory);
-    
-    // Find the index of a suitable memory type
-    u32 findMemoryTypeIndex(
-        u32 type_bits,
-        VkMemoryPropertyFlags properties
-    );
-    
+   
     /*
      *
      *      Queue functions
@@ -585,33 +559,25 @@ GeometryBuffer<VertexType> Device::createGeometryBuffer(
 ) {
     GeometryBuffer<VertexType> out_buffer;
 
-    VkMemoryPropertyFlags mem_prop = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    VkBufferUsageFlagBits vertex_usage = static_cast<VkBufferUsageFlagBits>(
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | 
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
-    );
-    VkBufferUsageFlagBits index_usage = static_cast<VkBufferUsageFlagBits>(
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | 
-        VK_BUFFER_USAGE_INDEX_BUFFER_BIT
-    );
+    GpuBufferInfo vertex_info = { };
+    vertex_info.domain = GpuBufferInfo::Domain::Device;
+    vertex_info.size = vertex_count * sizeof(VertexType);
+    vertex_info.usage = 
+        GpuBufferInfo::Usage::TransferDst |
+        GpuBufferInfo::Usage::VertexBuffer;
+
+    GpuBufferInfo index_info = { };
+    index_info.domain = GpuBufferInfo::Domain::Device;
+    index_info.size = index_count * sizeof(u32);
+    index_info.usage = 
+        GpuBufferInfo::Usage::TransferDst |
+        GpuBufferInfo::Usage::IndexBuffer;
 
     // Create the vertex buffer
-    out_buffer.m_vertex_buffer = createBuffer(
-        vertex_count * sizeof(VertexType), 
-        vertex_usage,
-        mem_prop, 
-        true
-    );
+    out_buffer.m_vertex_buffer = createBuffer(vertex_info);
 
     // Create the index buffer
-    out_buffer.m_index_buffer = createBuffer(
-        index_count * sizeof(u32), 
-        index_usage,
-        mem_prop, 
-        true
-    );
+    out_buffer.m_index_buffer = createBuffer(index_info);
     
     // Set load offsets to 0
     out_buffer.m_vertex_load_offset = 0;
@@ -641,33 +607,24 @@ void Device::geometryBufferLoad(
     VkDeviceSize index_data_size = indices.size() * sizeof(u32);
 
     // Create the staging buffers
-    VkMemoryPropertyFlags staging_mem_prop =
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    GpuBufferInfo staging_info = {};
+    staging_info.domain = GpuBufferInfo::Domain::Host;
+    staging_info.usage = GpuBufferInfo::Usage::TransferSrc;
     
-    Buffer vertex_staging = createBuffer(
-        vertex_data_size,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        staging_mem_prop,
-        true
-    );
-    Buffer index_staging = createBuffer(
-        index_data_size,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        staging_mem_prop,
-        true
-    );
+    staging_info.size = vertex_data_size;
+    Buffer vertex_staging = createBuffer(staging_info);
+
+    staging_info.size = index_data_size;
+    Buffer index_staging = createBuffer(staging_info);
 
     // Load the staging buffer with the data
-    vertex_staging.loadBuffer(
-        0, 
-        0, vertex_data_size,
-        vertices.data()
+    vertex_staging.copyMemToBuf(
+        vertices.data(),
+        0, vertex_data_size
     );
-    index_staging.loadBuffer(
-        0, 
-        0, index_data_size,
-        indices.data()
+    index_staging.copyMemToBuf(
+        indices.data(),
+        0, index_data_size
     );
 
     // Copy the staging buffers to the geometry buffer

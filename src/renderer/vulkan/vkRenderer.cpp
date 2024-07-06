@@ -239,7 +239,10 @@ void VkRenderer::draw()
     );
     cam.proj[1][1] *= -1;
     
-    std::memcpy(frame_data.camera_model_mapped_p, &cam, sizeof(CameraModel));
+    frame_data.camera_model_uniform.copyMemToBuf(
+        &cam, 
+        0, sizeof(CameraModel)
+    );
     
     // Test triangle code
     m_graphics_pipeline.bind(frame_data.main_cmd_buffer);
@@ -411,22 +414,13 @@ void VkRenderer::createInFlightDatas()
             data.graphics_cmd_pool.allocateCmdBuffer();
 
         // Create and map the uniforms buffers
-        VkDeviceSize camera_model_size = sizeof(CameraModel);
-        
-        data.camera_model_uniform = m_device.createBuffer(
-            camera_model_size,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | 
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-            true
-        );
-        
-        void *mapped_mem_p = data.camera_model_uniform.mapBuffer(
-            0, camera_model_size,
-            0
-        );
-        data.camera_model_mapped_p = (CameraModel*)mapped_mem_p; 
+        GpuBufferInfo uniform_info = { };
+        uniform_info.domain = GpuBufferInfo::Domain::Host;
+        uniform_info.usage = GpuBufferInfo::Usage::UniformBuffer;
+        uniform_info.size = sizeof(CameraModel);
 
+        data.camera_model_uniform = m_device.createBuffer(uniform_info);
+        
         // Create the descriptor allocator
         std::vector<DescriptorAllocator::PoolSizeRatio> ratio = {
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}  
@@ -439,7 +433,7 @@ void VkRenderer::createInFlightDatas()
             0, 
             data.camera_model_uniform.handle(), 
             0,
-            camera_model_size,
+            sizeof(CameraModel),
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
         );
     }
@@ -455,7 +449,7 @@ void VkRenderer::destroyInFlightData()
         m_device.destroyDescriptorAllocator(data.descriptor_allocator);
 
         // Unmap and destroy uniforms buffers
-        data.camera_model_uniform.unmapBuffer();
+        data.camera_model_uniform.unmap();
         m_device.destroyBuffer(data.camera_model_uniform);
 
         // Destroy the sync object

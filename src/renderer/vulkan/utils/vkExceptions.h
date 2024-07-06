@@ -255,11 +255,11 @@ public:
     { }
 };
 
-// Vulkan buffer bind exception
-class BufferBindError : public BufferException {
+// Vulkan buffer copy exception
+class BufferCopyError : public BufferException {
 public:
     template<typename... Args>
-    BufferBindError(
+    BufferCopyError(
         fmt::format_string<Args...> msg, Args&&... args
     ) : 
         BufferException(msg, std::forward<Args>(args)...)

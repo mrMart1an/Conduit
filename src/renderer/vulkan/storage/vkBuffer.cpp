@@ -1,81 +1,111 @@
+#include "renderer/vulkan/utils/vkExceptions.h"
 #include "renderer/vulkan/utils/vkUtils.h"
 #include "renderer/vulkan/vkDevice.h"
 
 #include "renderer/vulkan/storage/vkBuffer.h"
 
-#include <cstring>
-
 namespace cndt::vulkan {
 
-// Bind the given buffer to the device with the given memory offset
-void Buffer::bind(VkDeviceSize memory_offset)
+// Map the buffer to a region of host memory and return a pointer to it
+void* Buffer::map()
 {
-    VkResult res = vkBindBufferMemory(
-        m_device_p->logical,
-        m_handle,
-        m_memory,
-        memory_offset
-    );
-
-    if (res != VK_SUCCESS) {
-        throw BufferBindError(
-            "Vulkan buffer bind error: {}", 
-            vk_error_str(res)
+    // Check if the buffer is mapped, during allocation all
+    // host visible allocation are mapped
+    if (m_allocation_info.pMappedData == nullptr) {
+        throw BufferMapError(
+            "Vulkan buffer map error: buffer isn't host visible"
         );
     }
-}
-
-// Map the buffer to a region of host memory and return a pointer to it
-void* Buffer::mapBuffer(
-    VkDeviceSize offset,
-    VkDeviceSize size,
-
-    VkMemoryMapFlags map_flags
-) {
-    void *data;
-    
-    VkResult res = vkMapMemory(
-        m_device_p->logical,
-        m_memory,
-        offset, size,
-        map_flags, 
-        &data
+        
+    VkResult res = vmaInvalidateAllocation(
+        m_device_p->vmaAllocator(),
+        m_allocation,
+        0, size()
     );
-
+   
     if (res != VK_SUCCESS) {
         throw BufferMapError(
-            "Vulkan buffer map error: {}",
+            "Vulkan buffer map cache invalidation error: {}",
             vk_error_str(res)
         );
     }
 
     m_mapped = true;
 
-    return data;
+    return m_allocation_info.pMappedData;
 }
 
 // Unmap the given buffer 
-void Buffer::unmapBuffer()
+void Buffer::unmap()
 {
-    vkUnmapMemory(m_device_p->logical, m_memory);
+    // Check if the buffer is mapped, during allocation all
+    // host visible allocation are mapped
+    if (m_allocation_info.pMappedData == nullptr) {
+        throw BufferMapError(
+            "Vulkan buffer unmap error: buffer isn't host visible"
+        );
+    }
+
+    VkResult res = vmaFlushAllocation(
+        m_device_p->vmaAllocator(),
+        m_allocation,
+        0, size()
+    );
+
+    if (res != VK_SUCCESS) {
+        throw BufferMapError(
+            "Vulkan buffer unmap cache flush error: ",
+            vk_error_str(res)
+        );
+    }
     
     m_mapped = false;
 }
 
 // Load the data at the given pointer to the buffer at the given offset
-void Buffer::loadBuffer(
-    VkMemoryMapFlags map_flags,
+void Buffer::copyMemToBuf(
+    void *src_data_p,
 
-    VkDeviceSize buffer_offset,
-    VkDeviceSize size,
-
-    void *data_p
+    VkDeviceSize dst_offset,
+    VkDeviceSize size
 ) {
-    void *buffer_data = mapBuffer(buffer_offset, size, map_flags);
+    VkResult res = vmaCopyMemoryToAllocation(
+        m_device_p->vmaAllocator(),
+        src_data_p,
+        m_allocation,
+        dst_offset,
+        size
+    );
 
-    std::memcpy(buffer_data, data_p, size);
+    if (res != VK_SUCCESS) {
+        throw BufferCopyError(
+            "Buffer copy (Mem -> Buf) error: ",
+            vk_error_str(res)
+        );
+    }
+}
 
-    unmapBuffer();
+// Copy the buffer data at the src offset in the destination data pointer
+void Buffer::copyBufToMem(
+    void *dst_data_p,
+
+    VkDeviceSize src_offset,
+    VkDeviceSize size
+) {
+    VkResult res = vmaCopyAllocationToMemory(
+        m_device_p->vmaAllocator(),
+        m_allocation,
+        src_offset,
+        dst_data_p,
+        size
+    );
+
+    if (res != VK_SUCCESS) {
+        throw BufferCopyError(
+            "Buffer copy (Buf -> Mem) error: ",
+            vk_error_str(res)
+        );
+    }
 }
 
 } // namespace cndt::vulkan
