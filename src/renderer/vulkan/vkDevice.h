@@ -199,7 +199,7 @@ public:
 
     // Execute the command in the given function and wait 
     // for them to complete on the CPU
-    void immediateCmd(
+    void runCmdImmediate(
         QueueType type,
         std::function<void(VkCommandBuffer)> immediate_fun
     );
@@ -552,12 +552,17 @@ private:
     // Device memory property for allocation
     VkPhysicalDeviceMemoryProperties m_memory_properties;
 
-    // Immediate command graphics command pool
+    // Immediate command graphics command pool and buffer
     CommandPool m_graphics_cmd_pool;
-    // Immediate command compute command pool
+    CommandBuffer m_graphics_cmd_buf;
+
+    // Immediate command compute command pool and buffer
     CommandPool m_compute_cmd_pool;
-    // Immediate command transfer command pool
+    CommandBuffer m_compute_cmd_buf;
+
+    // Immediate command transfer command pool and buffer
     CommandPool m_transfer_cmd_pool;
+    CommandBuffer m_transfer_cmd_buf;
 
     // Immediate command execution fence
     Fence m_immediate_fence;

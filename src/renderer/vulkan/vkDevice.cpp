@@ -50,29 +50,63 @@ void Device::initialize(
     // Retrieve the device queue
     retrieveQueue();
 
-    // Create transfer queue and fence
+    // Create transfer command pool and buffer and fence
     if (m_device_requirement.required_queue.transfer()) {
         // Create the transient command pool for transfer operation
         m_transfer_cmd_pool = createCmdPool(
-            m_queue_indices.transferIndex(),
-            VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+            QueueType::Transfer, true, true
         );
+        m_transfer_cmd_buf = m_transfer_cmd_pool.allocateCmdBuffer();
 
-        m_delete_queue.addDeleter(std::bind(
-            &Device::destroyCmdPool,
-            this,
-            std::ref(m_transfer_cmd_pool)
-        ));
-
-        // Create the transfer operation fence
-        m_immediate_fence = createFence(false);
-
-        m_delete_queue.addDeleter(std::bind(
-            &Device::destroyFence,
-            this,
-            std::ref(m_immediate_fence)
-        ));
+        m_delete_queue.addDeleter([&]() {
+            destroyCmdPool(m_transfer_cmd_pool);
+        });
+        
+        m_delete_queue.addDeleter([&]() {
+            m_transfer_cmd_pool.freeCmdBuffer(m_transfer_cmd_buf);
+        });
     }
+
+    // Create compute command pool and buffer and fence
+    if (m_device_requirement.required_queue.compute()) {
+        // Create the transient command pool for transfer operation
+        m_compute_cmd_pool = createCmdPool(
+            QueueType::Compute, true, true
+        );
+        m_compute_cmd_buf = m_compute_cmd_pool.allocateCmdBuffer();
+
+        m_delete_queue.addDeleter([&]() {
+            destroyCmdPool(m_compute_cmd_pool);
+        });
+        
+        m_delete_queue.addDeleter([&]() {
+            m_compute_cmd_pool.freeCmdBuffer(m_compute_cmd_buf);
+        });
+    }
+
+    // Create transfer command pool and buffer and fence
+    if (m_device_requirement.required_queue.graphics()) {
+        // Create the transient command pool for transfer operation
+        m_graphics_cmd_pool = createCmdPool(
+            QueueType::Graphics, true, true
+        );
+        m_graphics_cmd_buf = m_graphics_cmd_pool.allocateCmdBuffer();
+
+        m_delete_queue.addDeleter([&]() {
+            destroyCmdPool(m_graphics_cmd_pool);
+        });
+
+        m_delete_queue.addDeleter([&]() {
+            m_graphics_cmd_pool.freeCmdBuffer(m_graphics_cmd_buf);
+        });
+    }
+
+    // Create the immediate command fence
+    m_immediate_fence = createFence(false);
+
+    m_delete_queue.addDeleter([&]() {
+        destroyFence(m_immediate_fence);
+    });
 }
 
 // Shutdown vulkan device
@@ -572,37 +606,22 @@ void Device::copyBuffer(
 
     VkDeviceSize size
 ) {
-    // Allocate the command buffer
-    CommandBuffer cmd_buffer = m_transfer_cmd_pool.allocateCmdBuffer();
-    cmd_buffer.begin(true, false, false);
-    
-    VkBufferCopy copy_op = { };
-    copy_op.size = size;
-    copy_op.srcOffset = src_offset;
-    copy_op.dstOffset = dest_offset;
+    runCmdImmediate(
+        QueueType::Transfer,
+        [&](VkCommandBuffer cmd_buf) {
+            VkBufferCopy copy_op = { };
+            copy_op.size = size;
+            copy_op.srcOffset = src_offset;
+            copy_op.dstOffset = dest_offset;
 
-    vkCmdCopyBuffer(
-        cmd_buffer.handle(), 
-        src_buffer, 
-        dest_buffer, 
-        1, &copy_op
+            vkCmdCopyBuffer(
+                cmd_buf, 
+                src_buffer, 
+                dest_buffer, 
+                1, &copy_op
+            );
+        }
     );
-
-    cmd_buffer.end();
-    cmd_buffer.submit(
-        transfer_queue,
-        m_immediate_fence.m_handle,
-        0, VK_NULL_HANDLE,
-        0, VK_NULL_HANDLE,
-        0
-    );
-
-    // Wait for the operation to finish and free the command buffer
-    m_immediate_fence.wait();
-    
-    m_transfer_cmd_pool.freeCmdBuffer(cmd_buffer);
-
-    m_immediate_fence.reset();
 }
 
 /*
@@ -1025,11 +1044,41 @@ void Device::destroyCmdPool(CommandPool cmd_pool)
 
 // Execute the command in the given function and wait 
 // for them to complete on the CPU
-void Device::immediateCmd(
+void Device::runCmdImmediate(
     QueueType type,
     std::function<void(VkCommandBuffer)> immediate_fun
 ) {
+    // Select the queue and buffer for the immediate command type
+    CommandBuffer cmd_buf;
 
+    VkQueue queue;
+
+    if (type == QueueType::Transfer) {
+        cmd_buf = m_transfer_cmd_buf;
+        queue = transfer_queue;
+
+    } else if (type == QueueType::Graphics) {
+        cmd_buf = m_graphics_cmd_buf;
+        queue = graphics_queue;
+
+    } else if (type == QueueType::Compute) {
+        cmd_buf = m_compute_cmd_buf;
+        queue = compute_queue;
+    }
+
+    // Record the immediate command
+    cmd_buf.begin();
+    cmd_buf.record(immediate_fun);
+    cmd_buf.end();
+
+    // Submit the command buffer to the queue 
+    m_immediate_fence.reset();
+    cmd_buf.submit(queue, m_immediate_fence.hande());
+
+    // Wait for the fence to signal and reset the command buffer 
+    m_immediate_fence.wait();
+
+    cmd_buf.reset();
 }
 
 /*
