@@ -11,13 +11,13 @@ namespace cndt {
 
 // Store a reference to an asset
 template<typename AssetType>
-class Handle {
+class AssetHandle {
 public:
-    Handle() : 
+    AssetHandle() : 
         m_ptr(nullptr), 
         m_old_version(0)
     { }
-    Handle(
+    AssetHandle(
         std::shared_ptr<AssetStorage<AssetType>> asset_p
     ) : 
         m_ptr(std::move(asset_p)), 

@@ -22,7 +22,7 @@ public:
     
     // Get an asset handle from the given asset name or file path
     template<typename AssetType>
-    Handle<AssetType> get(std::string_view asset_name);
+    AssetHandle<AssetType> get(std::string_view asset_name);
 
 private:
     internal::AssetParser<Shader, Texture, Mesh> m_parser;
@@ -31,7 +31,7 @@ private:
     
 // Get an asset handle from the given asset name or file path
 template<typename AssetType>
-Handle<AssetType> AssetsManager::get(std::string_view asset_name)
+AssetHandle<AssetType> AssetsManager::get(std::string_view asset_name)
 {
     return m_cache.getHandle<AssetType>(
         m_parser,
