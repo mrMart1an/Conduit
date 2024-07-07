@@ -21,6 +21,7 @@
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkContext.h"
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -181,11 +182,27 @@ public:
     // add the pool to the delete queue
     CommandPool createCmdPool(
         QueueType queue_type,
-        VkCommandPoolCreateFlags flags = 0
+
+        bool transient_pool = false,
+        bool reset_cmd_buffer = false,
+        bool protected_cmd_buffer = false
     );
 
     // Destroy the given command pool
     void destroyCmdPool(CommandPool cmd_pool);
+
+    /*
+     *
+     *      Immediate command functions
+     *
+     * */
+
+    // Execute the command in the given function and wait 
+    // for them to complete on the CPU
+    void immediateCmd(
+        QueueType type,
+        std::function<void(VkCommandBuffer)> immediate_fun
+    );
 
     /*
      *
@@ -354,7 +371,7 @@ public:
     void destroyShaderModule(
         ShaderModule &module
     );
-        
+     
     /*
      *
      *      Pipeline functions
@@ -535,10 +552,15 @@ private:
     // Device memory property for allocation
     VkPhysicalDeviceMemoryProperties m_memory_properties;
 
-    // Transfer operation command pool
+    // Immediate command graphics command pool
+    CommandPool m_graphics_cmd_pool;
+    // Immediate command compute command pool
+    CommandPool m_compute_cmd_pool;
+    // Immediate command transfer command pool
     CommandPool m_transfer_cmd_pool;
-    // Transfer operation fence
-    Fence m_transfer_fence;
+
+    // Immediate command execution fence
+    Fence m_immediate_fence;
     
     // Device delete queue
     DeleteQueue m_delete_queue;

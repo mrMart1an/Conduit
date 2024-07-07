@@ -65,12 +65,12 @@ void Device::initialize(
         ));
 
         // Create the transfer operation fence
-        m_transfer_fence = createFence(false);
+        m_immediate_fence = createFence(false);
 
         m_delete_queue.addDeleter(std::bind(
             &Device::destroyFence,
             this,
-            std::ref(m_transfer_fence)
+            std::ref(m_immediate_fence)
         ));
     }
 }
@@ -591,18 +591,18 @@ void Device::copyBuffer(
     cmd_buffer.end();
     cmd_buffer.submit(
         transfer_queue,
-        m_transfer_fence.m_handle,
+        m_immediate_fence.m_handle,
         0, VK_NULL_HANDLE,
         0, VK_NULL_HANDLE,
         0
     );
 
     // Wait for the operation to finish and free the command buffer
-    m_transfer_fence.wait();
+    m_immediate_fence.wait();
     
     m_transfer_cmd_pool.freeCmdBuffer(cmd_buffer);
 
-    m_transfer_fence.reset();
+    m_immediate_fence.reset();
 }
 
 /*
@@ -966,10 +966,13 @@ void Device::retrieveQueue()
 // Create the command pool  
 CommandPool Device::createCmdPool(
     QueueType queue_type,
-    VkCommandPoolCreateFlags flags
-) {
-    u32 index;
 
+    bool transient_pool,
+    bool reset_cmd_buffer,
+    bool protected_cmd_buffer
+) {
+    // Calculate the queue index
+    u32 index;
     switch (queue_type) {
         case QueueType::Graphics: {
             index = m_queue_indices.graphicsIndex();
@@ -985,7 +988,21 @@ CommandPool Device::createCmdPool(
         } 
     }
 
-    return createCmdPool(index, flags);
+    // Generate the pool flags
+    VkCommandPoolCreateFlags flags = 0;
+
+    if (transient_pool)
+        flags |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+    if (reset_cmd_buffer)
+        flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    if (protected_cmd_buffer)
+        flags |= VK_COMMAND_POOL_CREATE_PROTECTED_BIT;
+
+    // Set the command pool resettable member
+    CommandPool cmd_pool = createCmdPool(index, flags); 
+    cmd_pool.m_ressetable_cmd_buffer = reset_cmd_buffer;
+
+    return cmd_pool;
 }
 
 // Destroy the given command pool
@@ -998,6 +1015,21 @@ void Device::destroyCmdPool(CommandPool cmd_pool)
     );
 
     cmd_pool = CommandPool();
+}
+
+/*
+ *
+ *      Immediate command functions
+ *
+ * */
+
+// Execute the command in the given function and wait 
+// for them to complete on the CPU
+void Device::immediateCmd(
+    QueueType type,
+    std::function<void(VkCommandBuffer)> immediate_fun
+) {
+
 }
 
 /*

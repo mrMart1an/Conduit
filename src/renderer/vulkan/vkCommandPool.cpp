@@ -8,12 +8,10 @@ namespace cndt::vulkan {
 // Reset the command pool 
 void CommandPool::reset(bool release_resources)
 {
-    VkCommandPoolResetFlags flag;
+    VkCommandPoolResetFlags flag = 0;
     
     if (release_resources)
         flag = VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT; 
-    else
-        flag = 0;
 
     VkResult res = vkResetCommandPool(
         m_device_p->logical,
@@ -21,9 +19,14 @@ void CommandPool::reset(bool release_resources)
         flag
     );
 
+    // Reset all the state flags
+    for (auto storage_p : m_storages) {
+        storage_p->state = CommandBuffer::State::Initial;
+    }
+
     if (res != VK_SUCCESS) {
         throw CommandPoolResetError(
-            "Command pool reset error: {}",
+            "Vulkan command pool reset error: {}",
             vk_error_str(res)
         );
     }
@@ -32,7 +35,8 @@ void CommandPool::reset(bool release_resources)
 // Allocate a command buffer from a command pool
 CommandBuffer CommandPool::allocateCmdBuffer(bool primary) 
 {
-    CommandBuffer out_buffer;
+    CommandBuffer::Storage *storage_p = new CommandBuffer::Storage();
+    storage_p->resettable = m_ressetable_cmd_buffer;
 
     VkCommandBufferAllocateInfo allocate_info = { };
     allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -47,27 +51,43 @@ CommandBuffer CommandPool::allocateCmdBuffer(bool primary)
     VkResult res = vkAllocateCommandBuffers(
         m_device_p->logical, 
         &allocate_info,
-        &out_buffer.m_handle
+        &storage_p->handle
     );
 
     if (res != VK_SUCCESS) {
+        delete storage_p;
+
         throw CmdBufferAllocationError(
             "Vulkan buffer allocation error %s",
             vk_error_str(res)
         );
     }
 
-    return out_buffer;
+    // Move the command buffer to the Initial state
+    storage_p->state = CommandBuffer::State::Initial;
+
+    // Add the storage to the storage pointer set
+    m_storages.insert(storage_p);
+
+    return CommandBuffer(storage_p);
 }
 
 // Free a command buffer in a command pool
 void CommandPool::freeCmdBuffer(CommandBuffer &cmd_buffer) 
 {
+    CommandBuffer::Storage *storage_p = cmd_buffer.m_storage_p;
+    if (storage_p == nullptr)
+        return;
+
     vkFreeCommandBuffers(
         m_device_p->logical, 
         m_handle, 
-        1, &cmd_buffer.m_handle
+        1, &storage_p->handle
     );
+
+    // Delete the storage from the set and free it
+    m_storages.erase(storage_p);
+    delete storage_p;
 
     cmd_buffer = CommandBuffer();
 }
