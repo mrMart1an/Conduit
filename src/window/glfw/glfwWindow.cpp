@@ -2,6 +2,7 @@
 #include "conduit/logging.h"
 
 #include "conduit/events/eventWriter.h"
+#include "conduit/renderer/backendEnum.h"
 #include "conduit/window/window.h"
 #include "conduit/window/windowException.h"
 
@@ -35,6 +36,8 @@ GlfwWindow::~GlfwWindow()
 // Glfw window initialization function
 void GlfwWindow::initialize(
     EngineConfig::Window config,
+    RendererBackend render_backend,
+
     const char* title
 ) {
     if (!glfwInit()) {
@@ -60,8 +63,11 @@ void GlfwWindow::initialize(
         config.floating.value_or(false) ? GLFW_TRUE : GLFW_FALSE
     );   
 
-    // Disable OpenGL context creation
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    // If openGL is not the rendering backend disable
+    // openGL context initialization
+    if (render_backend != RendererBackend::OpenGL) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
     
     // Create the glfw window handler
     m_glfw_window = glfwCreateWindow(
