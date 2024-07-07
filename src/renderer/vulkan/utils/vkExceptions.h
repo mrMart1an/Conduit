@@ -355,6 +355,17 @@ public:
     { }
 };
 
+// Vulkan command buffer record exception
+class CmdBufferRecordError : public CmdBufferException {
+public:
+    template<typename... Args>
+    CmdBufferRecordError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        CmdBufferException(msg, std::forward<Args>(args)...)
+    { }
+};
+
 // Vulkan command buffer end exception
 class CmdBufferEndError : public CmdBufferException {
 public:

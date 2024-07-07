@@ -407,7 +407,7 @@ void VkRenderer::createInFlightDatas()
         // Create the command pool and buffers
         data.graphics_cmd_pool = m_device.createCmdPool(
             Device::QueueType::Graphics,
-            VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+            false, true, false
         );
 
         data.main_cmd_buffer = 
