@@ -5,6 +5,8 @@
 #include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/renderer/buffer.h"
+#include "conduit/renderer/image.h"
+
 #include "renderer/vulkan/descriptor/vkDescriptorAllocator.h"
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/descriptor/vkDescriptorWriter.h"
@@ -237,7 +239,7 @@ public:
     // Create a vulkan render attachment
     RenderAttachment createRenderAttachment(
         RenderPass render_pass,
-        Image &image
+        VulkanImage &image
     );
 
     // Destroy the given vulkan render attachment
@@ -270,19 +272,10 @@ public:
      * */
 
     // Create a new image with the given requirement 
-    Image createImage(
-        u32 width, 
-        u32 height, 
-        
-        VkFormat image_format,
-        bool linear_tiling,
-
-        VkImageUsageFlagBits usage_bits,
-        VkMemoryPropertyFlags memory_property
-    );
+    VulkanImage createImage(const GpuImage::Info& info);
 
     // Destroy the given image
-    void destroyImage(Image &image);
+    void destroyImage(VulkanImage &image);
 
     /*
      *
@@ -518,6 +511,26 @@ private:
         VkPhysicalDevice device
     );
 
+    /*
+     *
+     *      Conversion function (implementation in vkDeviceConverter.cpp)
+     *
+     * */
+
+    // Convert backend agnostic buffer usage to vulkan buffer usage
+    VkBufferUsageFlags getVkBufferUsage(GpuBuffer::Info::UsageEnum usage);
+
+    // Convert backend agnostic image usage to vulkan image usage
+    VkImageUsageFlags getVkImageUsage(GpuImage::Info::UsageEnum usage);
+
+    // Convert backend agnostic image format to vulkan image format
+    // TODO query for format support and fallback
+    VkFormat getVkFormat(GpuImage::Info::Format format);
+
+    // Convert the backend agnostic sample count to vulkan sample count
+    // TODO check for sample count support
+    VkSampleCountFlagBits getVkSampleCount(GpuImage::Info::Sample sample);
+
 public:
     // Logical vulkan device
     VkDevice logical;
@@ -531,20 +544,15 @@ public:
     VkQueue present_queue;
     
 private:
-    // Store custom allocator callbacks
-    const VkAllocationCallbacks *m_allocator;
-
-    VmaAllocator m_vma_allocator;
-
     // Queue family indices 
     QueueFamilyIndices m_queue_indices;
 
     // Physical device requirement
     PhysicalDeviceRequirement m_device_requirement;
-    
-    // Device memory property for allocation
-    VkPhysicalDeviceMemoryProperties m_memory_properties;
 
+    // Physical device property
+    VkPhysicalDeviceProperties m_physical_properties;
+    
     // Immediate command graphics command pool and buffer
     CommandPool m_graphics_cmd_pool;
     CommandBuffer m_graphics_cmd_buf;
@@ -560,6 +568,11 @@ private:
     // Immediate command execution fence
     Fence m_immediate_fence;
     
+    // Store custom allocator callbacks
+    const VkAllocationCallbacks *m_allocator;
+
+    VmaAllocator m_vma_allocator;
+
     // Device delete queue
     DeleteQueue m_delete_queue;
 };

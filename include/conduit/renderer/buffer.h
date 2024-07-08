@@ -5,7 +5,6 @@
 
 namespace cndt {
 
-class Renderer;
 // Backend independent GPU buffer abstraction 
 class GpuBuffer {
 public:

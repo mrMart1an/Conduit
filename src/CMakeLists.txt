@@ -66,6 +66,7 @@ if(VULKAN_BACKEND)
         "${BASE_PATH}/renderer/vulkan/vkCommandPool.cpp"   
         "${BASE_PATH}/renderer/vulkan/vkContext.cpp"
         "${BASE_PATH}/renderer/vulkan/vkDevice.cpp"
+        "${BASE_PATH}/renderer/vulkan/vkDeviceConverter.cpp"
         "${BASE_PATH}/renderer/vulkan/vkRenderer.cpp"   
         "${BASE_PATH}/renderer/vulkan/vkRenderPass.cpp"   
         "${BASE_PATH}/renderer/vulkan/vkSwapChain.cpp"

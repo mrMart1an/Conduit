@@ -7,6 +7,8 @@
 
 namespace cndt {
 
+class Renderer;
+
 // Ref counted GPU resource reference
 template <typename GpuType>
 class GpuResourceRef {
