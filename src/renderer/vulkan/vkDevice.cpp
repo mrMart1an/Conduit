@@ -464,9 +464,9 @@ void Device::destroyImage(Image &image)
  * */
 
 // Create a new buffer with the given requirement
-Buffer Device::createBuffer(GpuBufferInfo& info)
+VulkanBuffer Device::createBuffer(const GpuBuffer::Info& info)
  {
-    Buffer out_buffer;
+    VulkanBuffer out_buffer;
 
     out_buffer.m_device_p = this;
     out_buffer.m_info = info;
@@ -482,28 +482,28 @@ Buffer Device::createBuffer(GpuBufferInfo& info)
     // Find buffer usage
     buffer_info.usage = 0;
 
-    if (info.usage & GpuBufferInfo::Usage::TransferDst)
+    if (info.usage & GpuBuffer::Info::Usage::TransferDst)
         buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    if (info.usage & GpuBufferInfo::Usage::TransferSrc)
+    if (info.usage & GpuBuffer::Info::Usage::TransferSrc)
         buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-    if (info.usage & GpuBufferInfo::Usage::StorageBuffer)
+    if (info.usage & GpuBuffer::Info::Usage::StorageBuffer)
         buffer_info.usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    if (info.usage & GpuBufferInfo::Usage::UniformBuffer)
+    if (info.usage & GpuBuffer::Info::Usage::UniformBuffer)
         buffer_info.usage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-    if (info.usage & GpuBufferInfo::Usage::VertexBuffer)
+    if (info.usage & GpuBuffer::Info::Usage::VertexBuffer)
         buffer_info.usage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    if (info.usage & GpuBufferInfo::Usage::IndexBuffer)
+    if (info.usage & GpuBuffer::Info::Usage::IndexBuffer)
         buffer_info.usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
     // Allocation info
     VmaAllocationCreateInfo alloc_create_info = { };
 
-    if (info.domain == GpuBufferInfo::Domain::Device) {
+    if (info.domain == GpuBuffer::Info::Domain::Device) {
         alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
 
-    } else if (info.domain == GpuBufferInfo::Domain::Host) {
+    } else if (info.domain == GpuBuffer::Info::Domain::Host) {
         alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO;
 
         // Always create host visible memory with the create mapped flag
@@ -511,7 +511,7 @@ Buffer Device::createBuffer(GpuBufferInfo& info)
             VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
             VMA_ALLOCATION_CREATE_MAPPED_BIT;
         
-    } else if (info.domain == GpuBufferInfo::Domain::HostCached) {
+    } else if (info.domain == GpuBuffer::Info::Domain::HostCached) {
         alloc_create_info.requiredFlags = 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
@@ -521,7 +521,7 @@ Buffer Device::createBuffer(GpuBufferInfo& info)
             VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
             VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-    } else if (info.domain == GpuBufferInfo::Domain::HostCoherent) {
+    } else if (info.domain == GpuBuffer::Info::Domain::HostCoherent) {
         alloc_create_info.requiredFlags = 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
@@ -553,7 +553,7 @@ Buffer Device::createBuffer(GpuBufferInfo& info)
 }
 
 // Destroy the given buffer
-void Device::destroyBuffer(Buffer &buffer) 
+void Device::destroyBuffer(VulkanBuffer &buffer) 
 {
     vmaDestroyBuffer(
         m_vma_allocator,
@@ -561,26 +561,17 @@ void Device::destroyBuffer(Buffer &buffer)
         buffer.m_allocation
     );
 
-    buffer = Buffer();
-}
-
-// Resize the given buffer
-// this operation is blocking
-void Device::bufferResize(
-    Buffer &buffer,
-    VkDeviceSize size
-) {
-// TODO buffer resize
+    buffer = VulkanBuffer();
 }
 
 // Copy the content of one buffer to another
 // this operation is blocking
 void Device::copyBuffer(
     VkDeviceSize src_offset,
-    Buffer &src_buffer,
+    const VulkanBuffer &src_buffer,
     
     VkDeviceSize dest_offset,
-    Buffer &dest_buffer,
+    VulkanBuffer &dest_buffer,
 
     VkDeviceSize size
 ) {

@@ -3,116 +3,179 @@
 
 #include "conduit/defines.h"
 
-#include <functional>
-
 namespace cndt {
 
 class Renderer;
-
-// GPU buffer create info
-struct GpuBufferInfo {
+// Backend independent GPU buffer abstraction 
+class GpuBuffer {
 public:
-    // Buffer memory domain enum
-    enum class Domain {
-        // Memory for efficient device access, prefer host visible  
-        // Automatically select the best memory type 
-        Device,
-        // Host visible memory
-        // Automatically select the best memory type 
-        Host,
+    // Buffer size information
+    using Size = u64;
 
-        // Host visible cached memory
-        HostCached,
-        // Host visible coherent memory
-        HostCoherent
-    };
-
-    // Buffer usage enum with constexpr
-    using UsageEnum = u32;
-
-    struct Usage {
-        static constexpr UsageEnum None          = 0;
-
-        static constexpr UsageEnum TransferSrc   = BIT(0);
-        static constexpr UsageEnum TransferDst   = BIT(1);
-
-        static constexpr UsageEnum UniformBuffer = BIT(2);
-        static constexpr UsageEnum StorageBuffer = BIT(3);
-        static constexpr UsageEnum VertexBuffer  = BIT(4);
-        static constexpr UsageEnum IndexBuffer   = BIT(5);
-
-        Usage() = delete;
-    };
-
-    // Buffer size type
-    using BufferSize = usize;
-
-public:
-    // Buffer memory domain
-    Domain domain = Domain::Device;
-    // Buffer usage
-    UsageEnum usage = Usage::None;
-
-    // Buffer size 
-    BufferSize size = 0;
-};
-
-// Ref counted GPU renderer buffer
-class GpuBufferRef {
-    friend class Renderer;
+    // GPU buffer create info
+    struct Info {
+    public:
+        // Buffer memory domain enum
+        enum class Domain {
+            // Memory for efficient device access, prefer host visible  
+            // Automatically select the best memory type 
+            Device,
+            // Host visible memory
+            // Automatically select the best memory type 
+            Host,
     
-    // Buffer id type
-    using Id = u64;
-    static constexpr Id nullId = UINT64_MAX;
-
-    // Reference counter type
-    using Counter = usize;
+            // Host visible cached memory
+            HostCached,
+            // Host visible coherent memory
+            HostCoherent
+        };
+    
+        // Buffer usage enum with constexpr
+        using UsageEnum = u32;
+    
+        struct Usage {
+            static constexpr UsageEnum None          = 0;
+    
+            static constexpr UsageEnum TransferSrc   = BIT(0);
+            static constexpr UsageEnum TransferDst   = BIT(1);
+    
+            static constexpr UsageEnum UniformBuffer = BIT(2);
+            static constexpr UsageEnum StorageBuffer = BIT(3);
+            static constexpr UsageEnum VertexBuffer  = BIT(4);
+            static constexpr UsageEnum IndexBuffer   = BIT(5);
+    
+            Usage() = delete;
+        };
+    
+    public:
+        // Buffer memory domain
+        Domain domain = Domain::Device;
+        // Buffer usage
+        UsageEnum usage = Usage::None;
+    
+        // Buffer size 
+        Size size = 0;
+    };
 
 public:
-    // Public null ref constructor
-    GpuBufferRef() : 
-        m_id(nullId),
-        m_ref_count(nullptr),
-        m_deffer_delete_f([](){ })
-    { }
+    GpuBuffer() = default;
+    virtual ~GpuBuffer() = default;
 
-    // If the ref counter reaches zero call the deffer delete function
-    ~GpuBufferRef();
+    // Resize the buffer, if the preserve data argument is true
+    // the content of the buffer will be copied to the new buffer
+    // (preserve data default: false)
+    // 
+    // (If the new size is less that the previews one the
+    // content will be cut to fit the new buffer)
+    //
+    // Warning: the buffer MUST be unmapped before resizing
+    virtual void resize(Size new_size, bool preserve_data = false) = 0;
 
-    // Copy constructor
-    GpuBufferRef(const GpuBufferRef&);
-    // Copy assignment
-    GpuBufferRef& operator=(const GpuBufferRef&);
+    // If the buffer is host visible map it to a CPU visible address and 
+    // perform the necessary cache maintenance 
+    //
+    // The buffer MUST be unmapped before usage by the GPU
+    virtual void* map() = 0;
 
-    // Move constructor
-    GpuBufferRef(GpuBufferRef&&);
-    // Move assignment
-    GpuBufferRef& operator=(GpuBufferRef&&);
+    // Unmap the buffer and 
+    // perform the necessary cache maintenance 
+    virtual void unmap() = 0;
 
-private:
-    // Private constructor for the rendering backend
-    GpuBufferRef(
-        Id id,
-        std::function<void(void)> deffer_delete_f
-    ) : 
-        m_id(id),
-        m_ref_count(new Counter),
-        m_deffer_delete_f(deffer_delete_f)
-    { }
+    // Copy the data at the src pointer in the buffer at the given offset
+    //
+    // copy_size: size of the data to be copied
+    // dest_offset: buffer offset where to store the given data (default = 0)
+    virtual void copyMemToBuf(
+        const void* data_src_p,
 
-    // Decrease the counter and call the delete callback if it reaches 0
-    void release();
+        Size copy_size,
+        Size dest_offset = 0
+    ) = 0;
 
-private:
-    // Buffer id used by the rendering backend to identify the buffer
-    Id m_id;
+    // Copy the data in the buffer at the given offset to the given
+    // destination address
+    //
+    // copy_size: size of the data to be copied
+    // src_offset: buffer offset from where to read the data (default = 0)
+    virtual void copyBufToMem(
+        void* data_dest_p,
 
-    // Count the number of existing buffer reference
-    Counter* m_ref_count;
+        Size copy_size,
+        Size dest_offset = 0
+    ) = 0;
 
-    // Deffer delete function callback
-    std::function<void(void)> m_deffer_delete_f;
+    // Convenience template function to copy the given type 
+    // to the buffer at the given offset
+    template <typename T>
+    void copyTypeToBuf(
+        const T& src_obj, 
+        Size dest_offset = 0
+    );
+
+    // Convenience template function to copy the data at the given buffer  
+    // offset to the object of the given type
+    template <typename T>
+    void copyBufToType(
+        T& dest_obj, 
+        Size src_offset = 0
+    );
+
+    // Copy the content of the given buffer to the buffer with
+    // the given offsets 
+    virtual void copyBufToBuf(
+        const GpuBuffer& src_buffer,
+        Size copy_size,
+        
+        Size src_offset = 0,
+        Size dest_offset = 0
+    ) = 0;
+
+    /*
+     *
+     *      Getter
+     *
+     * */
+
+    // Return the size of the buffer
+    virtual Size size() const = 0;
+
+    // Return true if the buffer is mapped
+    virtual bool mapped() const = 0;
 };
+
+/*
+ *
+ *      GPU buffer template implementation
+ * 
+ * */
+
+// Convenience template function to copy the given type 
+// to the buffer at the given offset
+template <typename T>
+void GpuBuffer::copyTypeToBuf(
+    const T& src_obj, 
+    Size dest_offset
+) {
+    copyMemToBuf(
+        &src_obj,
+        sizeof(T),
+        dest_offset
+    );
+}
+
+// Convenience template function to copy the data at the given buffer  
+// offset to the object of the given type
+template <typename T>
+void GpuBuffer::copyBufToType(
+    T& dest_obj, 
+    Size src_offset
+) {
+    copyBufToMem(
+        &dest_obj,
+        sizeof(T),
+        src_offset
+    );
+}
 
 } // namespace cndt
 

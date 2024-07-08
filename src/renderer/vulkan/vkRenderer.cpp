@@ -241,7 +241,7 @@ void VkRenderer::draw()
     
     frame_data.camera_model_uniform.copyMemToBuf(
         &cam, 
-        0, sizeof(CameraModel)
+        sizeof(CameraModel), 0
     );
     
     // Test triangle code
@@ -414,9 +414,9 @@ void VkRenderer::createInFlightDatas()
             data.graphics_cmd_pool.allocateCmdBuffer();
 
         // Create and map the uniforms buffers
-        GpuBufferInfo uniform_info = { };
-        uniform_info.domain = GpuBufferInfo::Domain::Host;
-        uniform_info.usage = GpuBufferInfo::Usage::UniformBuffer;
+        GpuBuffer::Info uniform_info = { };
+        uniform_info.domain = GpuBuffer::Info::Domain::Host;
+        uniform_info.usage = GpuBuffer::Info::Usage::UniformBuffer;
         uniform_info.size = sizeof(CameraModel);
 
         data.camera_model_uniform = m_device.createBuffer(uniform_info);
@@ -449,7 +449,6 @@ void VkRenderer::destroyInFlightData()
         m_device.destroyDescriptorAllocator(data.descriptor_allocator);
 
         // Unmap and destroy uniforms buffers
-        data.camera_model_uniform.unmap();
         m_device.destroyBuffer(data.camera_model_uniform);
 
         // Destroy the sync object

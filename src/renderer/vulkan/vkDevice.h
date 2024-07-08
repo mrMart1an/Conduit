@@ -291,26 +291,19 @@ public:
      * */
 
     // Create a new buffer with the given requirement
-    Buffer createBuffer(GpuBufferInfo& info);
+    VulkanBuffer createBuffer(const GpuBuffer::Info& info);
 
     // Destroy the given buffer
-    void destroyBuffer(Buffer &buffer);
+    void destroyBuffer(VulkanBuffer &buffer);
     
-    // Resize the given buffer
-    // this operation is blocking
-    void bufferResize(
-        Buffer &buffer,
-        VkDeviceSize size
-    );
-
     // Copy the content of one buffer to another
     // this operation is blocking
     void copyBuffer(
         VkDeviceSize src_offset,
-        Buffer &src_buffer,
+        const VulkanBuffer &src_buffer,
         
         VkDeviceSize dest_offset,
-        Buffer &dest_buffer,
+        VulkanBuffer &dest_buffer,
 
         VkDeviceSize size
     );
@@ -586,19 +579,19 @@ GeometryBuffer<VertexType> Device::createGeometryBuffer(
 ) {
     GeometryBuffer<VertexType> out_buffer;
 
-    GpuBufferInfo vertex_info = { };
-    vertex_info.domain = GpuBufferInfo::Domain::Device;
+    GpuBuffer::Info vertex_info = { };
+    vertex_info.domain = GpuBuffer::Info::Domain::Device;
     vertex_info.size = vertex_count * sizeof(VertexType);
     vertex_info.usage = 
-        GpuBufferInfo::Usage::TransferDst |
-        GpuBufferInfo::Usage::VertexBuffer;
+        GpuBuffer::Info::Usage::TransferDst |
+        GpuBuffer::Info::Usage::VertexBuffer;
 
-    GpuBufferInfo index_info = { };
-    index_info.domain = GpuBufferInfo::Domain::Device;
+    GpuBuffer::Info index_info = { };
+    index_info.domain = GpuBuffer::Info::Domain::Device;
     index_info.size = index_count * sizeof(u32);
     index_info.usage = 
-        GpuBufferInfo::Usage::TransferDst |
-        GpuBufferInfo::Usage::IndexBuffer;
+        GpuBuffer::Info::Usage::TransferDst |
+        GpuBuffer::Info::Usage::IndexBuffer;
 
     // Create the vertex buffer
     out_buffer.m_vertex_buffer = createBuffer(vertex_info);
@@ -634,24 +627,24 @@ void Device::geometryBufferLoad(
     VkDeviceSize index_data_size = indices.size() * sizeof(u32);
 
     // Create the staging buffers
-    GpuBufferInfo staging_info = {};
-    staging_info.domain = GpuBufferInfo::Domain::Host;
-    staging_info.usage = GpuBufferInfo::Usage::TransferSrc;
+    GpuBuffer::Info staging_info = {};
+    staging_info.domain = GpuBuffer::Info::Domain::Host;
+    staging_info.usage = GpuBuffer::Info::Usage::TransferSrc;
     
     staging_info.size = vertex_data_size;
-    Buffer vertex_staging = createBuffer(staging_info);
+    VulkanBuffer vertex_staging = createBuffer(staging_info);
 
     staging_info.size = index_data_size;
-    Buffer index_staging = createBuffer(staging_info);
+    VulkanBuffer index_staging = createBuffer(staging_info);
 
     // Load the staging buffer with the data
     vertex_staging.copyMemToBuf(
         vertices.data(),
-        0, vertex_data_size
+        vertex_data_size, 0
     );
     index_staging.copyMemToBuf(
         indices.data(),
-        0, index_data_size
+        index_data_size, 0
     );
 
     // Copy the staging buffers to the geometry buffer

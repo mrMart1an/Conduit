@@ -17,14 +17,14 @@ public:
     GeometryBuffer() = default;
     
     // Vertex buffer getter functions
-    const Buffer& vertex() const { return m_vertex_buffer; };
+    const VulkanBuffer& vertex() const { return m_vertex_buffer; };
     
     // Index buffer getter functions
-    const Buffer& index() const { return m_index_buffer; };
+    const VulkanBuffer& index() const { return m_index_buffer; };
 
 private:
-    Buffer m_vertex_buffer;
-    Buffer m_index_buffer;
+    VulkanBuffer m_vertex_buffer;
+    VulkanBuffer m_index_buffer;
 
     u64 m_vertex_load_offset;
     u64 m_index_load_offset;
