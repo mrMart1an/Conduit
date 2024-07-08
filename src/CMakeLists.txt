@@ -83,7 +83,6 @@ set(RENDERER_SRC
     ${VULKAN_SRC}
     ${OPENGL_SRC}
 
-    "${BASE_PATH}/renderer/buffer.cpp"
     "${BASE_PATH}/renderer/renderer.cpp"
 )
 

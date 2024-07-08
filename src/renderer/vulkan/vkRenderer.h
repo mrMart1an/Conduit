@@ -39,7 +39,7 @@ public:
         VkSemaphore image_semaphore, render_semaphore;
 
         // Uniform buffer
-        Buffer camera_model_uniform;
+        VulkanBuffer camera_model_uniform;
 
         // descriptor allocator and writer
         DescriptorAllocator descriptor_allocator;
