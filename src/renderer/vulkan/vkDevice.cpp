@@ -3,6 +3,9 @@
 #include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/renderer/vertex.h"
+#include "conduit/renderer/buffer.h"
+#include "conduit/renderer/image.h"
+
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
 #include "renderer/vulkan/utils/vkAttributeDescriptor.h"
 #include "renderer/vulkan/utils/vkExceptions.h"
@@ -255,14 +258,18 @@ RenderAttachment Device::createRenderAttachment(
 // Create a vulkan render attachment
 RenderAttachment Device::createRenderAttachment(
     RenderPass render_pass,
-    Image &image
+    VulkanImage &image
 ) {
+    VkExtent2D extent = { };
+    extent.width = image.m_info.extent.width;
+    extent.height = image.m_info.extent.height;
+
     return createRenderAttachment(
         render_pass,
         
         image.m_view,
-        image.m_image_extent,
-        image.m_image_format
+        extent,
+        image.m_vk_format
     );
 }
 
@@ -357,51 +364,82 @@ void Device::destroySemaphore(VkSemaphore &semaphore)
  * */
 
 // Create a new image for 
-Image Device::createImage(
-    u32 width, 
-    u32 height, 
-    
-    VkFormat image_format,
-    bool linear_tiling,
+VulkanImage Device::createImage(const GpuImage::Info& info)
+{
+    VulkanImage out_image;
 
-    VkImageUsageFlagBits usage_bits,
-    VkMemoryPropertyFlags memory_property
-) {
-    Image out_image;
     out_image.m_device_p = this;
+    out_image.m_info = info;
+    out_image.m_vk_format = getVkFormat(info.format);
     
-    out_image.m_image_format = image_format;
-    out_image.m_usage_bits = usage_bits;
-    out_image.m_memory_flags = memory_property;
-    out_image.m_image_extent.width = width;
-    out_image.m_image_extent.height = height;
-
     // Prepare the create info struct
     VkImageCreateInfo image_info = { };
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_info.imageType = VK_IMAGE_TYPE_2D;
-    image_info.extent.width = width;
-    image_info.extent.height = height;
+    image_info.extent.width = info.extent.width;
+    image_info.extent.height = info.extent.height;
     image_info.extent.depth = 1;
-    image_info.mipLevels = 1;
     image_info.arrayLayers = 1;
-    image_info.format = image_format;
-    image_info.tiling =
-        linear_tiling ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
+    image_info.format = out_image.m_vk_format;
+
+    // Calculate number of level for the mipmap chain
+    if (info.store_mipmap) {
+        out_image.m_mipmap_levels = static_cast<uint32_t>(
+            std::floor(std::log2(std::max(
+                info.extent.width, 
+                info.extent.height
+            )))) + 1;
+
+        image_info.mipLevels = out_image.m_mipmap_levels;
+    } else {
+        out_image.m_mipmap_levels = 1;
+        image_info.mipLevels = 1;
+    }
+
+    // Always use optimal tiling
+    image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    image_info.usage = usage_bits;
+    image_info.usage = getVkImageUsage(info.usage);
 
-    // TODO: Multi sampling
-    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    // TODO: Non exclusive sharing
-    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_info.samples = getVkSampleCount(info.sampe);
 
-    // Create the image handle
-    VkResult res = vkCreateImage(
-        logical,
-        &image_info,
-        NULL,
-        &out_image.m_handle
+    // TODO move to exclusive mode once the render graph system is ready
+    image_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+
+    u32 unique_queue_count = 1;
+    u32 queue_indecies_p[3];
+
+    queue_indecies_p[0] = m_queue_indices.graphicsIndex();
+
+    if (queue_indecies_p[0] != m_queue_indices.computeIndex()) {
+        queue_indecies_p[1] = m_queue_indices.computeIndex();
+        unique_queue_count += 1;
+    }
+
+    if (
+        queue_indecies_p[0] != m_queue_indices.transferIndex() &&
+        queue_indecies_p[1] != m_queue_indices.transferIndex()
+    ) {
+        queue_indecies_p[2] = m_queue_indices.transferIndex();
+        unique_queue_count += 1;
+    }
+
+    image_info.queueFamilyIndexCount = unique_queue_count;
+    image_info.pQueueFamilyIndices = queue_indecies_p;
+
+    // Allocation create info
+    VmaAllocationCreateInfo alloc_create_info = { };
+    alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO;
+
+    // Create the image handle and allocate memory with VMA
+    VkResult res = vmaCreateImage(
+        m_vma_allocator, 
+        &image_info, 
+        &alloc_create_info,
+        &out_image.m_handle,
+        &out_image.m_allocation,
+        &out_image.m_alloc_info
     );
 
     if (res != VK_SUCCESS) {
@@ -411,30 +449,22 @@ Image Device::createImage(
         );
     }
 
-    // Allocate the image memory
-    VkMemoryRequirements requirements;
-    vkGetImageMemoryRequirements(
-        logical,
-        out_image.m_handle,
-        &requirements
-    );
-
     // Create image view
     VkImageViewCreateInfo view_info = { };
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     view_info.image = out_image.m_handle;
-    view_info.format = image_format;
+    view_info.format = out_image.m_vk_format;
     view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     view_info.subresourceRange.baseMipLevel = 0;
-    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.levelCount = out_image.m_mipmap_levels;
     view_info.subresourceRange.baseArrayLayer = 0;
     view_info.subresourceRange.layerCount = 1;
 
     VkResult view_res = vkCreateImageView(
         logical,
         &view_info,
-        NULL,
+        m_allocator,
         &out_image.m_view
     );
 
@@ -449,12 +479,12 @@ Image Device::createImage(
 }
 
 // Destroy the given image
-void Device::destroyImage(Image &image)
+void Device::destroyImage(VulkanImage &image)
 {
     vkDestroyImageView(logical, image.m_view, m_allocator);
     vkDestroyImage(logical, image.m_handle, m_allocator);
     
-    image = Image();
+    image = VulkanImage();
 }
 
 /*
@@ -476,26 +506,34 @@ VulkanBuffer Device::createBuffer(const GpuBuffer::Info& info)
     // Create the buffer
     VkBufferCreateInfo buffer_info = { };
     buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     buffer_info.size = info.size;
 
-    // Find buffer usage
-    buffer_info.usage = 0;
+    // TODO move to exclusive mode once the render graph system is ready
+    buffer_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
 
-    if (info.usage & GpuBuffer::Info::Usage::TransferDst)
-        buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    if (info.usage & GpuBuffer::Info::Usage::TransferSrc)
-        buffer_info.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    u32 unique_queue_count = 1;
+    u32 queue_indecies_p[3];
 
-    if (info.usage & GpuBuffer::Info::Usage::StorageBuffer)
-        buffer_info.usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    if (info.usage & GpuBuffer::Info::Usage::UniformBuffer)
-        buffer_info.usage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    queue_indecies_p[0] = m_queue_indices.graphicsIndex();
 
-    if (info.usage & GpuBuffer::Info::Usage::VertexBuffer)
-        buffer_info.usage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    if (info.usage & GpuBuffer::Info::Usage::IndexBuffer)
-        buffer_info.usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    if (queue_indecies_p[0] != m_queue_indices.computeIndex()) {
+        queue_indecies_p[1] = m_queue_indices.computeIndex();
+        unique_queue_count += 1;
+    }
+
+    if (
+        queue_indecies_p[0] != m_queue_indices.transferIndex() &&
+        queue_indecies_p[1] != m_queue_indices.transferIndex()
+    ) {
+        queue_indecies_p[2] = m_queue_indices.transferIndex();
+        unique_queue_count += 1;
+    }
+
+    buffer_info.queueFamilyIndexCount = unique_queue_count;
+    buffer_info.pQueueFamilyIndices = queue_indecies_p;
+
+    // Get buffer usage
+    buffer_info.usage = getVkBufferUsage(info.usage);
 
     // Allocation info
     VmaAllocationCreateInfo alloc_create_info = { };
@@ -721,12 +759,6 @@ void Device::shutdownVmaAllocator()
 // Create the logical device
 void Device::createLogicalDevice(Context *context_p)
 {
-    // Store device memory properties for allocations
-    vkGetPhysicalDeviceMemoryProperties(
-        physical,
-        &m_memory_properties
-    );
-
     QueueFamilyIndices indices = getQueueIndices(context_p, physical);
 
     // Store the physical device queues indices
@@ -1407,7 +1439,9 @@ void Device::pickPhysicalDevice(
 
     // Store the selected physical device
     physical = devices[best_device];
+
     m_device_requirement = requirement;
+    vkGetPhysicalDeviceProperties(physical, &m_physical_properties);
 
     // Print debug information
     printPhysicalDeviceInfo(
