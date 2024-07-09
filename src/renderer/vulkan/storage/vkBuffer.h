@@ -1,6 +1,7 @@
 #ifndef CNDT_VK_BUFFER_H
 #define CNDT_VK_BUFFER_H
 
+#include "conduit/renderer/backendEnum.h"
 #include "conduit/renderer/buffer.h"
 
 #include "vk_mem_alloc.h"
@@ -77,6 +78,10 @@ public:
 
     // Return the buffer handle
     VkBuffer handle() const { return m_handle; }
+
+    // Return the renderer backend that own this resource
+    RendererBackend backend() const override 
+    { return RendererBackend::Vulkan; };
 
 private:
     VkBuffer m_handle;

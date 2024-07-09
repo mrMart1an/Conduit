@@ -3,6 +3,8 @@
 
 #include "conduit/defines.h"
 
+#include "conduit/renderer/backendEnum.h"
+
 namespace cndt {
 
 // Backend independent GPU image abstraction 
@@ -125,6 +127,9 @@ public:
    
     // Return the image format
     virtual Info::Format format() const = 0;
+
+    // Return the renderer backend that own this resource
+    virtual RendererBackend backend() const = 0;
 };
 
 } // namespace cndt

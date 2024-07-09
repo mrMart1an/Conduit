@@ -1,6 +1,7 @@
 #ifndef CNDT_VK_IMAGE_H
 #define CNDT_VK_IMAGE_H
 
+#include "conduit/renderer/backendEnum.h"
 #include "conduit/renderer/image.h"
 
 #include "vk_mem_alloc.h"
@@ -37,6 +38,10 @@ public:
     // Return the image format handle
     VkFormat vkFormat() const { return m_vk_format; }
     
+    // Return the renderer backend that own this resource
+    RendererBackend backend() const override 
+    { return RendererBackend::Vulkan; };
+
 private:
     VkImage m_handle;
     VkImageView m_view;
