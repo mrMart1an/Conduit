@@ -868,7 +868,7 @@ ShaderModule Device::createShaderModule(
     ShaderModule out_shader;
 
     usize file_size;
-    std::vector<char> file_buffer;
+    std::vector<u32> file_buffer;
 
     // Read the file
     try {
@@ -890,8 +890,8 @@ ShaderModule Device::createShaderModule(
         file_size = input_file.tellg();
         input_file.seekg(0, std::ios::beg);
         
-        file_buffer.resize(file_size);
-        input_file.read(file_buffer.data(), file_size);
+        file_buffer.resize(file_size / sizeof(u32));
+        input_file.read((char*)file_buffer.data(), file_size);
         
         input_file.close();
     } catch (const std::ifstream::failure& e) {
@@ -929,9 +929,9 @@ ShaderModule Device::createShaderModule(
 
     // Stage create info
     out_shader.m_shader_stage_create_info = { };
-    
     out_shader.m_shader_stage_create_info.sType =
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    
     out_shader.m_shader_stage_create_info.stage = stage_flag_bits;
     out_shader.m_shader_stage_create_info.module = out_shader.m_handle;
     
