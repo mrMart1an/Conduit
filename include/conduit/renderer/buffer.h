@@ -3,6 +3,8 @@
 
 #include "conduit/defines.h"
 
+#include "conduit/renderer/backendEnum.h"
+
 namespace cndt {
 
 // Backend independent GPU buffer abstraction 
@@ -140,6 +142,9 @@ public:
 
     // Return true if the buffer is mapped
     virtual bool mapped() const = 0;
+
+    // Return the renderer backend that own this resource
+    virtual RendererBackend backend() const = 0;
 };
 
 /*
