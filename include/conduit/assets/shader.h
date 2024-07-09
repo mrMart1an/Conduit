@@ -16,7 +16,8 @@ public:
         Vertex,
         Fragment,
         Geometry,
-        Tessellation,
+        TessellationControl,
+        TessellationEval,
         Compute
     };
     
@@ -24,9 +25,13 @@ public:
     Shader() = default;
     Shader(
         std::vector<u32>& spv_code,
+        std::vector<char>& glsl_code,
+
         Type shader_type
     ) : 
         m_spv_code(std::move(spv_code)),
+        m_glsl_code(std::move(glsl_code)),
+
         m_type(shader_type)
     { }
 
@@ -38,12 +43,21 @@ public:
         return m_spv_code.data(); 
     }
 
+    // Get the GLSL shader code
+    // store the code size in the given usize variable
+    const char* getGlsl(usize& code_size) const 
+    { 
+        code_size  = m_glsl_code.size();
+        return m_glsl_code.data(); 
+    }
+
     // Return the shader type
     Type type() const { return m_type; }
     
 private:
     // Store the shader spriv code
     std::vector<u32> m_spv_code;
+    std::vector<char> m_glsl_code;
 
     Type m_type;
 };

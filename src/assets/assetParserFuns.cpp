@@ -49,8 +49,10 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
         type = Shader::Type::Fragment;
     else if (type_str == "geometry")
         type = Shader::Type::Geometry;
-    else if (type_str == "tesseletion")
-        type = Shader::Type::Tessellation;
+    else if (type_str == "tesseletion_control")
+        type = Shader::Type::TessellationControl;
+    else if (type_str == "tesseletion_evaluation")
+        type = Shader::Type::TessellationEval;
     else if (type_str == "compute")
         type = Shader::Type::Compute;
         

@@ -1,8 +1,11 @@
 #include "conduit/assets/assetsManagerException.h"
-#include "conduit/assets/mesh.h"
-#include "conduit/assets/texture.h"
-#include "conduit/internal/assets/assetStorage.h"
 #include "conduit/assets/assetInfo.h"
+
+#include "conduit/assets/mesh.h"
+#include "conduit/assets/shader.h"
+#include "conduit/assets/texture.h"
+
+#include "conduit/internal/assets/assetStorage.h"
 
 #include <filesystem>
 #include <fstream>
@@ -32,12 +35,12 @@ std::shared_ptr<AssetStorage<Shader>> loadShader(AssetInfo<Shader>& info)
         }
 
         // Get the code size and go to the beginning of the file
-        usize spv_size = spv_file.tellg() / 4;
+        usize spv_size = spv_file.tellg() / sizeof(u32);
         spv_file.seekg(0);
 
         // Load the code in the buffer
         spv_code.resize(spv_size);
-        spv_file.read((char*)spv_code.data(), spv_size * 4);
+        spv_file.read((char*)spv_code.data(), spv_size * sizeof(u32));
 
         spv_file.close();
 
@@ -48,11 +51,47 @@ std::shared_ptr<AssetStorage<Shader>> loadShader(AssetInfo<Shader>& info)
         );
     }
 
+    // Load the spv code byte in memory 
+    std::filesystem::path glsl_path = info.pathGlsl();
+    std::vector<char> glsl_code;
+
+    try {
+        std::ifstream glsl_file(
+            glsl_path,
+            std::ifstream::ate | std::ifstream::binary
+        );
+
+        if(glsl_file.fail()) {
+            throw ShaderLoadingError(
+                "failed to open file: {}",
+                spv_path.string()
+            );
+        }
+
+        // Get the code size and go to the beginning of the file
+        usize glsl_size = glsl_file.tellg();
+        glsl_file.seekg(0);
+
+        // Load the code in the buffer
+        glsl_code.resize(glsl_size);
+        glsl_file.read((char*)spv_code.data(), glsl_size);
+
+        glsl_file.close();
+
+    } catch (std::exception& e) {
+        throw ShaderLoadingError(
+            "Shader glsl code loading error: {}",
+            e.what()
+        );
+    }
+
     // Create and return a shared pointer storing the asset storage
     return std::make_shared<AssetStorage<Shader>>(
         info,
         std::make_unique<Shader>(
             spv_code,
+            glsl_code,
+
             info.shaderType()
         )
     );
