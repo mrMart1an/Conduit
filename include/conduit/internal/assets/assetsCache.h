@@ -39,7 +39,7 @@ public:
     // Get an asset handle
     // Load a new asset if this is the asset is not already cached
     template<typename AssetType>
-    Handle<AssetType> getHandle(
+    AssetHandle<AssetType> getHandle(
         AssetParser<AssetTypes...>& parser,
         std::string_view asset_name
     );
@@ -56,7 +56,7 @@ private:
 // Load a new asset if this is the asset is not already cached
 template<typename... AssetTypes>
 template<typename AssetType>
-Handle<AssetType> AssetsCache<AssetTypes...>::getHandle(
+AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
     AssetParser<AssetTypes...>& parser,
     std::string_view asset_name
 ) {
@@ -66,7 +66,7 @@ Handle<AssetType> AssetsCache<AssetTypes...>::getHandle(
     // If the asset is cahced return an handle to it
     // load the asset in the cache otherwise
     if (auto storage = storage_p.lock()) {
-        return Handle<AssetType>(storage);
+        return AssetHandle<AssetType>(storage);
     } else {
         // Get the asset info from the parser and log a message
         AssetInfo<AssetType> asset_info = 
@@ -84,7 +84,7 @@ Handle<AssetType> AssetsCache<AssetTypes...>::getHandle(
 
         // Store the asset storage in the cache and return the handle
         cache[asset_name] = new_storage;
-        return Handle<AssetType>(new_storage);
+        return AssetHandle<AssetType>(new_storage);
     }
 }
 

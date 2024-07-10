@@ -3,6 +3,7 @@
 
 #include "conduit/config/engineConfig.h"
 #include "conduit/events/eventWriter.h"
+#include "conduit/renderer/backendEnum.h"
 #include "conduit/window/window.h"
 
 struct GLFWwindow;
@@ -46,6 +47,8 @@ private:
     // Initialize the glfw window
     void initialize(
         EngineConfig::Window config,
+        RendererBackend render_backend,
+
         const char* title
     ) override;
 
