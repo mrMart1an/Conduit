@@ -4,6 +4,7 @@
 #include "conduit/defines.h"
 
 #include "conduit/config/engineConfig.h"
+#include "conduit/renderer/backendEnum.h"
 
 #include <vector>
 
@@ -70,6 +71,8 @@ protected:
     // Window initialization function
     virtual void initialize(
         EngineConfig::Window config,
+        RendererBackend render_backend,
+
         const char* title
     ) = 0;
 

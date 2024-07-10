@@ -53,7 +53,12 @@ void Application::engineStartup(EngineConfig config)
         m_event_bus.getEventWriter()
     );
     
-    m_window->initialize(config.window, appName().c_str());
+    m_window->initialize(
+        config.window,
+        config.renderer.backend.value(),
+
+        appName().c_str()
+    );
     
     m_delete_queue.addDeleter(std::bind(
         &Window::shutdown, m_window.get()
