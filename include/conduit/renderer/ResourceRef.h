@@ -23,8 +23,28 @@ public:
     RendererResRef() : 
         m_ptr(nullptr),
         m_ref_count(nullptr),
-        m_deffer_delete_f([](GpuType*){ })
+        m_deffer_delete_f()
     { }
+
+    RendererResRef(GpuType* ptr) : 
+        m_ptr(ptr),
+        m_ref_count(new Counter),
+        m_deffer_delete_f([] (GpuType* ptr) {
+            delete ptr;
+        })
+    { 
+        *m_ref_count = 1;
+    }
+    RendererResRef(
+        GpuType* ptr,
+        std::function<void(GpuType*)> deffer_delete_f
+    ) : 
+        m_ptr(ptr),
+        m_ref_count(new Counter),
+        m_deffer_delete_f(deffer_delete_f)
+    { 
+        *m_ref_count = 1;
+    }
 
     // If the ref counter reaches zero call the deffer delete function
     ~RendererResRef()
@@ -48,17 +68,13 @@ public:
         return m_ptr;
     }
 
-private:
-    // Private constructor for the rendering backend
-    RendererResRef(
-        GpuType* ptr,
-        std::function<void(GpuType*)> deffer_delete_f
-    ) : 
-        m_ptr(ptr),
-        m_ref_count(new Counter),
-        m_deffer_delete_f(deffer_delete_f)
-    { }
+    // Dereference operator
+    GpuType& operator* ()
+    {    
+        return *m_ptr;
+    }
 
+private:
     // Decrease the counter and call the delete callback if it reaches 0
     void release();
 
@@ -95,7 +111,8 @@ void RendererResRef<GpuType>::release()
 template <typename GpuType>
 RendererResRef<GpuType>::RendererResRef(const RendererResRef& obj) : 
     m_ptr(obj.m_ptr),
-    m_ref_count(obj.m_ref_count)
+    m_ref_count(obj.m_ref_count),
+    m_deffer_delete_f(obj.m_deffer_delete_f)
 {
     if (m_ref_count != nullptr) {
         (*this->m_ref_count) += 1;
@@ -111,6 +128,7 @@ RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
 
     this->m_ptr = obj.m_ptr;
     this->m_ref_count = obj.m_ref_count;
+    this->m_deffer_delete_f = obj.m_deffer_delete_f;
 
     if (m_ref_count != nullptr) {
         (*this->m_ref_count) += 1;
@@ -123,7 +141,8 @@ RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
 template <typename GpuType>
 RendererResRef<GpuType>::RendererResRef(RendererResRef&& obj) : 
     m_ptr(obj.m_ptr),
-    m_ref_count(obj.m_ref_count)
+    m_ref_count(obj.m_ref_count),
+    m_deffer_delete_f(obj.m_deffer_delete_f)
 {
     obj.m_ptr = nullptr;
     obj.m_ref_count = nullptr;
@@ -138,9 +157,11 @@ RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
 
     this->m_ptr = obj.m_ptr;
     this->m_ref_count = obj.m_ref_count;
+    this->m_deffer_delete_f = obj.m_deffer_delete_f;
 
     obj.m_ptr = nullptr;
     obj.m_ref_count = nullptr;
+    obj.m_deffer_delete_f = std::function<void(GpuType*)>();
 
     return *this;
 }

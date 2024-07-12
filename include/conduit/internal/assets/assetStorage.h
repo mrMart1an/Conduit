@@ -46,7 +46,7 @@ public:
 
 private:
     // Get a reference to the asset info
-    AssetInfo<AssetType>& info() { return m_info; }
+    AssetInfo<AssetType>& infoRef() { return m_info; }
     
     // Update the stored asset
     void updateAsset(

@@ -1,4 +1,7 @@
 #include "renderer/vulkan/vkRenderer.h"
+#include "conduit/assets/shader.h"
+#include "conduit/renderer/ResourceRef.h"
+#include "renderer/vulkan/pipelines/vkShaderProgramBuilder.h"
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkUniformData.h"
 
@@ -105,10 +108,18 @@ void VkRenderer::initialize(
     });
 
     // Create a graphics pipeline
+    auto program_builder = getShaderProgramBuilder();
+    program_builder->addStage(m_asset_manager.get<Shader>("builtinVert"));
+    program_builder->addStage(m_asset_manager.get<Shader>("builtinFrag"));
+
+    ShaderProgram::RasterConfig raster_config = { };
+    program_builder->configureRasterizer(raster_config);
+
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
-        "resources/shaders/builtin.vert.spv",
-        "resources/shaders/builtin.frag.spv",
+
+        static_cast<VulkanShaderProgram&>(*program_builder->build()),
+
         { m_uniform_layout.layout() }
     );
     m_delete_queue.addDeleter(std::bind(
@@ -185,6 +196,7 @@ void VkRenderer::recreateSwapChain()
 void VkRenderer::setVsync(bool v_sync)
 {
     vkDeviceWaitIdle(m_device.logical);
+
     
     destroySwapChainAttachment();
     
@@ -198,6 +210,20 @@ void VkRenderer::toggleVsync()
 {
     bool v_status = m_swap_chain.vSync();
     setVsync(!v_status);
+}
+
+/*
+ *
+ *      Renderer getter function
+ *
+ * */
+
+// Get a shader program builder
+RendererResRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder() 
+{
+    return RendererResRef<ShaderProgramBuilder>(
+        new VulkanShaderProgramBuilder(&m_device)
+    );
 }
 
 /*

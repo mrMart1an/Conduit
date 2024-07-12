@@ -115,6 +115,8 @@ public:
     };
 
 public:
+    GpuImage() = default;
+    virtual ~GpuImage() = default;
 
     /*
      *

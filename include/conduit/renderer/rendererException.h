@@ -47,10 +47,42 @@ protected:
     RendererBackend m_backend;
 };
 
+// Unsupported backend exception
 class UnsupportedBackend : public RendererException {
 public:
     template<typename... Args>
     UnsupportedBackend(
+        RendererBackend backend,
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RendererException(
+            backend,
+            msg, std::forward<Args>(args)...
+        )
+    { }
+};
+
+// Shader program invalid option
+class ShaderProgramInvalidOption : public RendererException {
+public:
+    template<typename... Args>
+    ShaderProgramInvalidOption(
+        RendererBackend backend,
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RendererException(
+            backend,
+            msg, std::forward<Args>(args)...
+        )
+    { }
+};
+
+
+// Shader program invalid build
+class InvalidShaderProgram : public RendererException {
+public:
+    template<typename... Args>
+    InvalidShaderProgram(
         RendererBackend backend,
         fmt::format_string<Args...> msg, Args&&... args
     ) : 

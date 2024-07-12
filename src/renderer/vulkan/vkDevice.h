@@ -1,6 +1,10 @@
 #ifndef CNDT_VK_DEVICE_H
 #define CNDT_VK_DEVICE_H
 
+
+#include "conduit/assets/handle.h"
+#include "conduit/assets/shader.h"
+
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
@@ -12,6 +16,7 @@
 #include "renderer/vulkan/descriptor/vkDescriptorWriter.h"
 #include "renderer/vulkan/pipelines/vkPipeline.h"
 #include "renderer/vulkan/pipelines/vkShaderModule.h"
+#include "renderer/vulkan/pipelines/vkShaderProgram.h"
 #include "renderer/vulkan/storage/vkBuffer.h"
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/storage/vkImage.h"
@@ -24,7 +29,6 @@
 #include "renderer/vulkan/vkContext.h"
 
 #include <functional>
-#include <string>
 #include <vector>
 
 #include <vk_mem_alloc.h>
@@ -348,14 +352,11 @@ public:
      * */
 
     // Create a shader module for the required stage from the SPIR-V file
-    ShaderModule createShaderModule(
-        const char* filepath,
-        VkShaderStageFlagBits stage_flag_bits
-    );
+    VulkanShaderModule createShaderModule(AssetHandle<Shader> shafer);
 
     // Destroy a shader module
     void destroyShaderModule(
-        ShaderModule &module
+        VulkanShaderModule &module
     );
      
     /*
@@ -368,12 +369,9 @@ public:
     GraphicsPipeline createGraphicsPipeline(
     	RenderPass &render_pass,
 
-    	std::string vertex_shader_filepath,
-    	std::string fragment_shader_filepath,
-	
-	    std::vector<VkDescriptorSetLayout> descriptor_set_layout,
-    	
-    	bool wireframe = false
+        VulkanShaderProgram &program,
+
+	    std::vector<VkDescriptorSetLayout> descriptor_set_layout
     );
     
     // Destroy a vulkan graphic pipeline
