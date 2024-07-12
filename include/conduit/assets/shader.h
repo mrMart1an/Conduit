@@ -13,11 +13,13 @@ public:
     // Shader type
     enum class Type {
         Undefined,
+
         Vertex,
         Fragment,
         Geometry,
         TessellationControl,
         TessellationEval,
+
         Compute
     };
     
@@ -36,18 +38,18 @@ public:
     { }
 
     // Get the Spriv byte code
-    // store the byte code size in the given usize variable
-    const u32* getSpv(usize& code_size) const 
+    // store the byte code size in bytes in the given usize variable
+    const u32* getSpv(usize *code_size_p) const 
     { 
-        code_size  = m_spv_code.size();
+        *code_size_p  = m_spv_code.size() * sizeof(u32);
         return m_spv_code.data(); 
     }
 
     // Get the GLSL shader code
-    // store the code size in the given usize variable
-    const char* getGlsl(usize& code_size) const 
+    // store the code size in bytes in the given usize variable
+    const char* getGlsl(usize *code_size_p) const 
     { 
-        code_size  = m_glsl_code.size();
+        *code_size_p  = m_glsl_code.size();
         return m_glsl_code.data(); 
     }
 

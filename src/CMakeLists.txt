@@ -52,6 +52,8 @@ if(VULKAN_BACKEND)
         "${BASE_PATH}/renderer/vulkan/utils/vkAttributeDescriptor.cpp"    
         
         "${BASE_PATH}/renderer/vulkan/pipelines/vkPipeline.cpp"   
+        "${BASE_PATH}/renderer/vulkan/pipelines/vkShaderProgram.cpp"   
+        "${BASE_PATH}/renderer/vulkan/pipelines/vkShaderProgramBuilder.cpp"   
         
         "${BASE_PATH}/renderer/vulkan/descriptor/vkDescriptorLayout.cpp"   
         "${BASE_PATH}/renderer/vulkan/descriptor/vkDescriptorAllocator.cpp"   
@@ -85,6 +87,7 @@ set(RENDERER_SRC
     ${OPENGL_SRC}
 
     "${BASE_PATH}/renderer/renderer.cpp"
+    "${BASE_PATH}/renderer/programBuilder.cpp"
 )
 
 # Platform specific code source files

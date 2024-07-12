@@ -4,6 +4,8 @@
 #include "conduit/config/engineConfig.h"
 #include "conduit/defines.h"
 
+#include "conduit/renderer/ResourceRef.h"
+#include "conduit/renderer/shader/programBuilder.h"
 #include "conduit/window/window.h"
 
 #include <memory>
@@ -28,6 +30,9 @@ public:
 
     // Toggle renderer v-sync
     virtual void toggleVsync() = 0;
+    
+    // Get a shader program builder
+    virtual RendererResRef<ShaderProgramBuilder> getShaderProgramBuilder() = 0;
     
 protected:
     // Initialize the renderer implementation

@@ -1,6 +1,7 @@
 #ifndef CNDT_VK_RENDERER_H
 #define CNDT_VK_RENDERER_H
 
+#include "conduit/assets/assetsManager.h"
 #include "conduit/config/engineConfig.h"
 #include "conduit/renderer/vertex.h"
 #include "conduit/window/window.h"
@@ -55,6 +56,9 @@ public:
 
     // Toggle renderer v-sync
     void toggleVsync() override;
+
+    // Get a shader program builder
+    RendererResRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
 
 protected:
     // Initialize the renderer implementation
@@ -150,6 +154,9 @@ private:
 
     // Count the total number of frame rendered by the renderer
     u64 m_frame_count;
+
+    // TODO temporary asset manager, remove later
+    AssetsManager m_asset_manager;
 };
 
 } // namespace cndt::vulkan

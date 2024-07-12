@@ -1,3 +1,6 @@
+#include "conduit/assets/handle.h"
+#include "conduit/assets/shader.h"
+
 #include "conduit/defines.h"
 #include "conduit/logging.h"
 #include "conduit/internal/core/deleteQueue.h"
@@ -16,8 +19,6 @@
 #include "renderer/vulkan/vkCommandPool.h"
 
 #include <array>
-#include <iostream>
-#include <fstream>
 #include <cstring>
 #include <functional>
 #include <string_view>
@@ -861,92 +862,90 @@ void Device::destroyLogicalDevice()
  * */
 
 // Create a shader module for the required stage from the SPIR-V file
-ShaderModule Device::createShaderModule(
-    const char* filepath,
-    VkShaderStageFlagBits stage_flag_bits
-) {
-    ShaderModule out_shader;
+VulkanShaderModule Device::createShaderModule(AssetHandle<Shader> shader) 
+{
+    VulkanShaderModule out_shader;
 
-    usize file_size;
-    std::vector<u32> file_buffer;
-
-    // Read the file
-    try {
-        std::ifstream input_file;
-        input_file.open(
-            filepath, 
-            std::ios::in | std::ios::binary | std::ios::ate
-        );
-        
-        // Throw exception on failure
-        if (input_file.fail()) {
-            throw ShaderModuleFileError(
-                "Vulkan shader module file access error, file: {}",
-                filepath
-            );
-        }
-
-        // Store the file content in a vector
-        file_size = input_file.tellg();
-        input_file.seekg(0, std::ios::beg);
-        
-        file_buffer.resize(file_size / sizeof(u32));
-        input_file.read((char*)file_buffer.data(), file_size);
-        
-        input_file.close();
-    } catch (const std::ifstream::failure& e) {
-        throw ShaderModuleFileError(
-            "Vulkan shader module file access error ({}), file: {}",
-            e.what(),
-            filepath
-        );
-    }
-    
     // Prepare the shader create info
-    out_shader.m_create_info = { };
+    VkShaderModuleCreateInfo create_info = { };
         
-    out_shader.m_create_info.sType =
-        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    
-    out_shader.m_create_info.codeSize = file_size;
-    out_shader.m_create_info.pCode = (u32*)file_buffer.data();
+    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    create_info.pCode = shader->getSpv(
+        &create_info.codeSize
+    );
     
     // Create the shader module
     VkResult res = vkCreateShaderModule(
         logical,
-        &out_shader.m_create_info,
+        &create_info,
         m_allocator,
         &out_shader.m_handle
     );
 
     if (res != VK_SUCCESS) {
         throw ShaderModuleFileError(
-            "Vulkan shader module creation error ({}), file: {}",
+            "Vulkan shader module creation error ({}), name: {}",
             vk_error_str(res),
-            filepath
+            shader.info().assetName()
         );
+    }
+    
+    // Store the shader type 
+    VkShaderStageFlagBits stage;
+
+    switch (shader->type()) {
+        case Shader::Type::Compute: {
+            stage = VK_SHADER_STAGE_COMPUTE_BIT;
+            break;
+        }
+        case Shader::Type::Vertex: {
+            stage = VK_SHADER_STAGE_VERTEX_BIT;
+            break;
+        }
+        case Shader::Type::Fragment: {
+            stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+            break;
+        }
+        case Shader::Type::TessellationEval: {
+            stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+            break;
+        }
+        case Shader::Type::TessellationControl: {
+            stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+            break;
+        }
+        case Shader::Type::Geometry: {
+            stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+            break;
+        }
+
+        default: {
+            throw ShaderModuleCreateError(
+                "Vulkan shader module create error: Invalid shader type"
+            );
+        }
     }
 
     // Stage create info
-    out_shader.m_shader_stage_create_info = { };
-    out_shader.m_shader_stage_create_info.sType =
+    out_shader.m_stage_create_info = { };
+    out_shader.m_stage_create_info.sType =
         VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     
-    out_shader.m_shader_stage_create_info.stage = stage_flag_bits;
-    out_shader.m_shader_stage_create_info.module = out_shader.m_handle;
+    out_shader.m_stage_create_info.stage = stage;
+    out_shader.m_stage_create_info.module = out_shader.m_handle;
     
     // Use main as default shader entry point
-    out_shader.m_shader_stage_create_info.pName = "main"; 
+    out_shader.m_stage_create_info.pName = "main"; 
 
     return out_shader;
 }
 
 // Destroy a shader module
 void Device::destroyShaderModule(
-    ShaderModule &module
+    VulkanShaderModule &module
 ) {
     vkDestroyShaderModule(logical, module.m_handle, m_allocator);
-    module = ShaderModule();
+    module = VulkanShaderModule();
 }
 
 /*
@@ -1114,31 +1113,11 @@ void Device::runCmdImmediate(
 GraphicsPipeline Device::createGraphicsPipeline(
 	RenderPass &render_pass,
 
-	std::string vertex_shader_filepath,
-	std::string fragment_shader_filepath,
+    VulkanShaderProgram &program,
 
-	std::vector<VkDescriptorSetLayout> descriptor_set_layout,
-	
-	bool wireframe 
+	std::vector<VkDescriptorSetLayout> descriptor_set_layout
 ) {
     GraphicsPipeline out_pipeline;
-
-    // Load shader modules
-    out_pipeline.m_vertex_stage = createShaderModule(
-        vertex_shader_filepath.c_str(), 
-		VK_SHADER_STAGE_VERTEX_BIT
-    );
-
-    // NOTE/TODO : ugly, handling this better
-    try {
-        out_pipeline.m_fragment_stage = createShaderModule(
-            fragment_shader_filepath.c_str(), 
-	    	VK_SHADER_STAGE_FRAGMENT_BIT
-        );
-    } catch (ShaderModuleException &e) {
-        destroyShaderModule(out_pipeline.m_vertex_stage);
-        throw e;
-    }
 
     // Enable dynamic viewport and scissor
     std::array<VkDynamicState, 2> dynamic_states = {
@@ -1158,35 +1137,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
         VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewport_state.viewportCount = 1;
     viewport_state.scissorCount = 1;
-    
-    // Rasterizer create info
-    VkPipelineRasterizationStateCreateInfo rasterizer = { };
-    rasterizer.sType = 
-        VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-
-    rasterizer.polygonMode = 
-        wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth = 1.0f;
-
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-
-    rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = 0.0f;
-    rasterizer.depthBiasClamp = 0.0f;
-    rasterizer.depthBiasSlopeFactor = 0.0f;
-
-    // Multi sampling create info
-    VkPipelineMultisampleStateCreateInfo multisampling = { };
-    multisampling.sType = 
-        VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    // TODO: configure depth and stencil 
-
+   
     // Color blend attachment
     VkPipelineColorBlendAttachmentState color_blend_attachment = { };
     color_blend_attachment.colorWriteMask = 
@@ -1257,9 +1208,6 @@ GraphicsPipeline Device::createGraphicsPipeline(
     );
     
     if (res_layout != VK_SUCCESS) {
-        destroyShaderModule(out_pipeline.m_vertex_stage);
-        destroyShaderModule(out_pipeline.m_fragment_stage);
-        
         throw PipelineCreationError(
             "Pipeline layout creation error: {}",
             vk_error_str(res_layout)
@@ -1267,27 +1215,25 @@ GraphicsPipeline Device::createGraphicsPipeline(
     }
     
     // Create the pipeline info
-    std::array<VkPipelineShaderStageCreateInfo, 2> stage_infos = {
-        out_pipeline.m_vertex_stage.m_shader_stage_create_info,  
-        out_pipeline.m_fragment_stage.m_shader_stage_create_info  
-    };
-    
     VkGraphicsPipelineCreateInfo pipeline_create_info = { };
     pipeline_create_info.sType = 
         VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipeline_create_info.stageCount = stage_infos.size();
-    pipeline_create_info.pStages = stage_infos.data();
+    
+    pipeline_create_info.pStages = program.getStageInfo(
+        &pipeline_create_info.stageCount
+    );
+    
     pipeline_create_info.pVertexInputState = &vertex_input_info;
     pipeline_create_info.pInputAssemblyState = &input_assembly;
 
-    pipeline_create_info.pViewportState = &viewport_state;
-    pipeline_create_info.pRasterizationState = &rasterizer;
-    pipeline_create_info.pMultisampleState = &multisampling;
-    pipeline_create_info.pColorBlendState = &color_blending;
     pipeline_create_info.pDynamicState = &dynamic_state;
+    pipeline_create_info.pViewportState = &viewport_state;
+    pipeline_create_info.pColorBlendState = &color_blending;
+    pipeline_create_info.pRasterizationState = program.getRasterizerInfo();
+    pipeline_create_info.pMultisampleState = program.getMultisamplingInfo();
+    pipeline_create_info.pDepthStencilState = program.getDepthStencilInfo();
 
-    // TODO: depth state
-    pipeline_create_info.pDepthStencilState = VK_NULL_HANDLE;
+    // TODO: tessellation state
     pipeline_create_info.pTessellationState = VK_NULL_HANDLE;
 
     pipeline_create_info.layout = out_pipeline.m_layout;
@@ -1312,9 +1258,6 @@ GraphicsPipeline Device::createGraphicsPipeline(
             m_allocator
         );
         
-        destroyShaderModule(out_pipeline.m_vertex_stage);
-        destroyShaderModule(out_pipeline.m_fragment_stage);
-        
         throw PipelineCreationError(
             "Pipeline creation error: {}",
             vk_error_str(res_pipeline)
@@ -1328,9 +1271,6 @@ GraphicsPipeline Device::createGraphicsPipeline(
 void Device::destroyGraphicsPipeline(
     GraphicsPipeline &pipeline
 ) {
-    destroyShaderModule(pipeline.m_vertex_stage);
-    destroyShaderModule(pipeline.m_fragment_stage);
-
     // Destroy the pipeline data fields
     vkDestroyPipeline(
         logical, 

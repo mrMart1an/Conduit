@@ -85,6 +85,10 @@ std::shared_ptr<AssetStorage<Shader>> loadShader(AssetInfo<Shader>& info)
         );
     }
 
+    // Make the asset available
+    info.setAvailable(true);
+    info.incrementVersion();
+
     // Create and return a shared pointer storing the asset storage
     return std::make_shared<AssetStorage<Shader>>(
         info,

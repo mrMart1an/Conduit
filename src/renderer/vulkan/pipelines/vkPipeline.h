@@ -44,10 +44,6 @@ public:
     // Bind the pipeline for use
     // Use the graphic bind port by default for this pipeline
     void bind(CommandBuffer &cmd_buffer);
-    
-private:
-    ShaderModule m_vertex_stage;
-    ShaderModule m_fragment_stage;
 };
 
 } // namespace cndt::vulkan
