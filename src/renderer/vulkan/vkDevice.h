@@ -1,13 +1,13 @@
 #ifndef CNDT_VK_DEVICE_H
 #define CNDT_VK_DEVICE_H
 
-
 #include "conduit/assets/handle.h"
 #include "conduit/assets/shader.h"
 
 #include "conduit/defines.h"
 #include "conduit/internal/core/deleteQueue.h"
 
+#include "conduit/renderer/ResourceRef.h"
 #include "conduit/renderer/buffer.h"
 #include "conduit/renderer/image.h"
 
@@ -368,8 +368,7 @@ public:
     // Create a vulkan graphics pipeline
     GraphicsPipeline createGraphicsPipeline(
     	RenderPass &render_pass,
-
-        VulkanShaderProgram &program,
+        RendererResRef<ShaderProgram> program,
 
 	    std::vector<VkDescriptorSetLayout> descriptor_set_layout
     );

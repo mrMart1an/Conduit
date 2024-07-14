@@ -133,8 +133,6 @@ private:
 
     SwapChain m_swap_chain;
 
-    GraphicsPipeline m_graphics_pipeline;
-
     GeometryBuffer<Vertex3D> m_static_mesh_buffer;
 
     DescriptorLayout m_uniform_layout;
@@ -142,6 +140,7 @@ private:
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;
     std::vector<RenderAttachment> m_swap_chain_attachements;
+    GraphicsPipeline m_graphics_pipeline;
 
     // Frame in flight data 
     std::vector<InFlightData> m_in_flight_data;

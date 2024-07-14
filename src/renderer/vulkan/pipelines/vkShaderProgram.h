@@ -29,6 +29,9 @@ public:
 
         VkPipelineDepthStencilStateCreateInfo &depth_stencil_info,
 
+        VkVertexInputBindingDescription &vertex_binding_desc,
+        std::vector<VkVertexInputAttributeDescription> vertex_attribute_desc,
+
         Type type
     );
     ~VulkanShaderProgram() override;
@@ -59,6 +62,21 @@ public:
     const VkPipelineDepthStencilStateCreateInfo* getDepthStencilInfo() const 
     { return &m_depth_stencil_info; }
 
+    // Return a pointer to vertex binding description
+    const VkVertexInputBindingDescription* getVertexBindingDescription() const
+    { return &m_vertex_binding_desc; }
+ 
+    // Return a pointer to the vertex attribute description, 
+    // store the attributes count in the given u32 pointer
+    const VkVertexInputAttributeDescription* getVertexAttributeDescription(
+        u32 *count_p
+    ) const {
+        if (count_p != nullptr)
+            *count_p = static_cast<u32>(m_vertex_attribute_desc.size());
+
+        return m_vertex_attribute_desc.data();
+    }
+
 private:
     // Shader stage modules and info
     std::vector<VulkanShaderModule> m_modules;
@@ -70,6 +88,10 @@ private:
 
     // Depth stencil state info
     VkPipelineDepthStencilStateCreateInfo m_depth_stencil_info;
+
+    // Vertex binding and attribute description
+    VkVertexInputBindingDescription m_vertex_binding_desc;
+    std::vector<VkVertexInputAttributeDescription> m_vertex_attribute_desc;
 
     // Pointer to the device that own the program
     Device *m_device_p;
