@@ -3,7 +3,10 @@
 
 #include "renderer/vulkan/vkDevice.h"
 #include "conduit/renderer/shader/programBuilder.h"
+
 #include <vector>
+
+#include "spirv_common.hpp"
 
 namespace cndt::vulkan {
 
@@ -34,8 +37,22 @@ public:
     // Parse depth stencil information
     VkPipelineDepthStencilStateCreateInfo parseDepthStencilInfo() const;
 
+    // Parse vertex binding description
+    VkVertexInputBindingDescription parseVertexBinding() const;
+
+    // Parse vertex attribute description
+    std::vector<VkVertexInputAttributeDescription> 
+    parseVertexAttribute() const;
+
     // Parse the shader modules
     std::vector<VulkanShaderModule> parseShaderModule() const;
+
+    // Convert vertex input and count to vkFormat
+    VkFormat getVkFormat(
+        ShaderProgram::Format format,
+        u32 size,
+        spirv_cross::SPIRType loc_type
+    ) const;
 
 private:
     // Pointer to the device that own the builder

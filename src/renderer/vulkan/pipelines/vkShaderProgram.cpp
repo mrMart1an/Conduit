@@ -15,6 +15,9 @@ VulkanShaderProgram::VulkanShaderProgram(
     VkPipelineMultisampleStateCreateInfo &multisampling_info,
 
     VkPipelineDepthStencilStateCreateInfo &depth_stencil_info,
+        
+    VkVertexInputBindingDescription &vertex_binding_desc,
+    std::vector<VkVertexInputAttributeDescription> vertex_attribute_desc,
 
     Type type
 ) :
@@ -24,6 +27,9 @@ VulkanShaderProgram::VulkanShaderProgram(
     m_rasterizer_info(rasterizer_info),
     m_multisampling_info(multisampling_info),
     m_depth_stencil_info(depth_stencil_info),
+
+    m_vertex_binding_desc(vertex_binding_desc),
+    m_vertex_attribute_desc(std::move(vertex_attribute_desc)),
 
     ShaderProgram(type)
 {

@@ -109,16 +109,24 @@ void VkRenderer::initialize(
 
     // Create a graphics pipeline
     auto program_builder = getShaderProgramBuilder();
+
     program_builder->addStage(m_asset_manager.get<Shader>("builtinVert"));
     program_builder->addStage(m_asset_manager.get<Shader>("builtinFrag"));
+
+    program_builder->configureInputVertex
+        <Vertex3D, glm::vec3, glm::vec3, glm::vec2>
+    (
+        {0, &Vertex3D::position, ShaderProgram::Format::f32, 3},
+        {1, &Vertex3D::color, ShaderProgram::Format::f32, 3},
+        {2, &Vertex3D::text_coord, ShaderProgram::Format::f32, 2}
+    );
 
     ShaderProgram::RasterConfig raster_config = { };
     program_builder->configureRasterizer(raster_config);
 
     m_graphics_pipeline = m_device.createGraphicsPipeline(
         m_main_render_pass,
-
-        static_cast<VulkanShaderProgram&>(*program_builder->build()),
+        program_builder->build(),
 
         { m_uniform_layout.layout() }
     );

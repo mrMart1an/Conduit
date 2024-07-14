@@ -1,7 +1,9 @@
 #ifndef CNDT_RENDERER_SHADER_PROGRAM_H
 #define CNDT_RENDERER_SHADER_PROGRAM_H
 
+#include "conduit/defines.h"
 #include "conduit/renderer/backendEnum.h"
+#include <vector>
 
 namespace cndt {
 
@@ -14,6 +16,14 @@ public:
         Compute
     };
 
+    // Vertex attribute input format
+    enum class Format {
+        u8, u16, u32, u64,
+        i8, i16, i32, i64,
+        f16, f32, f64,
+        // TODO add packed format option 
+    };
+ 
     // Rasterizer configuration
     struct RasterConfig {
     public:
@@ -76,6 +86,40 @@ public:
         SampleCount sample_count = SampleCount::Count_1;
         // Enable SSAA
         bool ssaa_sampling = false;
+    };
+
+    // Vertex input config
+    struct VertexConfig {
+    public:
+       // Store the information for one vertex attribute
+        struct Attribute {
+            Attribute(u32 l, u32 o, Format f, u32 s) :
+                location(l),
+                offset(o),
+                format(f),
+                size(s)
+            { }
+
+            // Vertex attribute location
+            u32 location;
+
+            // Attribute offset
+            u32 offset;
+            // Attribute input format
+            Format format;
+            // The amount of time the format input is repeated
+            u32 size;
+        };
+
+    public:
+        // Vertex attributes
+        std::vector<Attribute> attributes;
+
+        // Vertex stride
+        usize stride;
+
+        // Vertex buffer binding 
+        u32 binding = 0;
     };
 
 public:

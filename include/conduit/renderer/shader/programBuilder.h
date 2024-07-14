@@ -4,11 +4,14 @@
 #include "conduit/assets/handle.h"
 #include "conduit/assets/shader.h"
 
+#include "conduit/defines.h"
 #include "conduit/renderer/backendEnum.h"
 #include "conduit/renderer/ResourceRef.h"
+#include "conduit/renderer/rendererException.h"
 #include "conduit/renderer/shader/program.h"
 
 #include <optional>
+#include <tuple>
 
 namespace cndt {
 
@@ -39,6 +42,30 @@ public:
     // if the program type is not yet determined this function 
     // set it to graphics
     void configureRasterizer(const ShaderProgram::RasterConfig &config);
+
+    // TODO support multiple binding
+    //
+    // Configure the vertex input state if the current program type allow it
+    // Take a list of vertex pointer to member as argument to determine 
+    // the size and the offset of the vertex member variable
+    //
+    // if the program type is not yet determined this function 
+    // set it to graphics
+    //
+    // Take as argument a list of tuple each describing a vertex attribute
+    // with the following format:
+    // { location, vertex member pointer, format, size }
+    //
+    // size is the number of times the format is contain in the input 
+    template <typename VT, typename... MT>
+    void configureInputVertex(
+        std::tuple<
+            u32, 
+            MT VT::*, 
+            ShaderProgram::Format, 
+            u32
+        >... attributes
+    );
 
     // Clear all the stored configuration of the builder
     // and reset the program type
@@ -72,6 +99,9 @@ protected:
     // Store a tessellation evaluation shader
     std::optional<AssetHandle<Shader>> m_tessel_eval_shader = std::nullopt;
 
+    // Vertex input information
+    std::optional<ShaderProgram::VertexConfig> m_vertex_config = std::nullopt;
+
     // Compute program info
 
     // Store a compute shader
@@ -80,6 +110,60 @@ protected:
     // Build cache
     std::optional<RendererResRef<ShaderProgram>> m_cache = std::nullopt;
 };
+
+// Configure the vertex input state if the current program type allow it
+// Take a list of vertex pointer to member as argument to determine 
+// the size and the offset of the vertex member variable
+//
+// if the program type is not yet determined this function 
+// set it to graphics
+template <typename VT, typename... MT>
+void ShaderProgramBuilder::configureInputVertex(
+    std::tuple<
+        u32, 
+        MT VT::*, 
+        ShaderProgram::Format, 
+        u32
+    >... attributes
+) {    
+    if (m_type == ShaderProgram::Type::Compute) {
+        throw ShaderProgramInvalidOption(
+            backend(),
+            "Invalid settings for compute program"
+        );
+    }
+
+    // Set the shader program to graphics
+    m_type = ShaderProgram::Type::Graphics;
+ 
+    // Store a new vertex config struct
+    m_vertex_config = ShaderProgram::VertexConfig();
+
+    m_vertex_config->stride = sizeof(VT);
+    m_vertex_config->binding = 0;
+
+    // Instantiate a vertex to avoid nullptr dereference
+    VT vertex;
+    
+    m_vertex_config->attributes = {
+        ShaderProgram::VertexConfig::Attribute(
+            std::get<0>(attributes), 
+
+            // Calculate the member pointer offset
+            u32(
+                uintptr(&(vertex.*(std::get<1>(attributes)))) - 
+                uintptr(&vertex)
+            ),
+
+            std::get<2>(attributes),
+            std::get<3>(attributes)
+        )...
+    };
+    
+    // Reset the cache
+    m_cache = std::nullopt;
+}
+
 
 } // namespace cndt
 

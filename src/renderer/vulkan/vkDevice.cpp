@@ -5,12 +5,11 @@
 #include "conduit/logging.h"
 #include "conduit/internal/core/deleteQueue.h"
 
-#include "conduit/renderer/vertex.h"
 #include "conduit/renderer/buffer.h"
 #include "conduit/renderer/image.h"
 
 #include "renderer/vulkan/descriptor/vkDescriptorLayout.h"
-#include "renderer/vulkan/utils/vkAttributeDescriptor.h"
+#include "renderer/vulkan/pipelines/vkShaderProgram.h"
 #include "renderer/vulkan/utils/vkExceptions.h"
 #include "renderer/vulkan/utils/vkUtils.h"
 
@@ -1112,12 +1111,14 @@ void Device::runCmdImmediate(
 // Create a vulkan graphics pipeline
 GraphicsPipeline Device::createGraphicsPipeline(
 	RenderPass &render_pass,
-
-    VulkanShaderProgram &program,
+    RendererResRef<ShaderProgram> program_ref,
 
 	std::vector<VkDescriptorSetLayout> descriptor_set_layout
 ) {
     GraphicsPipeline out_pipeline;
+
+    VulkanShaderProgram &program = 
+        static_cast<VulkanShaderProgram&>(*program_ref);
 
     // Enable dynamic viewport and scissor
     std::array<VkDynamicState, 2> dynamic_states = {
@@ -1168,18 +1169,18 @@ GraphicsPipeline Device::createGraphicsPipeline(
     color_blending.blendConstants[3] = 0.0f;
 
     // Vertex attribute and descriptor
-    VkVertexInputBindingDescription binding_descriptor = 
-        getBindingDescriptor<Vertex3D>();
-    std::vector<VkVertexInputAttributeDescription> attributes = 
-        getAttributeDescriptor<Vertex3D>();
-    
     VkPipelineVertexInputStateCreateInfo vertex_input_info = { };
     vertex_input_info.sType = 
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    
     vertex_input_info.vertexBindingDescriptionCount = 1;
-    vertex_input_info.pVertexBindingDescriptions = &binding_descriptor;
-    vertex_input_info.vertexAttributeDescriptionCount = attributes.size();
-    vertex_input_info.pVertexAttributeDescriptions = attributes.data();
+    vertex_input_info.pVertexBindingDescriptions = 
+        program.getVertexBindingDescription();
+    
+    vertex_input_info.pVertexAttributeDescriptions = 
+        program.getVertexAttributeDescription(
+            &vertex_input_info.vertexAttributeDescriptionCount
+        );
 
     // Input assembly
     VkPipelineInputAssemblyStateCreateInfo input_assembly = { };

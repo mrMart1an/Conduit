@@ -49,7 +49,6 @@ set(WINDOW_SRC
 if(VULKAN_BACKEND)
     set(VULKAN_SRC
         "${BASE_PATH}/renderer/vulkan/utils/vkValidation.cpp"    
-        "${BASE_PATH}/renderer/vulkan/utils/vkAttributeDescriptor.cpp"    
         
         "${BASE_PATH}/renderer/vulkan/pipelines/vkPipeline.cpp"   
         "${BASE_PATH}/renderer/vulkan/pipelines/vkShaderProgram.cpp"   
