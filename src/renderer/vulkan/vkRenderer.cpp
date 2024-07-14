@@ -30,6 +30,10 @@ void VkRenderer::initialize(
 
     Window *window_p
 ) {
+    // Set the number of in flight frame to 2
+    m_in_flight_count = 2;
+    m_frame_count = 0;
+
     // Store the swap chain attachments dimension
     m_frame_width = window_p->getWindowData().buffer_width;
     m_frame_height = window_p->getWindowData().buffer_height;
@@ -57,7 +61,7 @@ void VkRenderer::initialize(
     m_swap_chain.initialize(
         m_context,
         m_device,
-        2,
+        m_in_flight_count,
         m_frame_width,
         m_frame_height,
         true 
@@ -240,7 +244,6 @@ RendererResRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder()
  *
  * */
 
-
 // Draw and present a frame
 void VkRenderer::draw()
 {
@@ -405,9 +408,6 @@ void VkRenderer::endFrame()
         1, &frame_data.render_semaphore, 
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     );
-
-    // Increment the renderer frame count
-    m_frame_count += 1;
 }
 
 // Present the current swap chain frame, return true if the frame was 
@@ -417,7 +417,15 @@ bool VkRenderer::presentFrame()
     InFlightData &frame_data = getCurrentInFlightData();
     
     // Present the swap chain image
-    return m_swap_chain.presentImage(m_device, frame_data.render_semaphore);
+    bool presented =  m_swap_chain.presentImage(
+        m_device,
+        frame_data.render_semaphore
+    );
+
+    // Increment the renderer frame count
+    m_frame_count += 1;
+
+    return presented;
 }
 
 /*
@@ -429,8 +437,7 @@ bool VkRenderer::presentFrame()
 // Create and initialized all the frame in flight data
 void VkRenderer::createInFlightDatas()
 {
-    u32 frame_in_flight = m_swap_chain.frameInFlight();
-    m_in_flight_data.resize(frame_in_flight);
+    m_in_flight_data.resize(m_in_flight_count);
 
     for (auto& data : m_in_flight_data) {
         // Create the sync object
@@ -504,8 +511,7 @@ void VkRenderer::destroyInFlightData()
 // Get the current frame in flight data
 VkRenderer::InFlightData& VkRenderer::getCurrentInFlightData()
 {
-    u32 current_frame = m_swap_chain.currentFrame();
-    
+    u32 current_frame = m_frame_count % m_in_flight_count;
     return m_in_flight_data.at(current_frame);
 }
 

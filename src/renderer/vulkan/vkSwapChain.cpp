@@ -133,21 +133,21 @@ void SwapChain::initialize(
         m_images.data()
     ));
 
-    log::core::trace("Swap chain image count: {}", m_image_count);
-    
     // Store swap chain info
     m_format = surface_format.format; // MUST be set before creating views
     m_extent = extent;
     m_v_sync = v_sync;
 
-    m_frame_in_flight = m_image_count - 1;
+    m_frame_in_flight = frame_in_flight;// m_image_count - 1;
     m_current_image = 0;
-    m_current_frame = 0;
     
     m_outdated = false;
 
     // Create the image views 
     createImageViews(context, device);
+
+    log::core::trace("Swap chain image count: {}", m_image_count);
+    log::core::trace("Frame in flight count: {}", m_frame_in_flight);
 }
 
 // Reinitialize an out dated the swap chain
@@ -291,9 +291,6 @@ bool SwapChain::presentImage(Device &device, VkSemaphore render_done)
             vk_error_str(res)
         );
     }
-    
-    // Update the current frame counter
-    m_current_frame = (m_current_frame + 1) % m_frame_in_flight;
     
     return true;
 }

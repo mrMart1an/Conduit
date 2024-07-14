@@ -143,6 +143,7 @@ private:
     GraphicsPipeline m_graphics_pipeline;
 
     // Frame in flight data 
+    u32 m_in_flight_count;
     std::vector<InFlightData> m_in_flight_data;
 
     // Dimensions of the renderer swap chain attachments

@@ -110,15 +110,9 @@ public:
     // Return the number of swap chain images
     u32 imageCount() const { return m_image_count; }
 
-    // Return the number of frame in frame in flight
-    u32 frameInFlight() const { return m_frame_in_flight; }
-
     // Get the index to the next swap chain image to present
     u32 currentImage() const { return m_current_image; }
     
-    // Get the index to the current frame in flight
-    u32 currentFrame() const { return m_current_frame; }
-
     // Return true if the swap chain is out of date and need to be recreated
     bool outOfDate() const { return m_outdated; }
 
@@ -149,7 +143,6 @@ private:
     std::vector<VkImage> m_images;
     std::vector<VkImageView> m_image_views;
     
-    u32 m_current_frame;
     u32 m_current_image;
 
     bool m_outdated;
