@@ -1111,7 +1111,7 @@ void Device::runCmdImmediate(
 // Create a vulkan graphics pipeline
 GraphicsPipeline Device::createGraphicsPipeline(
 	RenderPass &render_pass,
-    RendererResRef<ShaderProgram> program_ref,
+    RenderRef<ShaderProgram> program_ref,
 
 	std::vector<VkDescriptorSetLayout> descriptor_set_layout
 ) {

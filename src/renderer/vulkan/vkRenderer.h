@@ -58,7 +58,7 @@ public:
     void toggleVsync() override;
 
     // Get a shader program builder
-    RendererResRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
+    RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
 
 protected:
     // Initialize the renderer implementation

@@ -11,7 +11,7 @@ class Renderer;
 
 // Ref counted renderer resource reference
 template <typename GpuType>
-class RendererResRef {
+class RenderRef {
     friend class Renderer;
     
     // Reference counter type
@@ -20,13 +20,13 @@ class RendererResRef {
 
 public:
     // Public null ref constructor
-    RendererResRef() : 
+    RenderRef() : 
         m_ptr(nullptr),
         m_ref_count(nullptr),
         m_deffer_delete_f()
     { }
 
-    RendererResRef(GpuType* ptr) : 
+    RenderRef(GpuType* ptr) : 
         m_ptr(ptr),
         m_ref_count(new Counter),
         m_deffer_delete_f([] (GpuType* ptr) {
@@ -35,7 +35,7 @@ public:
     { 
         *m_ref_count = 1;
     }
-    RendererResRef(
+    RenderRef(
         GpuType* ptr,
         std::function<void(GpuType*)> deffer_delete_f
     ) : 
@@ -47,20 +47,20 @@ public:
     }
 
     // If the ref counter reaches zero call the deffer delete function
-    ~RendererResRef()
+    ~RenderRef()
     {
         release();
     }
 
     // Copy constructor
-    RendererResRef(const RendererResRef&);
+    RenderRef(const RenderRef&);
     // Copy assignment
-    RendererResRef& operator=(const RendererResRef&);
+    RenderRef& operator=(const RenderRef&);
 
     // Move constructor
-    RendererResRef(RendererResRef&&);
+    RenderRef(RenderRef&&);
     // Move assignment
-    RendererResRef& operator=(RendererResRef&&);
+    RenderRef& operator=(RenderRef&&);
 
     // Arrow access operator
     GpuType* operator-> ()
@@ -91,7 +91,7 @@ private:
 
 // Decrease the counter and call the delete callback if it reaches 0
 template <typename GpuType>
-void RendererResRef<GpuType>::release()
+void RenderRef<GpuType>::release()
 {
     if (m_ref_count != nullptr) {
         (*m_ref_count) -= 1;
@@ -109,7 +109,7 @@ void RendererResRef<GpuType>::release()
 
 // Copy constructor
 template <typename GpuType>
-RendererResRef<GpuType>::RendererResRef(const RendererResRef& obj) : 
+RenderRef<GpuType>::RenderRef(const RenderRef& obj) : 
     m_ptr(obj.m_ptr),
     m_ref_count(obj.m_ref_count),
     m_deffer_delete_f(obj.m_deffer_delete_f)
@@ -121,8 +121,8 @@ RendererResRef<GpuType>::RendererResRef(const RendererResRef& obj) :
 
 // Copy assignment
 template <typename GpuType>
-RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
-    const RendererResRef& obj
+RenderRef<GpuType>& RenderRef<GpuType>::operator=(
+    const RenderRef& obj
 ) {
     release();
 
@@ -139,7 +139,7 @@ RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
 
 // Move constructor
 template <typename GpuType>
-RendererResRef<GpuType>::RendererResRef(RendererResRef&& obj) : 
+RenderRef<GpuType>::RenderRef(RenderRef&& obj) : 
     m_ptr(obj.m_ptr),
     m_ref_count(obj.m_ref_count),
     m_deffer_delete_f(obj.m_deffer_delete_f)
@@ -150,8 +150,8 @@ RendererResRef<GpuType>::RendererResRef(RendererResRef&& obj) :
 
 // Move assignment
 template <typename GpuType>
-RendererResRef<GpuType>& RendererResRef<GpuType>::operator=(
-    RendererResRef&& obj
+RenderRef<GpuType>& RenderRef<GpuType>::operator=(
+    RenderRef&& obj
 ) {
     release();
 
