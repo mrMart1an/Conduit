@@ -368,7 +368,7 @@ public:
     // Create a vulkan graphics pipeline
     GraphicsPipeline createGraphicsPipeline(
     	RenderPass &render_pass,
-        RendererResRef<ShaderProgram> program,
+        RenderRef<ShaderProgram> program,
 
 	    std::vector<VkDescriptorSetLayout> descriptor_set_layout
     );

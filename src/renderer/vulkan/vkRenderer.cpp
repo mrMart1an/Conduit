@@ -227,9 +227,9 @@ void VkRenderer::toggleVsync()
  * */
 
 // Get a shader program builder
-RendererResRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder() 
+RenderRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder() 
 {
-    return RendererResRef<ShaderProgramBuilder>(
+    return RenderRef<ShaderProgramBuilder>(
         new VulkanShaderProgramBuilder(&m_device)
     );
 }

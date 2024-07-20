@@ -32,7 +32,7 @@ public:
     virtual void toggleVsync() = 0;
     
     // Get a shader program builder
-    virtual RendererResRef<ShaderProgramBuilder> getShaderProgramBuilder() = 0;
+    virtual RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() = 0;
     
 protected:
     // Initialize the renderer implementation
