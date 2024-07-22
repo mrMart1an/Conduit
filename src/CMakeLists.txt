@@ -87,6 +87,9 @@ set(RENDERER_SRC
 
     "${BASE_PATH}/renderer/renderer.cpp"
     "${BASE_PATH}/renderer/programBuilder.cpp"
+
+    "${BASE_PATH}/renderer/graph/passBuilder.cpp"
+    "${BASE_PATH}/renderer/graph/resourceRegister.cpp"
 )
 
 # Platform specific code source files
