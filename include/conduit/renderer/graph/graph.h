@@ -1,11 +1,15 @@
 #ifndef CNDT_RENDERER_GRAPH_H
 #define CNDT_RENDERER_GRAPH_H
 
+#include "conduit/internal/renderer/graph/resourceRegister.h"
 #include "conduit/renderer/graph/resources.h"
+#include "conduit/renderer/graph/passBuilders.h"
 
 #include "conduit/renderer/ResourceRef.h"
 #include "conduit/renderer/buffer.h"
 #include "conduit/renderer/image.h"
+
+#include <functional>
 
 namespace cndt {
 
@@ -13,9 +17,13 @@ namespace cndt {
 class RenderGraph {
 
 public:
-    // Add a render pass to the graph, the pass are submitted to the
+    // Add a graphics pass to the graph, the pass are submitted to the
     // graph in execution order
-    void addPass();
+    template <typename DataType>
+    void addGraphicsPass(
+        std::function<void(GraphicsPassBuilder&, DataType&)> builder_fun,
+        std::function<void(void*, DataType&)> execute_fun
+    );
     
     // Resource handle function
 
@@ -31,7 +39,11 @@ public:
     GraphImage importImage(RenderRef<GpuImage> image);
     // Import a buffer and return a resource handle, the lifetime of the buffer
     // is manage by the application
-    GraphImage importBuffer(RenderRef<GpuBuffer> buffer);
+    GraphBuffer importBuffer(RenderRef<GpuBuffer> buffer);
+
+private:
+    // Graph resource register
+    internal::GraphResourceRegister m_resource_register;
 };
 
 } // namespace cndt
