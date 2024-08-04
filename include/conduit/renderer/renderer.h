@@ -5,6 +5,7 @@
 #include "conduit/defines.h"
 
 #include "conduit/renderer/ResourceRef.h"
+#include "conduit/renderer/graph/graph.h"
 #include "conduit/renderer/shader/programBuilder.h"
 #include "conduit/window/window.h"
 
@@ -22,9 +23,6 @@ public:
     Renderer() = default;
     virtual ~Renderer() = default;
 
-    // Draw a frame and present it
-    virtual void draw() = 0;
-
     // Set renderer v-sync 
     virtual void setVsync(bool v_sync) = 0;
 
@@ -33,6 +31,12 @@ public:
     
     // Get a shader program builder
     virtual RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() = 0;
+
+    // Return a clear render graph ready to be built 
+    virtual RenderGraph getRenderGraph() = 0;
+
+    // Execute the given render graph
+    virtual void executeGraph(RenderGraph& graph) = 0;
     
 protected:
     // Initialize the renderer implementation

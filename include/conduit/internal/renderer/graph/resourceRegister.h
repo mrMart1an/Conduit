@@ -38,17 +38,29 @@ public:
 public:
     // Create a transient image and return a resource handle, the lifetime of 
     // the image is manage by the graph
-    GraphImage createImage(GpuImage::Info info);
+    GraphImage createImage(
+        std::string_view name,
+        GpuImage::Info info
+    );
     // Create a transient buffer and return a resource handle, the lifetime of
     // the buffer is manage by the graph
-    GraphBuffer createBuffer(GpuBuffer::Info info);
+    GraphBuffer createBuffer(
+        std::string_view name,
+        GpuBuffer::Info info
+    );
 
     // Import a image and return a resource handle, the lifetime of the image
     // is manage by the application
-    GraphImage importImage(RenderRef<GpuImage> image);
+    GraphImage importImage(
+        std::string_view name,
+        RenderRef<GpuImage> image
+    );
     // Import a buffer and return a resource handle, the lifetime of the buffer
     // is manage by the application
-    GraphBuffer importBuffer(RenderRef<GpuBuffer> buffer);
+    GraphBuffer importBuffer(
+        std::string_view name, 
+        RenderRef<GpuBuffer> buffer
+    );
 
 public:
     // Store the resource access data

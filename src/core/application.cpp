@@ -132,7 +132,9 @@ void Application::mainLoop()
         update(frame_time.delta());
 
         // Draw a frame
-        m_renderer->draw();
+        RenderGraph graph = m_renderer->getRenderGraph();
+
+        m_renderer->executeGraph(graph);
 
         // Pool the window event and update the event buffer
         m_window->poolEvents();

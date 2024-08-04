@@ -132,21 +132,21 @@ GraphImage PassBuilder::transferDstImage(GraphImage image)
 // Graphics pass builder
 
 // Use the image as color attachment in this pass
-GraphImage GraphicsPassBuilder::useColorOutput(GraphImage image)
+GraphImage PassBuilder::useColorOutput(GraphImage image)
 {
     writeImage(image, Pass::ImageUsage::ColorOutput);
     return image;
 }
 
 // Use the buffer as an index buffer
-GraphBuffer GraphicsPassBuilder::useIndexBuffer(GraphBuffer buffer)
+GraphBuffer PassBuilder::useIndexBuffer(GraphBuffer buffer)
 {
     readBuffer(buffer, Pass::BufferUsage::Index);
     return buffer;
 }
 
 // Use the buffer as a vertex buffer
-GraphBuffer GraphicsPassBuilder::useVertexBuffer(GraphBuffer buffer)
+GraphBuffer PassBuilder::useVertexBuffer(GraphBuffer buffer)
 {
     readBuffer(buffer, Pass::BufferUsage::Vertex);
     return buffer;

@@ -3,6 +3,7 @@
 
 #include "conduit/defines.h"
 
+#include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
 
@@ -148,6 +149,8 @@ private:
     u32 m_image_count;
     std::vector<VkImage> m_images;
     std::vector<VkImageView> m_image_views;
+
+    std::vector<VulkanImage> m_gpu_images;
     
     u32 m_current_frame;
     u32 m_current_image;

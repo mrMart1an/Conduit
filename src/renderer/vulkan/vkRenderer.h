@@ -48,9 +48,6 @@ public:
     };
 
 public:
-    // Draw a frame and present it
-    void draw() override;
-    
     // Set renderer v-sync 
     void setVsync(bool v_sync) override;
 
@@ -59,6 +56,12 @@ public:
 
     // Get a shader program builder
     RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
+
+    // Return a clear render graph ready to be built 
+    RenderGraph getRenderGraph() override;
+
+    // Execute the given render graph
+    void executeGraph(RenderGraph& graph) override;
 
 protected:
     // Initialize the renderer implementation

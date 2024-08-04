@@ -2,6 +2,7 @@
 #define CNDT_RENDERER_GRAPH_RESOURCES_H
 
 #include "conduit/defines.h"
+#include <string_view>
 
 namespace cndt {
 
@@ -39,22 +40,27 @@ public:
     GraphResource() : 
         m_id(nullId),
         m_lifetime(LifetimeType::Undefined),
-        m_type(ResourceType::Undefined)
+        m_type(ResourceType::Undefined),
+        m_name("unknow")
     { }
     GraphResource(ResourceType type) : 
         m_id(nullId),
         m_lifetime(LifetimeType::Undefined),
-        m_type(type)
+        m_type(type),
+        m_name("unknow")
     { }
     GraphResource(
         Id id,
         LifetimeType lifetime,
 
-        ResourceType type
+        ResourceType type,
+
+        std::string_view name
     ) : 
         m_id(id),
         m_lifetime(lifetime), 
-        m_type(type)
+        m_type(type),
+        m_name(name)
     { }
 
     // Id getter
@@ -65,6 +71,9 @@ public:
     // Resource type getter
     ResourceType type() const { return m_type; }
 
+    // Return the resource name
+    std::string_view name() const { return m_name; }
+
 private:
     // Store resource Id
     Id m_id;
@@ -73,15 +82,20 @@ private:
 
     // Resource type
     ResourceType m_type;
+
+    // Store the resource name for debug purpose
+    std::string_view m_name;
 };
 
 // Buffer resource handle type
 class GraphBuffer : public GraphResource {
 public:
     GraphBuffer() : GraphResource(ResourceType::Buffer) { }
-    GraphBuffer(Id id, LifetimeType lifetime) : GraphResource(
+    GraphBuffer(Id id, LifetimeType lifetime, std::string_view name)  
+    : GraphResource(
         id, lifetime,
-        ResourceType::Buffer
+        ResourceType::Buffer,
+        name
     ) { }
 };
 
@@ -89,9 +103,11 @@ public:
 class GraphImage : public GraphResource {
 public:
     GraphImage() : GraphResource(ResourceType::Buffer) { }
-    GraphImage(Id id, LifetimeType lifetime) : GraphResource(
+    GraphImage(Id id, LifetimeType lifetime, std::string_view name)
+    : GraphResource(
         id, lifetime,
-        ResourceType::Image
+        ResourceType::Image,
+        name
     ) { }
 };
 

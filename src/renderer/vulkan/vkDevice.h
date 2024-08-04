@@ -549,6 +549,11 @@ private:
 
     // Physical device property
     VkPhysicalDeviceProperties m_physical_properties;
+
+    // Image next unique id
+    VulkanImage::Id m_next_image_id;
+    // Buffer next unique id
+    VulkanImage::Id m_next_buffer_id;
     
     // Immediate command graphics command pool and buffer
     CommandPool m_graphics_cmd_pool;
