@@ -35,6 +35,8 @@ void VkRenderer::initialize(
     m_frame_width = window_p->getWindowData().buffer_width;
     m_frame_height = window_p->getWindowData().buffer_height;
 
+    m_in_flight_count = 2;
+
     // Initialize the vulkan context
     m_context.initialize(app_title, window_p, VK_NULL_HANDLE);
     m_delete_queue.addDeleter(std::bind(&Context::shutdown, &m_context));
@@ -58,42 +60,30 @@ void VkRenderer::initialize(
     m_swap_chain.initialize(
         m_context,
         m_device,
-        2,
+        m_in_flight_count,
         m_frame_width,
         m_frame_height,
-        true 
+        true,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
     );
-    m_delete_queue.addDeleter(std::bind(
-        &SwapChain::shutdown,
-        &m_swap_chain,
-        std::ref(m_context),
-        std::ref(m_device)
-    ));
+    m_delete_queue.addDeleter([&](){
+        m_swap_chain.shutdown();
+    });
 
     // Create the main render pass
     m_main_render_pass = m_device.createRenderPass(
         m_swap_chain.format(),
         { 0., 0., 0., 1.}
     );
-    m_delete_queue.addDeleter(std::bind(
-        &Device::destroyRenderPass,
-        &m_device,
-        std::ref(m_main_render_pass)
-    ));
+    m_delete_queue.addDeleter([&](){
+        m_device.destroyRenderPass(m_main_render_pass);
+    });
 
-    // Create the swap chain render attachments
-    createSwapChainAttachment();
-    m_delete_queue.addDeleter(std::bind(
-        &VkRenderer::destroySwapChainAttachment,
-        this
-    ));
-    
     // Create the frame in flight data
-    createInFlightDatas();
-    m_delete_queue.addDeleter(std::bind(
-        &VkRenderer::destroyInFlightData,
-        this
-    ));
+    createInFlightDatas(m_in_flight_count);
+    m_delete_queue.addDeleter([&](){
+        destroyInFlightData();
+    });
     
     // Create the uniform buffer descriptor set layout
     auto layout_builder = m_device.createDescriptorLayoutBuilder();
@@ -178,40 +168,16 @@ void VkRenderer::resize(u32 width, u32 height) {
         
         m_minimized = false;
         
-        m_swap_chain.setOutOfDate();
+        m_swap_chain.setSurfaceExtent(width, height);
     } else {
         m_minimized = true;
     }
 }
 
-// Recreate the swap chain and the swap chain render attachments
-void VkRenderer::recreateSwapChain()
-{
-    vkDeviceWaitIdle(m_device.logical);
-    
-    destroySwapChainAttachment();
-    
-    m_swap_chain.reinitialize(
-        m_context,
-        m_device,
-        m_frame_width,
-        m_frame_height
-    );
-
-    createSwapChainAttachment();
-}
-
 // Set renderer v-sync 
 void VkRenderer::setVsync(bool v_sync)
 {
-    vkDeviceWaitIdle(m_device.logical);
-
-    
-    destroySwapChainAttachment();
-    
-    m_swap_chain.setVsync(m_context, m_device, v_sync);
-    
-    createSwapChainAttachment();
+    m_swap_chain.setVsync(v_sync);
 }
 
 // Toggle renderer v-sync
@@ -337,20 +303,13 @@ bool VkRenderer::beginFrame()
     
     frame_data.render_fence.wait();
     
-    // If the swap chain is outdated recreate it
-    if (m_swap_chain.outOfDate()) {
-        recreateSwapChain();
-        return false;
-    }
-    
     // Acquire the next swap chain image for rendering
-    bool was_acquired = m_swap_chain.acquireNextImage(
-        m_device,
+    const VulkanImage* image = m_swap_chain.acquireNextImage(
         frame_data.image_semaphore,
         VK_NULL_HANDLE
     );
 
-    if (!was_acquired)
+    if (image == nullptr)
         return false;
     
     // Reset the rendering fence and descriptor allocator
@@ -378,8 +337,6 @@ bool VkRenderer::beginFrame()
     vkCmdSetScissor(frame_data.main_cmd_buffer.handle(), 0, 1, &scissor);
     
     // Start the main render pass on the current swap chain attachment
-    RenderAttachment &attachment = getCurrentAttachment();
-    
     RenderPass::RenderArea render_area(
         m_swap_chain.extent().width,
         m_swap_chain.extent().height
@@ -411,19 +368,19 @@ void VkRenderer::endFrame()
         1, &frame_data.render_semaphore, 
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     );
-
-    // Increment the renderer frame count
-    m_frame_count += 1;
 }
 
 // Present the current swap chain frame, return true if the frame was 
 // presented successfully to the screen
-bool VkRenderer::presentFrame()
+void VkRenderer::presentFrame()
 {
     InFlightData &frame_data = getCurrentInFlightData();
     
     // Present the swap chain image
-    return m_swap_chain.presentImage(m_device, frame_data.render_semaphore);
+    m_swap_chain.presentImage(frame_data.render_semaphore);
+
+    // Increment the renderer frame count
+    m_frame_count += 1;
 }
 
 /*
@@ -433,10 +390,9 @@ bool VkRenderer::presentFrame()
  * */
 
 // Create and initialized all the frame in flight data
-void VkRenderer::createInFlightDatas()
+void VkRenderer::createInFlightDatas(u32 in_flight_count)
 {
-    u32 frame_in_flight = m_swap_chain.frameInFlight();
-    m_in_flight_data.resize(frame_in_flight);
+    m_in_flight_data.resize(in_flight_count);
 
     for (auto& data : m_in_flight_data) {
         // Create the sync object
@@ -510,49 +466,9 @@ void VkRenderer::destroyInFlightData()
 // Get the current frame in flight data
 VkRenderer::InFlightData& VkRenderer::getCurrentInFlightData()
 {
-    u32 current_frame = m_swap_chain.currentFrame();
+    u32 current_frame = m_frame_count % m_in_flight_count;
     
     return m_in_flight_data.at(current_frame);
-}
-
-/*
- *
- *      Render attachment functions
- *
- * */
-
-// Create the swap chain render attachments using the main render pass
-void VkRenderer::createSwapChainAttachment()
-{
-    u32 attachments_count = m_swap_chain.imageCount();
-    m_swap_chain_attachements.resize(attachments_count);
-
-    // Create render attachments with the swap chain image views
-    for (u32 i = 0; i < attachments_count; i++) {
-        RenderAttachment& attachment = m_swap_chain_attachements.at(i);
-        VkImageView view = m_swap_chain.imageViews().at(i);
-
-        attachment = m_device.createRenderAttachment(
-            m_main_render_pass,
-            view,
-            m_swap_chain.extent(),
-            m_swap_chain.format()
-        );
-    }
-}
-
-// Destroy the swap chain render attachments
-void VkRenderer::destroySwapChainAttachment()
-{
-    for (auto& attachment : m_swap_chain_attachements) {
-        m_device.destroyRenderAttachment(attachment);
-    }
-}
-
-// Get the current swap chain render attachment
-RenderAttachment& VkRenderer::getCurrentAttachment()
-{
-    return m_swap_chain_attachements.at(m_swap_chain.currentImage());
 }
 
 } // namespace cndt::vulkan

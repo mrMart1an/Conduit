@@ -201,11 +201,11 @@ public:
 
 /*
  *
- *      Device errors
+ *      Device exception
  *
  * */
 
-// Generic vulkan device exception
+// Generic Vulkan device exception
 class DeviceException : public VulkanException {
 public:
     template<typename... Args>
