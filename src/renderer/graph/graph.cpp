@@ -8,30 +8,38 @@ namespace cndt {
 
 // Create a transient image and return a resource handle, the lifetime of 
 // the image is manage by the graph
-GraphImage RenderGraph::createImage(GpuImage::Info info)
-{
-    return m_resource_register.createImage(info);
+GraphImage RenderGraph::createImage(
+    std::string_view name,
+    GpuImage::Info info
+) {
+    return m_resource_register.createImage(name, info);
 }
 
 // Create a transient buffer and return a resource handle, the lifetime of
 // the buffer is manage by the graph
-GraphBuffer RenderGraph::createBuffer(GpuBuffer::Info info)
-{
-    return m_resource_register.createBuffer(info);
+GraphBuffer RenderGraph::createBuffer(
+    std::string_view name,
+    GpuBuffer::Info info
+) {
+    return m_resource_register.createBuffer(name, info);
 }
 
 // Import a image and return a resource handle, the lifetime of the image
 // is manage by the application
-GraphImage RenderGraph::importImage(RenderRef<GpuImage> image)
-{
-    return m_resource_register.importImage(image);
+GraphImage RenderGraph::importImage(
+    std::string_view name,
+    RenderRef<GpuImage> image
+) {
+    return m_resource_register.importImage(name, image);
 }
 
 // Import a buffer and return a resource handle, the lifetime of the buffer
 // is manage by the application
-GraphBuffer RenderGraph::importBuffer(RenderRef<GpuBuffer> buffer)
-{
-    return m_resource_register.importBuffer(buffer);
+GraphBuffer RenderGraph::importBuffer(
+    std::string_view name,
+    RenderRef<GpuBuffer> buffer
+) {
+    return m_resource_register.importBuffer(name, buffer);
 }
 
 } // namespace cndt

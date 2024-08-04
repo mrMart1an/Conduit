@@ -110,6 +110,10 @@ void Device::initialize(
     m_delete_queue.addDeleter([&]() {
         destroyFence(m_immediate_fence);
     });
+
+    // Set initial buffer and image id
+    m_next_buffer_id = 0;
+    m_next_image_id = 0;
 }
 
 // Shutdown vulkan device
@@ -371,6 +375,10 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
     out_image.m_device_p = this;
     out_image.m_info = info;
     out_image.m_vk_format = getVkFormat(info.format);
+
+    // Assign image id
+    out_image.m_id = m_next_image_id;
+    m_next_image_id += 1;
     
     // Prepare the create info struct
     VkImageCreateInfo image_info = { };
@@ -502,6 +510,10 @@ VulkanBuffer Device::createBuffer(const GpuBuffer::Info& info)
     out_buffer.m_info = info;
     
     out_buffer.m_mapped = false;
+
+    // Assign buffer id
+    out_buffer.m_id = m_next_buffer_id;
+    m_next_buffer_id += 1;
 
     // Create the buffer
     VkBufferCreateInfo buffer_info = { };

@@ -57,6 +57,18 @@ public:
     // Use the image as transfer source
     GraphImage transferDstImage(GraphImage image);
 
+    // Graphics resource usage type
+
+    // Use the image as color attachment in this pass
+    GraphImage useColorOutput(GraphImage image);
+
+    // Use the buffer as an index buffer
+    GraphBuffer useIndexBuffer(GraphBuffer buffer);
+    // Use the buffer as a vertex buffer
+    GraphBuffer useVertexBuffer(GraphBuffer buffer);
+
+    // TODO: implement other graphics pass builder functions
+    
 protected:
     PassBuilder(Pass::Id id) : m_pass_id(id) { }
 
@@ -78,20 +90,6 @@ private:
     std::vector<ResourceAccess> m_reads;
     // Store the resource writes performed by the pass   
     std::vector<ResourceAccess> m_writes;
-};
-
-// Graphics pass builder
-class GraphicsPassBuilder : public PassBuilder {
-public:
-    // Use the image as color attachment in this pass
-    GraphImage useColorOutput(GraphImage image);
-
-    // Use the buffer as an index buffer
-    GraphBuffer useIndexBuffer(GraphBuffer buffer);
-    // Use the buffer as a vertex buffer
-    GraphBuffer useVertexBuffer(GraphBuffer buffer);
-
-    // TODO: implement other graphics pass builder functions
 };
 
 } // namespace cndt

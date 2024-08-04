@@ -14,6 +14,9 @@ class Device;
 // Vulkan buffer with memory stored on a device
 class VulkanBuffer : public GpuBuffer {
     friend class Device;
+public:
+    // Buffer unique id type
+    using Id = u64;
 
 public:
     VulkanBuffer() = default;
@@ -83,6 +86,9 @@ public:
     RendererBackend backend() const override 
     { return RendererBackend::Vulkan; };
 
+    // Return the buffer unique id
+    Id id() const { return m_id; }
+
 private:
     VkBuffer m_handle;
     
@@ -95,6 +101,9 @@ private:
 
     // A pointer to the device that own the buffer
     Device *m_device_p;
+
+    // Buffer unique id
+    Id m_id;
 };
 
 } // namespace cndt::vulkan

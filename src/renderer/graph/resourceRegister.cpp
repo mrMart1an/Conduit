@@ -9,8 +9,10 @@ namespace cndt::internal {
 
 // Create a transient image and return a resource handle, the lifetime of 
 // the image is manage by the graph
-GraphImage GraphResourceRegister::createImage(GpuImage::Info info)
-{
+GraphImage GraphResourceRegister::createImage(
+    std::string_view name,
+    GpuImage::Info info
+) {
     GraphResource::Id id = m_next_id;
     m_next_id += 1;
 
@@ -29,13 +31,15 @@ GraphImage GraphResourceRegister::createImage(GpuImage::Info info)
     m_access_data.push_back(access_data);
 
     // Create the image handle
-    return GraphImage(id, GraphResource::LifetimeType::Transient);
+    return GraphImage(id, GraphResource::LifetimeType::Transient, name);
 }
 
 // Create a transient buffer and return a resource handle, the lifetime of
 // the buffer is manage by the graph
-GraphBuffer GraphResourceRegister::createBuffer(GpuBuffer::Info info)
-{
+GraphBuffer GraphResourceRegister::createBuffer(
+    std::string_view name,
+    GpuBuffer::Info info
+) {
     GraphResource::Id id = m_next_id;
     m_next_id += 1;
 
@@ -54,13 +58,15 @@ GraphBuffer GraphResourceRegister::createBuffer(GpuBuffer::Info info)
     m_access_data.push_back(access_data);
 
     // Create the buffer handle
-    return GraphBuffer(id, GraphResource::LifetimeType::Transient);
+    return GraphBuffer(id, GraphResource::LifetimeType::Transient, name);
 }
 
 // Import a image and return a resource handle, the lifetime of the image
 // is manage by the application
-GraphImage GraphResourceRegister::importImage(RenderRef<GpuImage> image)
-{
+GraphImage GraphResourceRegister::importImage(
+    std::string_view name,
+    RenderRef<GpuImage> image
+) {
     GraphResource::Id id = m_next_id;
     m_next_id += 1;
 
@@ -80,13 +86,15 @@ GraphImage GraphResourceRegister::importImage(RenderRef<GpuImage> image)
     m_access_data.push_back(access_data);
 
     // Create the image handle
-    return GraphImage(id, GraphResource::LifetimeType::External);
+    return GraphImage(id, GraphResource::LifetimeType::External, name);
 }
 
 // Import a buffer and return a resource handle, the lifetime of the buffer
 // is manage by the application
-GraphBuffer GraphResourceRegister::importBuffer(RenderRef<GpuBuffer> buffer)
-{
+GraphBuffer GraphResourceRegister::importBuffer(
+    std::string_view name,
+    RenderRef<GpuBuffer> buffer
+) {
     GraphResource::Id id = m_next_id;
     m_next_id += 1;
 
@@ -105,7 +113,7 @@ GraphBuffer GraphResourceRegister::importBuffer(RenderRef<GpuBuffer> buffer)
     m_access_data.push_back(access_data);
 
     // Create the buffer handle
-    return GraphBuffer(id, GraphResource::LifetimeType::External);
+    return GraphBuffer(id, GraphResource::LifetimeType::External, name);
 }
 
 } // namespace cndt::internal

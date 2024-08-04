@@ -1,6 +1,7 @@
 #include "renderer/vulkan/vkRenderer.h"
 #include "conduit/assets/shader.h"
 #include "conduit/renderer/ResourceRef.h"
+#include "conduit/renderer/graph/graph.h"
 #include "renderer/vulkan/pipelines/vkShaderProgramBuilder.h"
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkUniformData.h"
@@ -240,9 +241,14 @@ RenderRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder()
  *
  * */
 
+// Return a clear render graph ready to be built 
+RenderGraph VkRenderer::getRenderGraph() 
+{
+    return RenderGraph();
+}
 
-// Draw and present a frame
-void VkRenderer::draw()
+// Execute the given render graph
+void VkRenderer::executeGraph(RenderGraph& graph)
 {
     if (!beginFrame()) 
         return; 
