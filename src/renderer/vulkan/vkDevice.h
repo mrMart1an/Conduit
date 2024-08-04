@@ -267,7 +267,6 @@ public:
 
     // Destroy the given semaphore
     void destroySemaphore(VkSemaphore &semaphore);
-
     
     /*
      *
@@ -278,8 +277,19 @@ public:
     // Create a new image with the given requirement 
     VulkanImage createImage(const GpuImage::Info& info);
 
+    // Create swap chain image
+    VulkanImage createSwapChainImage(
+        VkImage image,
+        
+        GpuImage::Info::Format format,
+        GpuImage::Extent extent
+    );
+
     // Destroy the given image
     void destroyImage(VulkanImage &image);
+
+    // Destroy swap chain image
+    void destroySwapChainImage(VulkanImage &image);
 
     /*
      *

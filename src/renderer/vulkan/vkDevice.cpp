@@ -486,6 +486,73 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
     return out_image;
 }
 
+// Create swap chain image
+VulkanImage Device::createSwapChainImage(
+    VkImage image,
+
+    GpuImage::Info::Format format,
+    GpuImage::Extent extent
+) {
+    VulkanImage out_image;
+
+    out_image.m_device_p = this;
+
+    GpuImage::Info info = { };
+    info.format = format;
+    info.sampe = GpuImage::Info::Sample::Count_1;
+    info.store_mipmap = false;
+    info.extent = extent; 
+
+    out_image.m_info = info;
+    out_image.m_vk_format = getVkFormat(format);
+    out_image.m_mipmap_levels = 1;
+
+    out_image.m_handle = image;
+    out_image.m_alloc_info = { };
+    out_image.m_allocation = VK_NULL_HANDLE;
+
+    // Assign image id
+    out_image.m_id = m_next_image_id;
+    m_next_image_id += 1;
+
+    // Create the image view
+    VkImageViewCreateInfo view_info = { };
+    
+    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.image = image;
+    
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.format = out_image.m_vk_format;
+    
+    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view_info.subresourceRange.baseMipLevel = 0;
+    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.baseArrayLayer = 0;
+    view_info.subresourceRange.layerCount = 1;
+    
+    // Create the image view
+    VkResult res = vkCreateImageView(
+        logical,
+        &view_info,
+        m_allocator,
+        &out_image.m_view
+    );
+    
+    if (res) {
+        throw SwapChainViewError(
+            "Swap chain image view creation error: {}",
+            vk_error_str(res)
+        );
+    }
+
+    return out_image;
+}
+
 // Destroy the given image
 void Device::destroyImage(VulkanImage &image)
 {
@@ -493,6 +560,12 @@ void Device::destroyImage(VulkanImage &image)
     vkDestroyImage(logical, image.m_handle, m_allocator);
     
     image = VulkanImage();
+}
+
+// Destroy swap chain image
+void Device::destroySwapChainImage(VulkanImage &image)
+{
+
 }
 
 /*

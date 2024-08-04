@@ -87,12 +87,8 @@ private:
     // End frame rendering
     void endFrame();
 
-    // Present the current swap chain frame, return true if the frame was 
-    // presented successfully to the screen
-    bool presentFrame();
-
-    // Recreate the swap chain and the swap chain render attachments
-    void recreateSwapChain();
+    // Present the current swap chain frame
+    void presentFrame();
 
     /*
      *
@@ -101,28 +97,13 @@ private:
      * */
 
     // Create and initialized all the frame in flight data
-    void createInFlightDatas();
+    void createInFlightDatas(u32 in_flight_count);
     
     // Destroy all the frame in flight data
     void destroyInFlightData();
 
     // Get the current frame in flight data
     InFlightData& getCurrentInFlightData();
-
-    /*
-     *
-     *      Render attachment functions
-     *
-     * */
-
-    // Create the swap chain render attachments using the main render pass
-    void createSwapChainAttachment();
-
-    // Destroy the swap chain render attachments
-    void destroySwapChainAttachment();
-
-    // Get the current swap chain render attachment
-    RenderAttachment& getCurrentAttachment();
 
 private:
     // Renderer delete queue
@@ -146,6 +127,7 @@ private:
     GraphicsPipeline m_graphics_pipeline;
 
     // Frame in flight data 
+    u32 m_in_flight_count;
     std::vector<InFlightData> m_in_flight_data;
 
     // Dimensions of the renderer swap chain attachments
