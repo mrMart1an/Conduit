@@ -12,24 +12,16 @@
 
 namespace cndt::vulkan {
 
-// Initialize the swap chain
-void SwapChain::initialize(
-    Context &context,
-    Device &device,
-    
+// Private initialization code, used by the initialization and 
+// reinitialization function
+void SwapChain::initializeSwapChain(
     u32 frame_in_flight,
-
+    
     u32 width, u32 height,
     bool v_sync,
 
-    VkImageUsageFlags swap_chain_image_usage
+    GpuImage::Info::UsageEnum swap_chain_image_usage
 ) {
-    log::core::debug("Initializing vulkan swap chain");
-
-    // Store the device and context pointer
-    m_device_p = &device;
-    m_context_p = &context;
-
     // Get the number of images in the swap chains
     if (frame_in_flight < 1) {
         throw SwapChainInitError(
@@ -38,7 +30,7 @@ void SwapChain::initialize(
     }
 
     // Get the swap chain configurations
-    Details details(context, device);
+    Details details(m_context_p, m_device_p);
 
     VkSurfaceFormatKHR surface_format = chooseFormat(details);
     VkPresentModeKHR present_mode = choosePresentMode(details, v_sync);
@@ -48,18 +40,20 @@ void SwapChain::initialize(
     // Set up the swap chain create info
     VkSwapchainCreateInfoKHR create_info = { };
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    create_info.surface = context.surface;
+    create_info.surface = m_context_p->surface;
 
     create_info.minImageCount = min_image_count;
     create_info.imageFormat = surface_format.format;
     create_info.imageColorSpace = surface_format.colorSpace;
     create_info.imageExtent = extent;
     create_info.imageArrayLayers = 1;
-    create_info.imageUsage = swap_chain_image_usage;
+    create_info.imageUsage = m_device_p->getVkImageUsage(
+        swap_chain_image_usage
+    );
 
     // Get the queue indices
     // TODO Handle compute and transfer queue
-    Device::QueueFamilyIndices indices = device.queueIndices(); 
+    Device::QueueFamilyIndices indices = m_device_p->queueIndices(); 
 
     u32 queue_indices[] = { 
         indices.graphicsIndex(), 
@@ -91,9 +85,9 @@ void SwapChain::initialize(
 
     // Create the swap chain
     VkResult res = vkCreateSwapchainKHR(
-        device.logical, 
+        m_device_p->logical, 
         &create_info, 
-        context.allocator, 
+        m_context_p->allocator, 
         &m_handle
     );
 
@@ -120,6 +114,50 @@ void SwapChain::initialize(
     createImages();
 }
 
+// Private shutdown code, used by the shutdown and 
+// reinitialization function
+void SwapChain::shutdownSwapChain()
+{
+    // Wait for all the device operation to finish
+    vk_check(vkDeviceWaitIdle(m_device_p->logical));
+
+    // Destroy the swap chain image views
+    destroyImages();
+    
+    // Destroy the swap chain
+    vkDestroySwapchainKHR(
+        m_device_p->logical,
+        m_handle,
+        m_context_p->allocator
+    );
+}
+
+// Initialize the swap chain
+void SwapChain::initialize(
+    Context &context,
+    Device &device,
+    
+    u32 frame_in_flight,
+
+    u32 width, u32 height,
+    bool v_sync,
+
+    GpuImage::Info::UsageEnum swap_chain_image_usage
+) {
+    log::core::debug("Initializing vulkan swap chain");
+
+    // Store the device and context pointer
+    m_device_p = &device;
+    m_context_p = &context;
+
+    initializeSwapChain(
+        frame_in_flight,
+        width, height,
+        v_sync, 
+        swap_chain_image_usage
+    );
+}
+
 // Reinitialize an out dated the swap chain
 void SwapChain::reinitialize(
     std::optional<u32> width, 
@@ -127,17 +165,14 @@ void SwapChain::reinitialize(
 
     std::optional<bool> v_sync,
 
-    std::optional<VkImageUsageFlags> swap_chain_image_usage
+    std::optional<GpuImage::Info::UsageEnum> swap_chain_image_usage
 ) {
     log::core::debug("Reinitializing vulkan swap chain");
 
     // Shutdown and reinitialize the swap chain
-    shutdown();
+    shutdownSwapChain();
 
-    initialize(
-        *m_context_p,
-        *m_device_p,
-
+    initializeSwapChain(
         m_frame_in_flight,
 
         width.value_or(m_surface_extent.width),
@@ -153,18 +188,7 @@ void SwapChain::shutdown()
 {
     log::core::debug("Shutting down vulkan swap chain");
 
-    // Wait for all the device operation to finish
-    vk_check(vkDeviceWaitIdle(m_device_p->logical));
-
-    // Destroy the swap chain image views
-    destroyImages();
-    
-    // Destroy the swap chain
-    vkDestroySwapchainKHR(
-        m_device_p->logical,
-        m_handle,
-        m_context_p->allocator
-    );
+    shutdownSwapChain();
 }
 
 // Enable or disable v-sync
@@ -334,6 +358,8 @@ void SwapChain::createImages() {
     for (auto &image : images) {
         VulkanImage vk_image = m_device_p->createSwapChainImage(
             image, 
+
+            m_swap_chain_image_usage,
             format, 
             extent
         );
@@ -474,28 +500,28 @@ VkExtent2D SwapChain::chooseExtent(Details &details, u32 width, u32 height)
 }
 
 // Swap chain details constructor
-SwapChain::Details::Details(Context &context, Device &device) 
+SwapChain::Details::Details(Context *context_p, Device *device_p) 
 {
     // Get swap chain capabilities
     vk_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        device.physical, 
-        context.surface, 
+        device_p->physical, 
+        context_p->surface, 
         &m_capabilities
     ));
 
     // Get available formats
     u32 format_count;
     vk_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        device.physical,
-        context.surface,
+        device_p->physical,
+        context_p->surface,
         &format_count, 
         VK_NULL_HANDLE
     ));
 
     m_formats.resize(format_count);
     vk_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        device.physical,
-        context.surface,
+        device_p->physical,
+        context_p->surface,
         &format_count, 
         m_formats.data()
     ));
@@ -503,16 +529,16 @@ SwapChain::Details::Details(Context &context, Device &device)
     // Get available present mode
     u32 present_mode_count;
     vk_check(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        device.physical,
-        context.surface,
+        device_p->physical,
+        context_p->surface,
         &present_mode_count, 
         VK_NULL_HANDLE
     ));
     
     m_present_modes.resize(present_mode_count);
     vk_check(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        device.physical,
-        context.surface,
+        device_p->physical,
+        context_p->surface,
         &present_mode_count, 
         m_present_modes.data()
     ));

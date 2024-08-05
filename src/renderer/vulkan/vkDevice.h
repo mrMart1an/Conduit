@@ -281,6 +281,7 @@ public:
     VulkanImage createSwapChainImage(
         VkImage image,
         
+        GpuImage::Info::UsageEnum usage,
         GpuImage::Info::Format format,
         GpuImage::Extent extent
     );
@@ -517,6 +518,8 @@ private:
         Context *context_p,
         VkPhysicalDevice device
     );
+
+public:
 
     /*
      *

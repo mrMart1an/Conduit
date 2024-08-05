@@ -490,6 +490,7 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
 VulkanImage Device::createSwapChainImage(
     VkImage image,
 
+    GpuImage::Info::UsageEnum usage,
     GpuImage::Info::Format format,
     GpuImage::Extent extent
 ) {
@@ -500,6 +501,7 @@ VulkanImage Device::createSwapChainImage(
     GpuImage::Info info = { };
     info.format = format;
     info.sampe = GpuImage::Info::Sample::Count_1;
+    info.usage = usage;
     info.store_mipmap = false;
     info.extent = extent; 
 

@@ -19,7 +19,7 @@ private:
     // Store swap chain information for initialization
     class Details {
     public:
-        Details(Context &context, Device &device);
+        Details(Context *context_p, Device *device_p);
         ~Details() = default;
 
         // Return the swap chain capabilities
@@ -56,7 +56,7 @@ public:
         u32 width, u32 height,
         bool v_sync,
 
-        VkImageUsageFlags swap_chain_image_usage
+        GpuImage::Info::UsageEnum swap_chain_image_usage
     );
     
     // Reinitialize the swap chain, 
@@ -69,7 +69,8 @@ public:
 
         std::optional<bool> v_sync = std::nullopt,
 
-        std::optional<VkImageUsageFlags> swap_chain_image_usage = std::nullopt
+        std::optional<GpuImage::Info::UsageEnum> 
+        swap_chain_image_usage = std::nullopt
     );
 
     // Shutdown the swap chain
@@ -118,6 +119,21 @@ public:
     bool outOfDate() const { return m_outdated; }
 
 private:
+    // Private initialization code, used by the initialization and 
+    // reinitialization function
+    void initializeSwapChain(
+        u32 frame_in_flight,
+        
+        u32 width, u32 height,
+        bool v_sync,
+
+        GpuImage::Info::UsageEnum swap_chain_image_usage
+    );
+
+    // Private shutdown code, used by the shutdown and 
+    // reinitialization function
+    void shutdownSwapChain();
+
     // Choose the number of swap chain images
     u32 chooseMinImagesCount(Details &details, u32 frame_in_flight);
     // Chose the swap chain format among the available ones
@@ -146,7 +162,7 @@ private:
     VkExtent2D m_extent;
     bool m_v_sync;
 
-    VkImageUsageFlags m_swap_chain_image_usage;
+    GpuImage::Info::UsageEnum m_swap_chain_image_usage;
 
     // Store the swap chain Vulkan images
     u32 m_image_count;
