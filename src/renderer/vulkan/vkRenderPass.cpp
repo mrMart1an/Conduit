@@ -162,7 +162,7 @@ RenderPass::FrameBuffer& RenderPass::createFrameBuffer(
     frame_buffer_info.layers = 1;
 
     VkResult res = vkCreateFramebuffer(
-        m_device_p->logical,
+        m_device_p->logical(),
         &frame_buffer_info,
         m_device_p->allocator(),
         &frame_buffer.m_handle
@@ -190,7 +190,7 @@ void RenderPass::deleteFrameBuffer(FrameBuffer& frame_buffer)
     log::core::trace("Deallocating old frame buffer");
 
     vkDestroyFramebuffer(
-        m_device_p->logical,
+        m_device_p->logical(),
         frame_buffer.m_handle,
         m_device_p->allocator()
     );
