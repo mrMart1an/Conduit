@@ -416,11 +416,33 @@ public:
     { }
 };
 
-// Vulkan command buffer submit exception
+// Vulkan render pass creation exception
 class RenderPassCreationError : public RenderPassException {
 public:
     template<typename... Args>
     RenderPassCreationError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RenderPassException(msg, std::forward<Args>(args)...)
+    { }
+};
+
+// Vulkan render pass incompatible attachment provided exception
+class IncompatibleAttachmentsError : public RenderPassException {
+public:
+    template<typename... Args>
+    IncompatibleAttachmentsError(
+        fmt::format_string<Args...> msg, Args&&... args
+    ) : 
+        RenderPassException(msg, std::forward<Args>(args)...)
+    { }
+};
+
+// Vulkan render pass begin exception
+class RenderPassBeginError : public RenderPassException {
+public:
+    template<typename... Args>
+    RenderPassBeginError(
         fmt::format_string<Args...> msg, Args&&... args
     ) : 
         RenderPassException(msg, std::forward<Args>(args)...)

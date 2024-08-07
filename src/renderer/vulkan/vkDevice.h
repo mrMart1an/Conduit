@@ -218,36 +218,14 @@ public:
 
     // Create a vulkan render pass
     RenderPass createRenderPass(
-        VkFormat attachment_format,
-        RenderPass::ClearColor clear_color
+        std::vector<RenderPass::Attachment> attachments,
+        std::vector<RenderPass::Dependency> dependencies,
+
+        std::vector<RenderPass::Subpass> subpasses
     );
 
     // Destroy render pass
     void destroyRenderPass(RenderPass &render_pass);
-
-    /*
-     *
-     *      Render attachment functions
-     *
-     * */
-    
-    // Create a vulkan render attachment
-    RenderAttachment createRenderAttachment(
-        RenderPass render_pass,
-        
-        VkImageView image_view,
-        VkExtent2D image_extent,
-        VkFormat image_format
-    );
-    
-    // Create a vulkan render attachment
-    RenderAttachment createRenderAttachment(
-        RenderPass render_pass,
-        VulkanImage &image
-    );
-
-    // Destroy the given vulkan render attachment
-    void destroyRenderAttachment(RenderAttachment &attachment);
 
     /*
      *

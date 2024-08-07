@@ -133,53 +133,163 @@ void Device::shutdown()
 
 // Create a vulkan render pass
 RenderPass Device::createRenderPass(
-    VkFormat attachment_format,
-    RenderPass::ClearColor clear_color
-) {
-    RenderPass out_pass(clear_color);
+    std::vector<RenderPass::Attachment> attachments,
+    std::vector<RenderPass::Dependency> dependencies,
 
-    // Color attachment
-    VkAttachmentDescription color_attachment = { };
-    color_attachment.format = attachment_format;
-    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    std::vector<RenderPass::Subpass> subpasses
+) {
+    RenderPass out_pass;
+    out_pass.m_device_p = this;
+
+    // Attachment description and reference
+    std::vector<VkAttachmentDescription> 
+    vk_attachments(attachments.size());
+
+    for (u32 i = 0; i < attachments.size(); i++) {
+        auto& descriptor = vk_attachments[i];
+        auto& attachment = attachments[i];
+
+        // Description
+        descriptor.format = getVkFormat(attachment.format);
+        descriptor.samples = getVkSampleCount(attachment.samples);
+
+        descriptor.loadOp = attachment.load_op;
+        descriptor.storeOp = attachment.store_op;
+        descriptor.stencilLoadOp = attachment.stencil_load_op;
+        descriptor.stencilStoreOp = attachment.stencil_store_op;
+
+        descriptor.initialLayout = attachment.initial_layout;
+        descriptor.finalLayout = attachment.final_layout;
+    }
+
+    // Dependencies
+    if (dependencies.size() != subpasses.size() + 1) {
+        throw RenderPassCreationError(
+            "Incorrenct number of dependencies (expected: {}, provided: {})",
+            subpasses.size() + 1, dependencies.size()
+        );
+    }
+
+    std::vector<VkSubpassDependency> vk_dependencies(dependencies.size());
+    u32 dep_count = dependencies.size();
+
+    for (u32 i = 0; i < dep_count; i++) {
+        auto& vk_dep = vk_dependencies[i];
+        auto& dep = dependencies[i];
+
+        // Set source and destination subpass
+        vk_dep.srcSubpass = i == 0 ? VK_SUBPASS_EXTERNAL : i - 1;
+        vk_dep.dstSubpass = i + 1 == dep_count ? VK_SUBPASS_EXTERNAL : i;
+
+        // Setup dependency
+        vk_dep.srcStageMask = dep.src_stage_mask;
+        vk_dep.srcAccessMask = dep.src_access_mask;
+        vk_dep.dstStageMask = dep.dst_stage_mask;
+        vk_dep.dstAccessMask = dep.dst_access_mask;
+
+        vk_dep.dependencyFlags = 
+            dep.by_region ? VK_DEPENDENCY_BY_REGION_BIT : 0;
+    }
     
-    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    
-    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    
-    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    
-    VkAttachmentReference color_attachment_ref = { };
-    color_attachment_ref.attachment = 0;
-    color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    
-    // Main sub pass 
-    VkSubpassDescription subpass = { };
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &color_attachment_ref;
-    
-    // Sub pass dependency
-    VkSubpassDependency dependency = { };
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    
+    // Create the subpasses description
+    std::vector<VkSubpassDescription> vk_subpasses(subpasses.size());
+
+    // Keep track of unused attachment to preserve them
+    std::vector<bool> used_attachment(attachments.size());
+    std::fill(used_attachment.begin(), used_attachment.end(), false);
+
+    // Create a vector of preserve attachments
+    std::vector<std::vector<u32>> preserve_attachments_list(subpasses.size());
+
+    // Lambda to mark attachment as used and perform bound check
+    auto check_subpass_attachments = [&](
+        std::vector<VkAttachmentReference> references
+    ) {
+        for (auto& ref : references) {
+            if (ref.attachment != VK_ATTACHMENT_UNUSED) {
+                if (ref.attachment >= attachments.size()) {
+                    throw RenderPassCreationError(
+                        "Invalid attachment reference index: {}", 
+                        ref.attachment
+                    );
+                }
+
+                used_attachment[ref.attachment] = true;
+            }
+        }
+    };
+
+    for (u32 i = 0; i < subpasses.size(); i++) {
+        auto& subpass = subpasses[i];
+        auto& vk_subpass = vk_subpasses[i];
+        vk_subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+        // Color attachments
+        check_subpass_attachments(subpass.color_attachments);
+        vk_subpass.colorAttachmentCount = subpass.color_attachments.size();
+        vk_subpass.pColorAttachments = subpass.color_attachments.data();
+
+        // Input attachments
+        check_subpass_attachments(subpass.input_attachments);
+        vk_subpass.inputAttachmentCount = subpass.input_attachments.size();
+        vk_subpass.pInputAttachments = subpass.input_attachments.data();
+
+        // Resolve attachments
+        u32 resolve_count = subpass.resolve_attachments.size();
+
+        if (resolve_count != 0) {
+            // Resolve and color attachments need to have the same size
+            if (resolve_count != subpass.color_attachments.size()) {
+                throw RenderPassCreationError(
+                    "Resolve and color attachments need to be equal"
+                );
+            }
+
+            // Setup resolve attachments
+            check_subpass_attachments(subpass.resolve_attachments);
+            vk_subpass.pResolveAttachments =
+                subpass.resolve_attachments.data();
+
+        } else {
+            vk_subpass.pResolveAttachments = VK_NULL_HANDLE;
+        }
+
+        // Depth stencil attachments
+        if (subpass.depth_stencil_attachment.has_value()) {
+            VkAttachmentReference ref = 
+                subpass.depth_stencil_attachment.value();
+
+            check_subpass_attachments({ ref });
+            vk_subpass.pDepthStencilAttachment = &ref;
+        } else {
+            vk_subpass.pDepthStencilAttachment = VK_NULL_HANDLE;
+        }
+
+        // Find the attachments to preserve
+        std::vector<u32>& preserve_attachments = preserve_attachments_list[i];
+
+        for (u32 i = 0; i < used_attachment.size(); i++) {
+            if (used_attachment[i] == false) {
+                preserve_attachments.push_back(i);
+            }
+        }
+            
+        vk_subpass.preserveAttachmentCount = preserve_attachments.size();
+        vk_subpass.pPreserveAttachments = preserve_attachments.data();
+
+        // Reset the used_attachment variable
+        std::fill(used_attachment.begin(), used_attachment.end(), false);
+    }
+
     // Render pass
     VkRenderPassCreateInfo render_pass_info = { };
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_info.attachmentCount = 1;
-    render_pass_info.pAttachments = &color_attachment;
-    render_pass_info.subpassCount = 1;
-    render_pass_info.pSubpasses = &subpass;
-    render_pass_info.dependencyCount = 1;
-    render_pass_info.pDependencies = &dependency;
+    render_pass_info.attachmentCount = vk_attachments.size();
+    render_pass_info.pAttachments = vk_attachments.data();
+    render_pass_info.subpassCount = vk_subpasses.size();
+    render_pass_info.pSubpasses = vk_subpasses.data();
+    render_pass_info.dependencyCount = vk_dependencies.size();
+    render_pass_info.pDependencies = vk_dependencies.data();
 
     VkResult res = vkCreateRenderPass(
         logical,
@@ -190,10 +300,15 @@ RenderPass Device::createRenderPass(
     
     if (res != VK_SUCCESS) {
         throw RenderPassCreationError(
-            "Render pass creation error {}",
+            "Render pass creation error: {}",
             vk_error_str(res)
         );
     }
+
+    // Fill attachment info 
+    out_pass.m_attachment_infos = attachments;
+    out_pass.m_keys_tmp.resize(attachments.size());
+    out_pass.m_view_tmp.resize(attachments.size());
 
     return out_pass;
 }
@@ -201,92 +316,18 @@ RenderPass Device::createRenderPass(
 // Destroy render pass
 void Device::destroyRenderPass(RenderPass &render_pass)
 {
+    // Destroy all the frame buffer
+    for (auto& frame_buffer : render_pass.m_frame_buffer_cache) {
+        render_pass.deleteFrameBuffer(frame_buffer.second);
+    }
+
     vkDestroyRenderPass(
         logical,
         render_pass.m_handle,
         m_allocator
     );
 
-    render_pass.m_handle = VK_NULL_HANDLE;
-    render_pass.m_clear_color = RenderPass::ClearColor();
-}
-
-/*
- *
- *      Render attachment functions
- *
- * */
-
-// Create a vulkan render attachment
-RenderAttachment Device::createRenderAttachment(
-    RenderPass render_pass,
-    
-    VkImageView image_view,
-    VkExtent2D image_extent,
-    VkFormat image_format
-) {
-    RenderAttachment out_attachment;
-
-    // Store extent and format of the attachment
-    out_attachment.m_extent = image_extent;
-    out_attachment.m_format = image_format;
-
-    VkFramebufferCreateInfo frame_buffer_info = { };
-    frame_buffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    
-    frame_buffer_info.attachmentCount = 1;
-    frame_buffer_info.pAttachments = &image_view;
-    frame_buffer_info.renderPass = render_pass.m_handle; 
-    
-    frame_buffer_info.width = image_extent.width;
-    frame_buffer_info.height = image_extent.height;
-    frame_buffer_info.layers = 1;
-
-    VkResult res = vkCreateFramebuffer(
-        logical,
-        &frame_buffer_info,
-        m_allocator,
-        &out_attachment.m_frame_buffer
-    ); 
-    
-    if (res != VK_SUCCESS) {
-        throw RenderAttachmentCreationError(
-            "frame buffer creation error {}",
-            vk_error_str(res)
-        );
-    }
-
-    return out_attachment;
-}
-
-// Create a vulkan render attachment
-RenderAttachment Device::createRenderAttachment(
-    RenderPass render_pass,
-    VulkanImage &image
-) {
-    VkExtent2D extent = { };
-    extent.width = image.m_info.extent.width;
-    extent.height = image.m_info.extent.height;
-
-    return createRenderAttachment(
-        render_pass,
-        
-        image.m_view,
-        extent,
-        image.m_vk_format
-    );
-}
-
-// Destroy the given vulkan render attachment
-void Device::destroyRenderAttachment(RenderAttachment &attachment)
-{
-    vkDestroyFramebuffer(
-        logical,
-        attachment.m_frame_buffer,
-        m_allocator
-    );
-
-    attachment = RenderAttachment();
+    render_pass = { };
 }
 
 /*
@@ -410,7 +451,7 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
     image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     image_info.usage = getVkImageUsage(info.usage);
 
-    image_info.samples = getVkSampleCount(info.sampe);
+    image_info.samples = getVkSampleCount(info.sample);
 
     // TODO move to exclusive mode once the render graph system is ready
     image_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -500,7 +541,7 @@ VulkanImage Device::createSwapChainImage(
 
     GpuImage::Info info = { };
     info.format = format;
-    info.sampe = GpuImage::Info::Sample::Count_1;
+    info.sample = GpuImage::Info::Sample::Count_1;
     info.usage = usage;
     info.store_mipmap = false;
     info.extent = extent; 
@@ -559,7 +600,7 @@ VulkanImage Device::createSwapChainImage(
 void Device::destroyImage(VulkanImage &image)
 {
     vkDestroyImageView(logical, image.m_view, m_allocator);
-    vkDestroyImage(logical, image.m_handle, m_allocator);
+    vmaDestroyImage(m_vma_allocator, image.m_handle, image.m_allocation);
     
     image = VulkanImage();
 }
@@ -567,7 +608,9 @@ void Device::destroyImage(VulkanImage &image)
 // Destroy swap chain image
 void Device::destroySwapChainImage(VulkanImage &image)
 {
+    vkDestroyImageView(logical, image.m_view, m_allocator);
 
+    image = VulkanImage();
 }
 
 /*
