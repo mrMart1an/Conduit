@@ -56,13 +56,13 @@ void SwapChain::initializeSwapChain(
     Device::QueueFamilyIndices indices = m_device_p->queueIndices(); 
 
     u32 queue_indices[] = { 
-        indices.graphicsIndex(), 
-        indices.presentIndex() 
+        indices.general().first, 
+        indices.present().first 
     };
 
     // If the graphic and presentation are performed by the same queue
     // Use exclusive sharing mode
-    if (indices.graphicsIndex() != indices.presentIndex()) {
+    if (indices.general().first != indices.present().first) {
         create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         create_info.queueFamilyIndexCount = 2;
         create_info.pQueueFamilyIndices = queue_indices;
@@ -282,7 +282,7 @@ void SwapChain::presentImage(VkSemaphore render_done)
     present_info.pImageIndices = &m_current_image;
 
     VkResult res = vkQueuePresentKHR(
-        m_device_p->present_queue, 
+        m_device_p->presentQueue().handle(), 
         &present_info
     );
     

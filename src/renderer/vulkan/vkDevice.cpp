@@ -17,6 +17,7 @@
 #include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkCommandPool.h"
 
+#include <algorithm>
 #include <array>
 #include <cstring>
 #include <functional>
@@ -54,55 +55,46 @@ void Device::initialize(
     retrieveQueue();
 
     // Create transfer command pool and buffer and fence
-    if (m_device_requirement.required_queue.transfer()) {
-        // Create the transient command pool for transfer operation
-        m_transfer_cmd_pool = createCmdPool(
-            QueueType::Transfer, true, true
-        );
-        m_transfer_cmd_buf = m_transfer_cmd_pool.allocateCmdBuffer();
+    m_transfer_cmd_pool = createCmdPool(
+        m_transfer_queue, true, true
+    );
+    m_transfer_cmd_buf = m_transfer_cmd_pool.allocateCmdBuffer();
 
-        m_delete_queue.addDeleter([&]() {
-            destroyCmdPool(m_transfer_cmd_pool);
-        });
-        
-        m_delete_queue.addDeleter([&]() {
-            m_transfer_cmd_pool.freeCmdBuffer(m_transfer_cmd_buf);
-        });
-    }
+    m_delete_queue.addDeleter([&]() {
+        destroyCmdPool(m_transfer_cmd_pool);
+    });
+    
+    m_delete_queue.addDeleter([&]() {
+        m_transfer_cmd_pool.freeCmdBuffer(m_transfer_cmd_buf);
+    });
 
     // Create compute command pool and buffer and fence
-    if (m_device_requirement.required_queue.compute()) {
-        // Create the transient command pool for transfer operation
-        m_compute_cmd_pool = createCmdPool(
-            QueueType::Compute, true, true
-        );
-        m_compute_cmd_buf = m_compute_cmd_pool.allocateCmdBuffer();
+    m_compute_cmd_pool = createCmdPool(
+        m_compute_queue, true, true
+    );
+    m_compute_cmd_buf = m_compute_cmd_pool.allocateCmdBuffer();
 
-        m_delete_queue.addDeleter([&]() {
-            destroyCmdPool(m_compute_cmd_pool);
-        });
-        
-        m_delete_queue.addDeleter([&]() {
-            m_compute_cmd_pool.freeCmdBuffer(m_compute_cmd_buf);
-        });
-    }
+    m_delete_queue.addDeleter([&]() {
+        destroyCmdPool(m_compute_cmd_pool);
+    });
+    
+    m_delete_queue.addDeleter([&]() {
+        m_compute_cmd_pool.freeCmdBuffer(m_compute_cmd_buf);
+    });
 
     // Create transfer command pool and buffer and fence
-    if (m_device_requirement.required_queue.graphics()) {
-        // Create the transient command pool for transfer operation
-        m_graphics_cmd_pool = createCmdPool(
-            QueueType::Graphics, true, true
-        );
-        m_graphics_cmd_buf = m_graphics_cmd_pool.allocateCmdBuffer();
+    m_general_cmd_pool = createCmdPool(
+        m_general_queue, true, true
+    );
+    m_general_cmd_buf = m_general_cmd_pool.allocateCmdBuffer();
 
-        m_delete_queue.addDeleter([&]() {
-            destroyCmdPool(m_graphics_cmd_pool);
-        });
+    m_delete_queue.addDeleter([&]() {
+        destroyCmdPool(m_general_cmd_pool);
+    });
 
-        m_delete_queue.addDeleter([&]() {
-            m_graphics_cmd_pool.freeCmdBuffer(m_graphics_cmd_buf);
-        });
-    }
+    m_delete_queue.addDeleter([&]() {
+        m_general_cmd_pool.freeCmdBuffer(m_general_cmd_buf);
+    });
 
     // Create the immediate command fence
     m_immediate_fence = createFence(false);
@@ -454,28 +446,28 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
     image_info.samples = getVkSampleCount(info.sample);
 
     // TODO move to exclusive mode once the render graph system is ready
-    image_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    u32 unique_queue_count = 1;
-    u32 queue_indecies_p[3];
+//    u32 unique_queue_count = 1;
+//    u32 queue_indecies_p[3];
+//
+//    queue_indecies_p[0] = m_queue_indices.general().first;
+//
+//    if (queue_indecies_p[0] != m_queue_indices.compute().first) {
+//        queue_indecies_p[1] = m_queue_indices.compute().first;
+//        unique_queue_count += 1;
+//    }
+//
+//    if (
+//        queue_indecies_p[0] != m_queue_indices.transfer().first &&
+//        queue_indecies_p[1] != m_queue_indices.transfer().first
+//    ) {
+//        queue_indecies_p[2] = m_queue_indices.transfer().first;
+//        unique_queue_count += 1;
+//    }
 
-    queue_indecies_p[0] = m_queue_indices.graphicsIndex();
-
-    if (queue_indecies_p[0] != m_queue_indices.computeIndex()) {
-        queue_indecies_p[1] = m_queue_indices.computeIndex();
-        unique_queue_count += 1;
-    }
-
-    if (
-        queue_indecies_p[0] != m_queue_indices.transferIndex() &&
-        queue_indecies_p[1] != m_queue_indices.transferIndex()
-    ) {
-        queue_indecies_p[2] = m_queue_indices.transferIndex();
-        unique_queue_count += 1;
-    }
-
-    image_info.queueFamilyIndexCount = unique_queue_count;
-    image_info.pQueueFamilyIndices = queue_indecies_p;
+    image_info.queueFamilyIndexCount = 0;
+    image_info.pQueueFamilyIndices = VK_NULL_HANDLE;
 
     // Allocation create info
     VmaAllocationCreateInfo alloc_create_info = { };
@@ -639,28 +631,28 @@ VulkanBuffer Device::createBuffer(const GpuBuffer::Info& info)
     buffer_info.size = info.size;
 
     // TODO move to exclusive mode once the render graph system is ready
-    buffer_info.sharingMode = VK_SHARING_MODE_CONCURRENT;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+//
+//    u32 unique_queue_count = 1;
+//    u32 queue_indecies_p[3];
+//
+//    queue_indecies_p[0] = m_queue_indices.general().first;
+//
+//    if (queue_indecies_p[0] != m_queue_indices.compute().first) {
+//        queue_indecies_p[1] = m_queue_indices.compute().first;
+//        unique_queue_count += 1;
+//    }
+//
+//    if (
+//        queue_indecies_p[0] != m_queue_indices.transfer().first &&
+//        queue_indecies_p[1] != m_queue_indices.transfer().first
+//    ) {
+//        queue_indecies_p[2] = m_queue_indices.transfer().first;
+//        unique_queue_count += 1;
+//    }
 
-    u32 unique_queue_count = 1;
-    u32 queue_indecies_p[3];
-
-    queue_indecies_p[0] = m_queue_indices.graphicsIndex();
-
-    if (queue_indecies_p[0] != m_queue_indices.computeIndex()) {
-        queue_indecies_p[1] = m_queue_indices.computeIndex();
-        unique_queue_count += 1;
-    }
-
-    if (
-        queue_indecies_p[0] != m_queue_indices.transferIndex() &&
-        queue_indecies_p[1] != m_queue_indices.transferIndex()
-    ) {
-        queue_indecies_p[2] = m_queue_indices.transferIndex();
-        unique_queue_count += 1;
-    }
-
-    buffer_info.queueFamilyIndexCount = unique_queue_count;
-    buffer_info.pQueueFamilyIndices = queue_indecies_p;
+    buffer_info.queueFamilyIndexCount = 0;
+    buffer_info.pQueueFamilyIndices = VK_NULL_HANDLE;
 
     // Get buffer usage
     buffer_info.usage = getVkBufferUsage(info.usage);
@@ -766,7 +758,6 @@ void Device::copyBuffer(
     VkDeviceSize size
 ) {
     runCmdImmediate(
-        QueueType::Transfer,
         [&](VkCommandBuffer cmd_buf) {
             VkBufferCopy copy_op = { };
             copy_op.size = size;
@@ -1086,45 +1077,59 @@ void Device::destroyShaderModule(
 // Retrieve the queue from the logical device
 void Device::retrieveQueue()
 {
-    // Graphic queue
-    if (m_device_requirement.required_queue.graphics()) {
-        vkGetDeviceQueue(
-            m_logical, 
-            m_queue_indices.graphicsIndex(), 
-            0, 
-            &graphics_queue
-        );
-    }
-    
-    // Compute queue
-    if (m_device_requirement.required_queue.compute()) {
-        vkGetDeviceQueue(
-            m_logical, 
-            m_queue_indices.computeIndex(), 
-            0, 
-            &compute_queue
-        );
-    }
-    
-    // Transfer queue
-    if (m_device_requirement.required_queue.transfer()) {
-        vkGetDeviceQueue(
-            m_logical, 
-            m_queue_indices.transferIndex(), 
-            0, 
-            &transfer_queue
-        );
-    }
-    
-    // Present queue
-    if (m_device_requirement.required_queue.present()) {
-        vkGetDeviceQueue(
-            m_logical,
-            m_queue_indices.presentIndex(),
-            0,
-            &present_queue
-        );
-    }
+    VkQueue queue;
+
+    // Retrieve general purpose queue
+    vkGetDeviceQueue(
+        m_logical, 
+        m_queue_indices.general().first,
+        0, 
+        &queue
+    );
+    m_general_queue = Queue(
+        queue,
+        m_queue_indices.general().first, 
+        m_queue_indices.general().second
+    );
+
+    // Retrieve compute queue
+    vkGetDeviceQueue(
+        m_logical, 
+        m_queue_indices.compute().first,
+        0, 
+        &queue
+    );
+    m_compute_queue = Queue(
+        queue,
+        m_queue_indices.compute().first, 
+        m_queue_indices.compute().second
+    );
+
+    // Retrieve transfer queue
+    vkGetDeviceQueue(
+        m_logical, 
+        m_queue_indices.transfer().first,
+        0, 
+        &queue
+    );
+    m_transfer_queue = Queue(
+        queue,
+        m_queue_indices.transfer().first, 
+        m_queue_indices.transfer().second
+    );
+
+    // Retrieve present queue
+    vkGetDeviceQueue(
+        m_logical, 
+        m_queue_indices.present().first,
+        0, 
+        &queue
+    );
+    m_present_queue = Queue(
+        queue,
+        m_queue_indices.present().first, 
+        m_queue_indices.present().second
+    );
 }
 
 /*
@@ -1135,28 +1140,14 @@ void Device::retrieveQueue()
 
 // Create the command pool  
 CommandPool Device::createCmdPool(
-    QueueType queue_type,
+    Queue queue,
 
     bool transient_pool,
     bool reset_cmd_buffer,
     bool protected_cmd_buffer
 ) {
     // Calculate the queue index
-    u32 index;
-    switch (queue_type) {
-        case QueueType::Graphics: {
-            index = m_queue_indices.graphicsIndex();
-            break;
-        } 
-        case QueueType::Compute: {
-            index = m_queue_indices.computeIndex();
-            break;
-        } 
-        case QueueType::Transfer: {
-            index = m_queue_indices.transferIndex();
-            break;
-        } 
-    }
+    u32 index = queue.familyIndex();
 
     // Generate the pool flags
     VkCommandPoolCreateFlags flags = 0;
@@ -1196,40 +1187,24 @@ void Device::destroyCmdPool(CommandPool cmd_pool)
 // Execute the command in the given function and wait 
 // for them to complete on the CPU
 void Device::runCmdImmediate(
-    QueueType type,
     std::function<void(VkCommandBuffer)> immediate_fun
 ) {
-    // Select the queue and buffer for the immediate command type
-    CommandBuffer cmd_buf;
-
-    VkQueue queue;
-
-    if (type == QueueType::Transfer) {
-        cmd_buf = m_transfer_cmd_buf;
-        queue = transfer_queue;
-
-    } else if (type == QueueType::Graphics) {
-        cmd_buf = m_graphics_cmd_buf;
-        queue = graphics_queue;
-
-    } else if (type == QueueType::Compute) {
-        cmd_buf = m_compute_cmd_buf;
-        queue = compute_queue;
-    }
-
     // Record the immediate command
-    cmd_buf.begin();
-    cmd_buf.record(immediate_fun);
-    cmd_buf.end();
+    m_general_cmd_buf.begin();
+    m_general_cmd_buf.record(immediate_fun);
+    m_general_cmd_buf.end();
 
     // Submit the command buffer to the queue 
     m_immediate_fence.reset();
-    cmd_buf.submit(queue, m_immediate_fence.hande());
+    m_general_cmd_buf.submit(
+        m_general_queue.handle(),
+        m_immediate_fence.hande()
+    );
 
     // Wait for the fence to signal and reset the command buffer 
     m_immediate_fence.wait();
 
-    cmd_buf.reset();
+    m_general_cmd_buf.reset();
 }
 
 /*
@@ -1547,10 +1522,7 @@ bool Device::checkDeviceRequirement(
         return false;
     
     // Check if the device support all the required queues
-    bool support_queue = checkDeviceQueue(
-        requirement.required_queue,
-        indices.supportedQueue()
-    );
+    bool support_queue = checkDeviceQueue(indices);
     
     if (!support_queue)
         return false;
@@ -1591,17 +1563,13 @@ bool Device::checkDeviceFeatures(
 
 // Check if the device support the required queue family
 bool Device::checkDeviceQueue(
-    QueueFamilyType required_queue,
-    QueueFamilyType available_queue
+    QueueFamilyIndices available_queue
 ) {
-    if (required_queue.graphics() && !available_queue.graphics())
-        return false;
-    if (required_queue.compute() && !available_queue.compute())
-        return false;
-    if (required_queue.transfer() && !available_queue.transfer())
-        return false;
-    if (required_queue.present() && !available_queue.present())
-        return false;
+    for (int i = 0; i < 4; i++) {
+        if (available_queue.indices()[i] == -1) {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -1631,10 +1599,14 @@ Device::QueueFamilyIndices Device::getQueueIndices(
     Context *context_p,
     VkPhysicalDevice device
 ) {
-    u32 graphics_family = (u32)-1;
-    u32 compute_family  = (u32)-1;
-    u32 transfer_family = (u32)-1;
-    u32 present_family  = (u32)-1;
+    std::pair<u32, Queue::CapabilityEnum> general = 
+        { -1, Queue::Capability::None };
+    std::pair<u32, Queue::CapabilityEnum> compute = 
+        { -1, Queue::Capability::None };
+    std::pair<u32, Queue::CapabilityEnum> transfer = 
+        { -1, Queue::Capability::None };
+    std::pair<u32, Queue::CapabilityEnum> present = 
+        { -1, Queue::Capability::None };
 
     // Get queue family count
     u32 queue_family_count = 0;
@@ -1650,93 +1622,124 @@ Device::QueueFamilyIndices Device::getQueueIndices(
         queues_prop.data()
     );
 
-    // Find queue family
-    u32 dedicated_transfer_queue = (u32)-1;
-    u32 dedicated_compute_queue = (u32)-1;
-    u32 graphics_and_present_queue = (u32)-1;
-    
+    // Track the used queue family
+    std::vector<u32> used_queue;
+
+    // Look for a general purpose queue family
     for (u32 i = 0; i < queue_family_count; i++) {
-        bool graphic_support  = false;
-        bool compute_support  = false;
-        bool transfer_support = false;
-        bool present_support  = false;
+        auto required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+        auto available_flags = queues_prop[i].queueFlags;
 
-        VkBool32 present_vk_bool = VK_FALSE;
-        vk_check(vkGetPhysicalDeviceSurfaceSupportKHR(
-            device, 
-            i, 
-            context_p->surface, 
-            &present_vk_bool
-        ));
-        
-        // Check for queue family support
-        VkQueueFlags queue_flags = queues_prop[i].queueFlags;
-        
-        graphic_support  = (queue_flags & VK_QUEUE_GRAPHICS_BIT) != 0;
-        compute_support  = (queue_flags & VK_QUEUE_COMPUTE_BIT) != 0 ;
-        transfer_support = (queue_flags & VK_QUEUE_TRANSFER_BIT) != 0 ;
-        present_support  = present_vk_bool == VK_TRUE;
-        
-        // Store indices
-        if (graphic_support)
-            graphics_family = i;
-        if (compute_support)
-            compute_family = i;
-        if (transfer_support)
-            transfer_family = i;
-        if (present_support)
-            present_family = i;
-        
-        // Look for dedicated compute queue
-        if (compute_support && !graphic_support)
-            dedicated_compute_queue = i;
-        
-        // Look for dedicated transfer queue
-        if (transfer_support && (!compute_support && !graphic_support))
-            dedicated_transfer_queue = i;
+        if ((available_flags & required_flags) == required_flags) {
+            general.first = i;
 
-        // Look for a queue with both graphics and present functionality
-        if (graphic_support && present_support)
-            graphics_and_present_queue = i;
+            general.second =
+                Queue::Capability::Graphics | Queue::Capability::Compute;
+            general.second |= available_flags | VK_QUEUE_TRANSFER_BIT ? 
+                Queue::Capability::Transfer : Queue::Capability::None;
+
+            used_queue.push_back(i);
+        }
     }
 
-    // Replace the stored queue with the dedicated one if they were found
-    if (dedicated_compute_queue != (u32)-1) {
-        compute_family = dedicated_compute_queue;
+    // Look for dedicated compute family
+    for (u32 i = 0; i < queue_family_count; i++) {
+        // Check if the queue is already in used
+        if (std::count(used_queue.begin(), used_queue.end(), i) == 0) {
+            auto required_flags = VK_QUEUE_COMPUTE_BIT;
+            auto available_flags = queues_prop[i].queueFlags;
+    
+            if (available_flags & required_flags) {
+                compute.first = i;
+    
+                compute.second = Queue::Capability::Compute;
+                compute.second |= available_flags | VK_QUEUE_GRAPHICS_BIT ? 
+                    Queue::Capability::Graphics : Queue::Capability::None;
+                compute.second |= available_flags | VK_QUEUE_TRANSFER_BIT ? 
+                    Queue::Capability::Transfer : Queue::Capability::None;
+    
+                used_queue.push_back(i);
+            }
+        }
+    }
+
+    // If no queue was found use general purpose
+    if (compute.first == -1) {
+        compute.first = general.first;
+        compute.second = general.second;
     }
     
-    if (dedicated_transfer_queue != (u32)-1) {
-        transfer_family = dedicated_transfer_queue;
-    }
-
-    // Use the same queue for graphics and present operation
-    // this allow the swap image to use exclusive share mode
-    if (graphics_and_present_queue != (u32)-1) {
-        graphics_family = graphics_and_present_queue;
-        present_family  = graphics_and_present_queue;
-    }
-
-    // Store the supported queue family struct
-    bool graphic_support  = graphics_family != (u32)-1;  
-    bool compute_support  = compute_family != (u32)-1;  
-    bool transfer_support = transfer_family != (u32)-1;  
-    bool present_support  = present_family != (u32)-1;  
+    // Look for dedicated transfer family
+    for (u32 i = 0; i < queue_family_count; i++) {
+        // Check if the queue is already in used
+        if (std::count(used_queue.begin(), used_queue.end(), i) == 0) {
+            auto required_flags = VK_QUEUE_TRANSFER_BIT;
+            auto available_flags = queues_prop[i].queueFlags;
     
-    QueueFamilyType supported_queue(
-        graphic_support,
-        compute_support,
-        transfer_support,
-        present_support
+            if (available_flags & required_flags) {
+                transfer.first = i;
+    
+                transfer.second = Queue::Capability::Transfer;
+                transfer.second |= available_flags | VK_QUEUE_GRAPHICS_BIT ? 
+                    Queue::Capability::Graphics : Queue::Capability::None;
+                transfer.second |= available_flags | VK_QUEUE_COMPUTE_BIT ? 
+                    Queue::Capability::Compute : Queue::Capability::None;
+    
+                used_queue.push_back(i);
+            }
+        }
+    }
+
+    // If no queue was found use general purpose
+    if (transfer.first == -1) {
+        transfer.first = general.first;
+        transfer.second = general.second;
+    }
+
+    // Look for a present queue, if possible from the same family of general
+    VkBool32 present_supported = false;
+    vkGetPhysicalDeviceSurfaceSupportKHR(
+        device,
+        general.first,
+        context_p->surface,
+        &present_supported
     );
+
+    if (present_supported) {
+        general.second |= Queue::Capability::Present;
+
+        present.first = general.first;
+        present.second = general.second;
+    } else {
+        // Look for another present queue if general doesn't support present
+        for (u32 i = 0; i < queue_family_count; i++) {
+            vkGetPhysicalDeviceSurfaceSupportKHR(
+                device,
+                i,
+                context_p->surface,
+                &present_supported
+            );
+
+            if (present_supported) {
+                present.first = i;
+                auto available_flags = queues_prop[i].queueFlags;
+
+                present.second |= available_flags | VK_QUEUE_GRAPHICS_BIT ? 
+                    Queue::Capability::Graphics : Queue::Capability::None;
+                present.second |= available_flags | VK_QUEUE_COMPUTE_BIT ? 
+                    Queue::Capability::Compute : Queue::Capability::None;
+                present.second |= available_flags | VK_QUEUE_TRANSFER_BIT ? 
+                    Queue::Capability::Transfer : Queue::Capability::None;
+            }
+        }
+    }
 
     // Build and return the indices
     QueueFamilyIndices indices(
-        supported_queue,
-        
-        graphics_family,
-        compute_family,
-        transfer_family,
-        present_family
+        general,
+        compute,
+        transfer,
+        present
     );
 
     return indices;
@@ -1765,20 +1768,20 @@ void Device::printPhysicalDeviceInfo(
     
     // Print device queue family indices
     log::core::trace(
-        "Vulkan device graphics queue family index: {}",
-        indices.graphicsIndex()
+        "Vulkan device general purpose queue family index: {}",
+        indices.general().first
     );
     log::core::trace(
         "Vulkan device compute queue family index: {}",
-        indices.computeIndex()
+        indices.compute().first
     );
     log::core::trace(
         "Vulkan device transfer queue family index: {}",
-        indices.transferIndex()
+        indices.transfer().first
     );
     log::core::trace(
         "Vulkan device present queue family index: {}",
-        indices.presentIndex()
+        indices.present().first
     );
 }
 
