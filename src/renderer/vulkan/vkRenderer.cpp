@@ -46,9 +46,6 @@ void VkRenderer::initialize(
     
     // Enable swap chain extensions
     requirement.required_device_extensions = Device::Extensions(true);
-    // Require graphics, transfer and present of queue
-    requirement.required_queue =
-        Device::QueueFamilyType(true, true, true, true);
     // Require features 
     requirement.required_feature.geometryShader = VK_TRUE;
     requirement.required_feature.fillModeNonSolid = VK_TRUE;
@@ -407,7 +404,7 @@ void VkRenderer::endFrame()
 
     // Submit the rendering command buffer
     frame_data.main_cmd_buffer.submit(
-        m_device.graphics_queue, 
+        m_device.generalQueue().handle(), 
         frame_data.render_fence.hande(), 
         1, &frame_data.image_semaphore, 
         1, &frame_data.render_semaphore, 
@@ -447,7 +444,7 @@ void VkRenderer::createInFlightDatas(u32 in_flight_count)
 
         // Create the command pool and buffers
         data.graphics_cmd_pool = m_device.createCmdPool(
-            Device::QueueType::Graphics,
+            m_device.generalQueue(),
             false, true, false
         );
 

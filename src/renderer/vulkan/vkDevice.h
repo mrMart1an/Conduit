@@ -64,108 +64,115 @@ public:
         bool m_swap_chain;
     };
 
-    // Store the queue family type
-    class QueueFamilyType {
+
+
+    // Device queue abstraction
+    class Queue {
     public:
-        QueueFamilyType() = default;
-        
-        QueueFamilyType(
-            bool graphics,
-            bool compute,
-            bool transfer,
-            bool present
-        ) : m_graphics(graphics),
-            m_compute(compute),
-            m_transfer(transfer),
-            m_present(present) 
+        // Queue capability enum
+        using CapabilityEnum = u32;
+    
+        struct Capability {
+            Capability() = delete;
+            ~Capability() = delete;
+    
+            static constexpr CapabilityEnum None = 0;
+            static constexpr CapabilityEnum Graphics = BIT(0);
+            static constexpr CapabilityEnum Compute = BIT(1);
+            static constexpr CapabilityEnum Transfer = BIT(2);
+            static constexpr CapabilityEnum Present = BIT(3);
+        };
+
+    public:
+        Queue() = default;
+        Queue(
+            VkQueue handle,
+            u32 index,
+
+            CapabilityEnum capability
+        ) : 
+            m_handle(handle),
+            m_family_index(index),
+            m_capability(capability)
         { }
 
-        // Return true if the queue family support graphics operations
-        bool graphics() const { return m_graphics; };
-        // Return true if the queue family support compute operations
-        bool compute() const { return m_compute; };
-        // Return true if the queue family support transfer operations
-        bool transfer() const { return m_transfer; };
-        // Return true if the queue family support present operations
-        bool present() const { return m_present; };
+        // Get the queue handle
+        VkQueue handle() const { return m_handle; }
+
+        // Get the queue family index
+        u32 familyIndex() const { return m_family_index; }
+        // Get the queue capability
+        CapabilityEnum capability() const { return m_capability; }
         
     private:
-        bool m_graphics;
-        bool m_compute;
-        bool m_transfer;
-        bool m_present;
+        VkQueue m_handle;
+        u32 m_family_index;
+
+        CapabilityEnum m_capability;
     };
 
-    // Store the queue type
-    enum class QueueType {
-        Graphics,
-        Compute,
-        Transfer
-    };
-    
     // Store the device queue family indices
     class QueueFamilyIndices {
     public:
         QueueFamilyIndices() = default;
         
         QueueFamilyIndices(
-            QueueFamilyType supported_queue,
-            
-            u32 graphics_index,
-            u32 compute_index,
-            u32 transfer_index,
-            u32 present_index
-        ) : m_supported_queue(supported_queue),
-            
-            m_indices{
-                graphics_index,
-                compute_index,
-                transfer_index,
-                present_index
-                }
+            std::pair<u32, Queue::CapabilityEnum> general,
+            std::pair<u32, Queue::CapabilityEnum> compute,
+            std::pair<u32, Queue::CapabilityEnum> transfer,
+            std::pair<u32, Queue::CapabilityEnum> present
+        ) : 
+            m_indices
+            {
+                general.first,
+                compute.first,
+                transfer.first,
+                present.first
+            },
+            m_capabilitys
+            {
+                general.second,
+                compute.second,
+                transfer.second,
+                present.second
+            }
         { };
 
-        // Graphics queue index
-        u32 graphicsIndex() const 
+        // Graphics queue index and capability
+        std::pair<u32, Queue::CapabilityEnum> general() const 
         { 
-            return (m_supported_queue.graphics() ? m_indices[0] : (u32)-1);
+            return { m_indices[0], m_capabilitys[0] };
         };
-        // Compute queue index
-        u32 computeIndex() const
+        // Compute queue index and capability
+        std::pair<u32, Queue::CapabilityEnum> compute() const
         { 
-            return (m_supported_queue.compute() ? m_indices[1] : (u32)-1);
+            return { m_indices[1], m_capabilitys[1] };
         };
-        // Transfer queue index
-        u32 transferIndex() const
+        // Transfer queue index and capability
+        std::pair<u32, Queue::CapabilityEnum> transfer() const
         { 
-            return (m_supported_queue.transfer() ? m_indices[2] : (u32)-1);
+            return { m_indices[2], m_capabilitys[2] };
         };
-        // Present queue index
-        u32 presentIndex() const
+        // Present queue index and capability
+        std::pair<u32, Queue::CapabilityEnum> present() const
         { 
-            return (m_supported_queue.present() ? m_indices[3] : (u32)-1);
+            return { m_indices[3], m_capabilitys[3] };
         };
 
         // indices array [graphics, compute, transfer, present]
         const u32* indices() const { return m_indices; };
 
-        // Return the supported queue 
-        QueueFamilyType supportedQueue() const { return m_supported_queue; };
-        
     private:
-        // Store the supported queue type by the device
-        QueueFamilyType m_supported_queue;
-        
         // Store the indices of the queue family
         u32 m_indices[4];
+
+        Queue::CapabilityEnum m_capabilitys[4];
     };
     
     // Store the physical device requirement 
     struct PhysicalDeviceRequirement {
         Extensions required_device_extensions;
-        
         VkPhysicalDeviceFeatures required_feature;
-        QueueFamilyType required_queue;
     };
 
 public:
@@ -187,7 +194,7 @@ public:
     // Create the command pool  
     // add the pool to the delete queue
     CommandPool createCmdPool(
-        QueueType queue_type,
+        Queue queue,
 
         bool transient_pool = false,
         bool reset_cmd_buffer = false,
@@ -206,7 +213,6 @@ public:
     // Execute the command in the given function and wait 
     // for them to complete on the CPU
     void runCmdImmediate(
-        QueueType type,
         std::function<void(VkCommandBuffer)> immediate_fun
     );
 
@@ -404,6 +410,15 @@ public:
 
     // Return the device queue family indices
     QueueFamilyIndices queueIndices() const { return m_queue_indices; }
+
+    // Get a const reference to the general purpose queue
+    const Queue& generalQueue() const { return m_general_queue; }
+    // Get a const reference to the compute queue
+    const Queue& computeQueue() const { return m_compute_queue; }
+    // Get a const reference to the transfer queue
+    const Queue& transferQueue() const { return m_transfer_queue; }
+    // Get a const reference to the present queue
+    const Queue& presentQueue() const { return m_present_queue; }
     
     // Get the allocator callbacks pointer
     const VkAllocationCallbacks *allocator() const { return m_allocator; }
@@ -484,8 +499,7 @@ private:
     );
     // Check if the device support the required queue family
     bool checkDeviceQueue(
-        QueueFamilyType required_queue,
-        QueueFamilyType available_queue
+        QueueFamilyIndices available_queue
     );
     
     // Return a score for the given physical device, higher is better
@@ -525,12 +539,6 @@ public:
     // TODO check for sample count support
     VkSampleCountFlagBits getVkSampleCount(GpuImage::Info::Sample sample);
 
-public:
-    VkQueue graphics_queue;
-    VkQueue compute_queue;
-    VkQueue transfer_queue;
-    VkQueue present_queue;
-    
 private:
     // Logical vulkan device
     VkDevice m_logical;
@@ -551,10 +559,16 @@ private:
     VulkanImage::Id m_next_image_id;
     // Buffer next unique id
     VulkanImage::Id m_next_buffer_id;
+
+    // Device queue
+    Queue m_general_queue;
+    Queue m_compute_queue;
+    Queue m_transfer_queue;
+    Queue m_present_queue;
     
     // Immediate command graphics command pool and buffer
-    CommandPool m_graphics_cmd_pool;
-    CommandBuffer m_graphics_cmd_buf;
+    CommandPool m_general_cmd_pool;
+    CommandBuffer m_general_cmd_buf;
 
     // Immediate command compute command pool and buffer
     CommandPool m_compute_cmd_pool;
