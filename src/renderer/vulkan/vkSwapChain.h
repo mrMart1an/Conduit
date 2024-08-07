@@ -104,7 +104,10 @@ public:
      * */
 
     // Return the swap chain image format
-    VkFormat format() const { return m_format; }
+    GpuImage::Info::Format format() const { return m_format; }
+
+    // Return the swap chain vulkan format
+    VkFormat vkFormat() const { return m_vk_format; }
     
     // Return the swap chain image extent
     VkExtent2D extent() const { return m_extent; }
@@ -157,7 +160,9 @@ private:
     VkExtent2D m_surface_extent;
 
     // Swap chain image current format 
-    VkFormat m_format;
+    GpuImage::Info::Format m_format;
+    VkFormat m_vk_format;
+
     // Swap chain image current extent 
     VkExtent2D m_extent;
     bool m_v_sync;

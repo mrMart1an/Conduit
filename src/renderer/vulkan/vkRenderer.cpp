@@ -71,9 +71,44 @@ void VkRenderer::initialize(
     });
 
     // Create the main render pass
+    RenderPass::Attachment color_attachments = { };
+    color_attachments.format = m_swap_chain.format();
+    color_attachments.samples = GpuImage::Info::Sample::Count_1;
+
+    color_attachments.load_op = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    color_attachments.store_op = VK_ATTACHMENT_STORE_OP_STORE;
+
+    color_attachments.stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    color_attachments.stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    color_attachments.initial_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    color_attachments.final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    RenderPass::Dependency input_dep = { };
+    input_dep.src_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    input_dep.src_access_mask = 0;
+    input_dep.dst_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    input_dep.dst_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    input_dep.by_region = true;
+
+    RenderPass::Dependency output_dep = { };
+    output_dep.src_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    output_dep.src_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    output_dep.dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    output_dep.dst_access_mask = 0;
+
+    VkAttachmentReference attachment_ref = { };
+    attachment_ref.attachment = 0;
+    attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    RenderPass::Subpass main_subpass = { };
+    main_subpass.color_attachments.push_back(attachment_ref);
+
     m_main_render_pass = m_device.createRenderPass(
-        m_swap_chain.format(),
-        { 0., 0., 0., 1.}
+        { color_attachments },
+
+        {input_dep, output_dep},
+        {main_subpass}
     );
     m_delete_queue.addDeleter([&](){
         m_device.destroyRenderPass(m_main_render_pass);
@@ -341,11 +376,19 @@ bool VkRenderer::beginFrame()
         m_swap_chain.extent().width,
         m_swap_chain.extent().height
     );
+
+    VkClearValue clear = { };
+    clear.color.float32[0] = 0.;
+    clear.color.float32[1] = 0.;
+    clear.color.float32[2] = 0.;
+    clear.color.float32[3] = 1.;
     
     m_main_render_pass.begin(
-        attachment,
+        frame_data.main_cmd_buffer,
         render_area,
-        frame_data.main_cmd_buffer
+
+        { image },
+        { clear }
     );
 
     return true;
@@ -359,6 +402,8 @@ void VkRenderer::endFrame()
     // End command buffer recording and render pass
     m_main_render_pass.end(frame_data.main_cmd_buffer);
     frame_data.main_cmd_buffer.end();
+
+    m_main_render_pass.cleanupRoutine();
 
     // Submit the rendering command buffer
     frame_data.main_cmd_buffer.submit(

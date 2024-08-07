@@ -32,6 +32,8 @@ public:
 
     // Return the image format
     Info::Format format() const override;
+    // Return the image sample count
+    Info::Sample sample() const override;
 
     // Return the image handle
     VkImage handle() const { return m_handle; }

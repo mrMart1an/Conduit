@@ -98,8 +98,15 @@ void SwapChain::initializeSwapChain(
         );
     }
 
-    // Store swap chain info
-    m_format = surface_format.format; // MUST be set before creating views
+    // Store swap chain info, MUST be set before creating views
+    m_vk_format = surface_format.format; 
+    if (m_vk_format == VK_FORMAT_B8G8R8A8_SRGB)
+        m_format = GpuImage::Info::Format::B8G8R8A8_SRGB;
+    else if (m_vk_format == VK_FORMAT_B8G8R8A8_UNORM)
+        m_format = GpuImage::Info::Format::B8G8R8A8_UNORM;
+    else 
+        throw UnexpectedError("Swap chain using unknown format");
+
     m_swap_chain_image_usage = swap_chain_image_usage;
     m_surface_extent = extent;
     m_extent = extent;
@@ -341,15 +348,6 @@ void SwapChain::createImages() {
     // Create the swap chain image
     m_images.reserve(images.size());
 
-    // Get format
-    GpuImage::Info::Format format;
-    if (m_format == VK_FORMAT_B8G8R8A8_SRGB)
-        format = GpuImage::Info::Format::B8G8R8A8_SRGB;
-    else if (m_format == VK_FORMAT_B8G8R8A8_UNORM)
-        format = GpuImage::Info::Format::B8G8R8A8_UNORM;
-    else 
-        throw UnexpectedError("Swap chain using unknown format");
-
     // Get extent
     GpuImage::Extent extent;
     extent.width = m_extent.width;
@@ -360,7 +358,7 @@ void SwapChain::createImages() {
             image, 
 
             m_swap_chain_image_usage,
-            format, 
+            m_format, 
             extent
         );
 
