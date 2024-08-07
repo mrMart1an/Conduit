@@ -92,7 +92,7 @@ void DescriptorWriter::updateSet(VkDescriptorSet set)
     }
 
     vkUpdateDescriptorSets(
-        m_device_p->logical,
+        m_device_p->logical(),
         m_writes.size(), m_writes.data(), 
         0, VK_NULL_HANDLE
     );

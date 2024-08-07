@@ -14,7 +14,7 @@ void CommandPool::reset(bool release_resources)
         flag = VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT; 
 
     VkResult res = vkResetCommandPool(
-        m_device_p->logical,
+        m_device_p->logical(),
         m_handle,
         flag
     );
@@ -49,7 +49,7 @@ CommandBuffer CommandPool::allocateCmdBuffer(bool primary)
     allocate_info.commandBufferCount = 1;
 
     VkResult res = vkAllocateCommandBuffers(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         &allocate_info,
         &storage_p->handle
     );
@@ -80,7 +80,7 @@ void CommandPool::freeCmdBuffer(CommandBuffer &cmd_buffer)
         return;
 
     vkFreeCommandBuffers(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         m_handle, 
         1, &storage_p->handle
     );

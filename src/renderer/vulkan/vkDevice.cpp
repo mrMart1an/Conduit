@@ -292,7 +292,7 @@ RenderPass Device::createRenderPass(
     render_pass_info.pDependencies = vk_dependencies.data();
 
     VkResult res = vkCreateRenderPass(
-        logical,
+        m_logical,
         &render_pass_info,
         m_allocator,
         &out_pass.m_handle
@@ -322,7 +322,7 @@ void Device::destroyRenderPass(RenderPass &render_pass)
     }
 
     vkDestroyRenderPass(
-        logical,
+        m_logical,
         render_pass.m_handle,
         m_allocator
     );
@@ -347,7 +347,7 @@ Fence Device::createFence(bool signaled)
     fence_info.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
 
     VkResult res = vkCreateFence(
-        logical, 
+        m_logical, 
         &fence_info, 
         m_allocator, 
         &out_fence.m_handle
@@ -366,7 +366,7 @@ Fence Device::createFence(bool signaled)
 // Destroy the given fence
 void Device::destroyFence(Fence &fence)
 {
-    vkDestroyFence(logical, fence.m_handle, m_allocator);
+    vkDestroyFence(m_logical, fence.m_handle, m_allocator);
 
     fence = Fence();
 }
@@ -380,7 +380,7 @@ VkSemaphore Device::createSemaphore()
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
     VkResult res = vkCreateSemaphore(
-        logical, 
+        m_logical, 
         &semaphore_info, 
         m_allocator, 
         &out_semaphore
@@ -399,7 +399,7 @@ VkSemaphore Device::createSemaphore()
 // Destroy the given semaphore
 void Device::destroySemaphore(VkSemaphore &semaphore) 
 {
-    vkDestroySemaphore(logical, semaphore, m_allocator);
+    vkDestroySemaphore(m_logical, semaphore, m_allocator);
 }
 
 /*
@@ -511,7 +511,7 @@ VulkanImage Device::createImage(const GpuImage::Info& info)
     view_info.subresourceRange.layerCount = 1;
 
     VkResult view_res = vkCreateImageView(
-        logical,
+        m_logical,
         &view_info,
         m_allocator,
         &out_image.m_view
@@ -580,7 +580,7 @@ VulkanImage Device::createSwapChainImage(
     
     // Create the image view
     VkResult res = vkCreateImageView(
-        logical,
+        m_logical,
         &view_info,
         m_allocator,
         &out_image.m_view
@@ -599,7 +599,7 @@ VulkanImage Device::createSwapChainImage(
 // Destroy the given image
 void Device::destroyImage(VulkanImage &image)
 {
-    vkDestroyImageView(logical, image.m_view, m_allocator);
+    vkDestroyImageView(m_logical, image.m_view, m_allocator);
     vmaDestroyImage(m_vma_allocator, image.m_handle, image.m_allocation);
     
     image = VulkanImage();
@@ -608,7 +608,7 @@ void Device::destroyImage(VulkanImage &image)
 // Destroy swap chain image
 void Device::destroySwapChainImage(VulkanImage &image)
 {
-    vkDestroyImageView(logical, image.m_view, m_allocator);
+    vkDestroyImageView(m_logical, image.m_view, m_allocator);
 
     image = VulkanImage();
 }
@@ -802,7 +802,7 @@ DescriptorLayoutBuilder Device::createDescriptorLayoutBuilder()
 void Device::destroyDescriptorLayout(DescriptorLayout &layout)
 {
     vkDestroyDescriptorSetLayout(
-        logical,
+        m_logical,
         layout.layout(),
         m_allocator
     );
@@ -854,8 +854,8 @@ void Device::initializeVmaAllocator(VkInstance instance)
     VmaAllocatorCreateInfo allocator_info = {};
 
     allocator_info.instance = instance;
-    allocator_info.physicalDevice = physical;
-    allocator_info.device = logical;
+    allocator_info.physicalDevice = m_physical;
+    allocator_info.device = m_logical;
 
     allocator_info.pHeapSizeLimit = nullptr;
     allocator_info.pAllocationCallbacks = nullptr;
@@ -889,7 +889,7 @@ void Device::shutdownVmaAllocator()
 // Create the logical device
 void Device::createLogicalDevice(Context *context_p)
 {
-    QueueFamilyIndices indices = getQueueIndices(context_p, physical);
+    QueueFamilyIndices indices = getQueueIndices(context_p, m_physical);
 
     // Store the physical device queues indices
     m_queue_indices = indices;
@@ -960,10 +960,10 @@ void Device::createLogicalDevice(Context *context_p)
     
     // Create the logical device
     VkResult res = vkCreateDevice(
-        physical, 
+        m_physical, 
         &create_info, 
         m_allocator, 
-        &logical
+        &m_logical
     );
 
     if (res != VK_SUCCESS) {
@@ -978,10 +978,10 @@ void Device::createLogicalDevice(Context *context_p)
 void Device::destroyLogicalDevice()
 {
     // Wait for all operation to end on the device
-    vk_check(vkDeviceWaitIdle(logical));
+    vk_check(vkDeviceWaitIdle(m_logical));
     
     // Destroy the logical device
-    vkDestroyDevice(logical, m_allocator);
+    vkDestroyDevice(m_logical, m_allocator);
 }
 
 /*
@@ -1005,7 +1005,7 @@ VulkanShaderModule Device::createShaderModule(AssetHandle<Shader> shader)
     
     // Create the shader module
     VkResult res = vkCreateShaderModule(
-        logical,
+        m_logical,
         &create_info,
         m_allocator,
         &out_shader.m_handle
@@ -1073,7 +1073,7 @@ VulkanShaderModule Device::createShaderModule(AssetHandle<Shader> shader)
 void Device::destroyShaderModule(
     VulkanShaderModule &module
 ) {
-    vkDestroyShaderModule(logical, module.m_handle, m_allocator);
+    vkDestroyShaderModule(m_logical, module.m_handle, m_allocator);
     module = VulkanShaderModule();
 }
 
@@ -1089,7 +1089,7 @@ void Device::retrieveQueue()
     // Graphic queue
     if (m_device_requirement.required_queue.graphics()) {
         vkGetDeviceQueue(
-            logical, 
+            m_logical, 
             m_queue_indices.graphicsIndex(), 
             0, 
             &graphics_queue
@@ -1099,7 +1099,7 @@ void Device::retrieveQueue()
     // Compute queue
     if (m_device_requirement.required_queue.compute()) {
         vkGetDeviceQueue(
-            logical, 
+            m_logical, 
             m_queue_indices.computeIndex(), 
             0, 
             &compute_queue
@@ -1109,7 +1109,7 @@ void Device::retrieveQueue()
     // Transfer queue
     if (m_device_requirement.required_queue.transfer()) {
         vkGetDeviceQueue(
-            logical, 
+            m_logical, 
             m_queue_indices.transferIndex(), 
             0, 
             &transfer_queue
@@ -1119,7 +1119,7 @@ void Device::retrieveQueue()
     // Present queue
     if (m_device_requirement.required_queue.present()) {
         vkGetDeviceQueue(
-            logical,
+            m_logical,
             m_queue_indices.presentIndex(),
             0,
             &present_queue
@@ -1179,7 +1179,7 @@ CommandPool Device::createCmdPool(
 void Device::destroyCmdPool(CommandPool cmd_pool)
 {
     vkDestroyCommandPool(
-        logical, 
+        m_logical, 
         cmd_pool.m_handle, 
         m_allocator
     );
@@ -1332,7 +1332,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
 
     // Create pipeline layout
     VkResult res_layout = vkCreatePipelineLayout(
-        logical, 
+        m_logical, 
         &pipeline_layout_info, 
         m_allocator,
         &out_pipeline.m_layout
@@ -1375,7 +1375,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
     pipeline_create_info.basePipelineIndex = -1;
 
     VkResult res_pipeline = vkCreateGraphicsPipelines(
-        logical, 
+        m_logical, 
         VK_NULL_HANDLE, 
         1, &pipeline_create_info, 
         m_allocator, 
@@ -1384,7 +1384,7 @@ GraphicsPipeline Device::createGraphicsPipeline(
 
     if (res_pipeline != VK_SUCCESS) {
         vkDestroyPipelineLayout(
-            logical, 
+            m_logical, 
             out_pipeline.m_layout, 
             m_allocator
         );
@@ -1404,13 +1404,13 @@ void Device::destroyGraphicsPipeline(
 ) {
     // Destroy the pipeline data fields
     vkDestroyPipeline(
-        logical, 
+        m_logical, 
         pipeline.m_handle, 
         m_allocator
     );
     
     vkDestroyPipelineLayout(
-        logical, 
+        m_logical, 
         pipeline.m_layout, 
         m_allocator
     );
@@ -1434,7 +1434,7 @@ CommandPool Device::createCmdPool(
     pool_info.queueFamilyIndex = queue_family_index;
     
     VkResult res = vkCreateCommandPool(
-        logical,
+        m_logical,
         &pool_info,
         m_allocator, 
         &out_pool.m_handle
@@ -1509,10 +1509,10 @@ void Device::pickPhysicalDevice(
     }
 
     // Store the selected physical device
-    physical = devices[best_device];
+    m_physical = devices[best_device];
 
     m_device_requirement = requirement;
-    vkGetPhysicalDeviceProperties(physical, &m_physical_properties);
+    vkGetPhysicalDeviceProperties(m_physical, &m_physical_properties);
 
     // Print debug information
     printPhysicalDeviceInfo(

@@ -190,7 +190,7 @@ void VkRenderer::initialize(
 // Shutdown the renderer implementation
 void VkRenderer::shutdown() 
 {
-    vkDeviceWaitIdle(m_device.logical);
+    vkDeviceWaitIdle(m_device.logical());
     
     m_delete_queue.callDeleter();
 }
@@ -483,7 +483,7 @@ void VkRenderer::createInFlightDatas(u32 in_flight_count)
 // Destroy all the frame in flight data
 void VkRenderer::destroyInFlightData()
 {
-    vkDeviceWaitIdle(m_device.logical);
+    vkDeviceWaitIdle(m_device.logical());
     
     for (auto& data : m_in_flight_data) {
         // Destroy the descriptor allocator

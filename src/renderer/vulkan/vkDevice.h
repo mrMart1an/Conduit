@@ -396,6 +396,12 @@ public:
      *
      * */
 
+    // Get the logical device handle
+    VkDevice logical() const { return m_logical; }
+
+    // Get the physical device handle
+    VkPhysicalDevice physical() const { return m_physical; }
+
     // Return the device queue family indices
     QueueFamilyIndices queueIndices() const { return m_queue_indices; }
     
@@ -520,18 +526,18 @@ public:
     VkSampleCountFlagBits getVkSampleCount(GpuImage::Info::Sample sample);
 
 public:
-    // Logical vulkan device
-    VkDevice logical;
-
-    // Physical vulkan device
-    VkPhysicalDevice physical;
-
     VkQueue graphics_queue;
     VkQueue compute_queue;
     VkQueue transfer_queue;
     VkQueue present_queue;
     
 private:
+    // Logical vulkan device
+    VkDevice m_logical;
+
+    // Physical vulkan device
+    VkPhysicalDevice m_physical;
+
     // Queue family indices 
     QueueFamilyIndices m_queue_indices;
 

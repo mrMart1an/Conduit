@@ -85,7 +85,7 @@ void SwapChain::initializeSwapChain(
 
     // Create the swap chain
     VkResult res = vkCreateSwapchainKHR(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         &create_info, 
         m_context_p->allocator, 
         &m_handle
@@ -126,14 +126,14 @@ void SwapChain::initializeSwapChain(
 void SwapChain::shutdownSwapChain()
 {
     // Wait for all the device operation to finish
-    vk_check(vkDeviceWaitIdle(m_device_p->logical));
+    vk_check(vkDeviceWaitIdle(m_device_p->logical()));
 
     // Destroy the swap chain image views
     destroyImages();
     
     // Destroy the swap chain
     vkDestroySwapchainKHR(
-        m_device_p->logical,
+        m_device_p->logical(),
         m_handle,
         m_context_p->allocator
     );
@@ -235,7 +235,7 @@ const VulkanImage* SwapChain::acquireNextImage(
     
     // Acquire the image
     VkResult res = vkAcquireNextImageKHR(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         m_handle, 
         UINT64_MAX,
         image_available, 
@@ -319,7 +319,7 @@ void SwapChain::presentImage(VkSemaphore render_done)
 void SwapChain::createImages() {
     // Retrieve the swap chain images
     VkResult res_retrive = vkGetSwapchainImagesKHR(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         m_handle, 
         &m_image_count, 
         VK_NULL_HANDLE
@@ -332,7 +332,7 @@ void SwapChain::createImages() {
     
     std::vector<VkImage> images(m_image_count);
     res_retrive = vkGetSwapchainImagesKHR(
-        m_device_p->logical, 
+        m_device_p->logical(), 
         m_handle, 
         &m_image_count, 
         images.data()
@@ -502,7 +502,7 @@ SwapChain::Details::Details(Context *context_p, Device *device_p)
 {
     // Get swap chain capabilities
     vk_check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        device_p->physical, 
+        device_p->physical(), 
         context_p->surface, 
         &m_capabilities
     ));
@@ -510,7 +510,7 @@ SwapChain::Details::Details(Context *context_p, Device *device_p)
     // Get available formats
     u32 format_count;
     vk_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        device_p->physical,
+        device_p->physical(),
         context_p->surface,
         &format_count, 
         VK_NULL_HANDLE
@@ -518,7 +518,7 @@ SwapChain::Details::Details(Context *context_p, Device *device_p)
 
     m_formats.resize(format_count);
     vk_check(vkGetPhysicalDeviceSurfaceFormatsKHR(
-        device_p->physical,
+        device_p->physical(),
         context_p->surface,
         &format_count, 
         m_formats.data()
@@ -527,7 +527,7 @@ SwapChain::Details::Details(Context *context_p, Device *device_p)
     // Get available present mode
     u32 present_mode_count;
     vk_check(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        device_p->physical,
+        device_p->physical(),
         context_p->surface,
         &present_mode_count, 
         VK_NULL_HANDLE
@@ -535,7 +535,7 @@ SwapChain::Details::Details(Context *context_p, Device *device_p)
     
     m_present_modes.resize(present_mode_count);
     vk_check(vkGetPhysicalDeviceSurfacePresentModesKHR(
-        device_p->physical,
+        device_p->physical(),
         context_p->surface,
         &present_mode_count, 
         m_present_modes.data()
