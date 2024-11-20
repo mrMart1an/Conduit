@@ -24,7 +24,6 @@
 #include "renderer/vulkan/sync/vkFence.h"
 #include "renderer/vulkan/vkCommandBuffer.h"
 #include "renderer/vulkan/vkCommandPool.h"
-#include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkContext.h"
 
@@ -223,12 +222,7 @@ public:
      * */
 
     // Create a vulkan render pass
-    RenderPass createRenderPass(
-        std::vector<RenderPass::Attachment> attachments,
-        std::vector<RenderPass::Dependency> dependencies,
-
-        std::vector<RenderPass::Subpass> subpasses
-    );
+    RenderPass createRenderPass(const RenderPass::Info &info);
 
     // Destroy render pass
     void destroyRenderPass(RenderPass &render_pass);

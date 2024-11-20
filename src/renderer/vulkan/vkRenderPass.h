@@ -6,10 +6,9 @@
 #include "conduit/renderer/image.h"
 #include "renderer/vulkan/storage/vkImage.h"
 #include "renderer/vulkan/vkCommandBuffer.h"
-#include "renderer/vulkan/vkRenderAttachment.h"
 
-#include <glm/ext/vector_float4.hpp>
 #include <vector>
+
 #include <vulkan/vulkan_core.h>
 
 namespace cndt::vulkan {
@@ -21,17 +20,6 @@ class RenderPass {
     friend class Device;
 
 public:
-    // Render pass render area
-    struct RenderArea {
-        RenderArea(u32 width, u32 height) :
-            x(0), y(0), width(width), height(height) { };
-        RenderArea(i32 x, i32 y, u32 width, u32 height) :
-            x(x), y(y), width(width), height(height) { };
-
-        i32 x, y;  
-        u32 width, height;
-    };
-
     // Render pass dependency struct 
     struct Dependency {
         VkPipelineStageFlags src_stage_mask = 0;
@@ -41,6 +29,9 @@ public:
         VkAccessFlags dst_access_mask = 0;
 
         bool by_region = true;
+
+        // Eq operator
+        bool operator==(Dependency const&) const = default;
     };
 
     // Render pass attachment descriptor
@@ -62,6 +53,9 @@ public:
         VkImageLayout initial_layout;
         // Layout of the image required at the end of the pass
         VkImageLayout final_layout;
+
+        // Eq operator
+        bool operator==(Attachment const&) const = default;
     };
 
     // struct subpass description
@@ -71,6 +65,25 @@ public:
         std::vector<VkAttachmentReference> resolve_attachments;
 
         std::optional<VkAttachmentReference> depth_stencil_attachment;
+   };
+
+    // Render pass create info
+    struct Info {
+        std::vector<Attachment> attachments;
+
+        std::vector<Dependency> dependencies;
+        std::vector<Subpass> subpasses;
+    };
+
+    // Render pass render area
+    struct RenderArea {
+        RenderArea(u32 width, u32 height) :
+            x(0), y(0), width(width), height(height) { };
+        RenderArea(i32 x, i32 y, u32 width, u32 height) :
+            x(x), y(y), width(width), height(height) { };
+
+        i32 x, y;  
+        u32 width, height;
     };
 
     // Frame buffer storage
@@ -85,7 +98,7 @@ public:
     };
 
     // Number of frame after which an unused frame buffer need to be deleted 
-    static constexpr u32 frame_buffer_delete_after = 10;
+    static constexpr u32 frame_buffer_delete_after = 100;
 
 public:
     RenderPass() = default;

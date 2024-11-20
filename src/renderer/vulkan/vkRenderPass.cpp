@@ -3,6 +3,8 @@
 
 #include "renderer/vulkan/utils/vkUtils.h"
 #include "renderer/vulkan/vkDevice.h"
+#include <sstream>
+#include <vector>
 #include <vulkan/vulkan_core.h>
 
 #include "renderer/vulkan/vkRenderPass.h"
@@ -181,6 +183,18 @@ RenderPass::FrameBuffer& RenderPass::createFrameBuffer(
 
     frame_buffer.m_unused_counter = 0;
 
+    // Print the image ids for the frame buffer
+    std::stringstream s;
+    for (int i = 0; i < m_keys_tmp.size(); i++) {
+        s << m_keys_tmp[i];
+
+        if (i != m_keys_tmp.size()-1) {
+            s << ", ";
+        }
+    }
+
+    log::core::trace("Frame buffer key: [{}]", s.str());
+
     return frame_buffer;
 }
 
@@ -207,7 +221,7 @@ void RenderPass::cleanupRoutine()
     ) {
         FrameBuffer& frame_buffer = iter->second;
         frame_buffer.m_unused_counter += 1;
-        
+
         if (frame_buffer.m_unused_counter > frame_buffer_delete_after) {
             deleteFrameBuffer(frame_buffer);
 

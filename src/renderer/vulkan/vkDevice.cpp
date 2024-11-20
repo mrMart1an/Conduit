@@ -124,22 +124,17 @@ void Device::shutdown()
  * */
 
 // Create a vulkan render pass
-RenderPass Device::createRenderPass(
-    std::vector<RenderPass::Attachment> attachments,
-    std::vector<RenderPass::Dependency> dependencies,
-
-    std::vector<RenderPass::Subpass> subpasses
-) {
+RenderPass Device::createRenderPass(const RenderPass::Info &info) {
     RenderPass out_pass;
     out_pass.m_device_p = this;
 
     // Attachment description and reference
     std::vector<VkAttachmentDescription> 
-    vk_attachments(attachments.size());
+    vk_attachments(info.attachments.size());
 
-    for (u32 i = 0; i < attachments.size(); i++) {
+    for (u32 i = 0; i < info.attachments.size(); i++) {
         auto& descriptor = vk_attachments[i];
-        auto& attachment = attachments[i];
+        auto& attachment = info.attachments[i];
 
         // Description
         descriptor.format = getVkFormat(attachment.format);
@@ -155,19 +150,19 @@ RenderPass Device::createRenderPass(
     }
 
     // Dependencies
-    if (dependencies.size() != subpasses.size() + 1) {
+    if (info.dependencies.size() != info.subpasses.size() + 1) {
         throw RenderPassCreationError(
             "Incorrenct number of dependencies (expected: {}, provided: {})",
-            subpasses.size() + 1, dependencies.size()
+            info.subpasses.size() + 1, info.dependencies.size()
         );
     }
 
-    std::vector<VkSubpassDependency> vk_dependencies(dependencies.size());
-    u32 dep_count = dependencies.size();
+    std::vector<VkSubpassDependency> vk_dependencies(info.dependencies.size());
+    u32 dep_count = info.dependencies.size();
 
     for (u32 i = 0; i < dep_count; i++) {
         auto& vk_dep = vk_dependencies[i];
-        auto& dep = dependencies[i];
+        auto& dep = info.dependencies[i];
 
         // Set source and destination subpass
         vk_dep.srcSubpass = i == 0 ? VK_SUBPASS_EXTERNAL : i - 1;
@@ -184,14 +179,14 @@ RenderPass Device::createRenderPass(
     }
     
     // Create the subpasses description
-    std::vector<VkSubpassDescription> vk_subpasses(subpasses.size());
+    std::vector<VkSubpassDescription> vk_subpasses(info.subpasses.size());
 
     // Keep track of unused attachment to preserve them
-    std::vector<bool> used_attachment(attachments.size());
+    std::vector<bool> used_attachment(info.attachments.size());
     std::fill(used_attachment.begin(), used_attachment.end(), false);
 
     // Create a vector of preserve attachments
-    std::vector<std::vector<u32>> preserve_attachments_list(subpasses.size());
+    std::vector<std::vector<u32>> preserve_attachments_list(info.subpasses.size());
 
     // Lambda to mark attachment as used and perform bound check
     auto check_subpass_attachments = [&](
@@ -199,7 +194,7 @@ RenderPass Device::createRenderPass(
     ) {
         for (auto& ref : references) {
             if (ref.attachment != VK_ATTACHMENT_UNUSED) {
-                if (ref.attachment >= attachments.size()) {
+                if (ref.attachment >= info.attachments.size()) {
                     throw RenderPassCreationError(
                         "Invalid attachment reference index: {}", 
                         ref.attachment
@@ -211,8 +206,8 @@ RenderPass Device::createRenderPass(
         }
     };
 
-    for (u32 i = 0; i < subpasses.size(); i++) {
-        auto& subpass = subpasses[i];
+    for (u32 i = 0; i < info.subpasses.size(); i++) {
+        auto& subpass = info.subpasses[i];
         auto& vk_subpass = vk_subpasses[i];
         vk_subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -298,9 +293,9 @@ RenderPass Device::createRenderPass(
     }
 
     // Fill attachment info 
-    out_pass.m_attachment_infos = attachments;
-    out_pass.m_keys_tmp.resize(attachments.size());
-    out_pass.m_view_tmp.resize(attachments.size());
+    out_pass.m_attachment_infos = info.attachments;
+    out_pass.m_keys_tmp.resize(info.attachments.size());
+    out_pass.m_view_tmp.resize(info.attachments.size());
 
     return out_pass;
 }

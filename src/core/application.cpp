@@ -4,6 +4,7 @@
 #include "conduit/application.h"
 #include "conduit/events/events.h"
 #include "conduit/events/eventKeyCode.h"
+#include "conduit/renderer/packet.h"
 #include "conduit/renderer/renderer.h"
 #include "conduit/time.h"
 
@@ -132,9 +133,8 @@ void Application::mainLoop()
         update(frame_time.delta());
 
         // Draw a frame
-        RenderGraph graph = m_renderer->getRenderGraph();
-
-        m_renderer->executeGraph(graph);
+        RenderPacket packet = m_renderer->getRenderPacket();
+        m_renderer->executePacket(packet);
 
         // Pool the window event and update the event buffer
         m_window->poolEvents();

@@ -4,9 +4,9 @@
 #include "conduit/config/engineConfig.h"
 #include "conduit/defines.h"
 
-#include "conduit/renderer/ResourceRef.h"
-#include "conduit/renderer/graph/graph.h"
 #include "conduit/renderer/shader/programBuilder.h"
+#include "conduit/renderer/ResourceRef.h"
+#include "conduit/renderer/packet.h"
 #include "conduit/window/window.h"
 
 #include <memory>
@@ -32,11 +32,11 @@ public:
     // Get a shader program builder
     virtual RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() = 0;
 
-    // Return a clear render graph ready to be built 
-    virtual RenderGraph getRenderGraph() = 0;
+    // Return a cleared render packet ready to be built 
+    virtual RenderPacket getRenderPacket() = 0;
 
-    // Execute the given render graph
-    virtual void executeGraph(RenderGraph& graph) = 0;
+    // Execute the given render packet
+    virtual void executePacket(RenderPacket& packet) = 0;
     
 protected:
     // Initialize the renderer implementation

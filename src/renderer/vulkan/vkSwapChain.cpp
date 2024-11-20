@@ -454,15 +454,21 @@ VkSurfaceFormatKHR SwapChain::chooseFormat(Details &details)
 // Chose the swap chain present mode among the available ones
 VkPresentModeKHR SwapChain::choosePresentMode(Details &details, bool v_sync)
 {
+    // WARNING!!! This code does not work at the moment,
+    // present mode will always be FIFO
+   
+    VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+
     if (!v_sync)
-       return VK_PRESENT_MODE_IMMEDIATE_KHR;
+       desired_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     
     // If mailbox present mode is supported use it
     for (usize i = 0; i < details.present_modes().size(); i++) {
         VkPresentModeKHR available_mode = details.present_modes().at(i);
 
-        if (available_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return available_mode;
+        if (available_mode == desired_mode) {
+            // TODO: Fix how present mode is handle, default to FIFO for now
+            return VK_PRESENT_MODE_FIFO_KHR;
         }
     }
 
