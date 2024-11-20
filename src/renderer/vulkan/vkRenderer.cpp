@@ -31,6 +31,10 @@ void VkRenderer::initialize(
 
     Window *window_p
 ) {
+    // Set the number of in flight frame to 2
+    m_in_flight_count = 2;
+    m_frame_count = 0;
+
     // Store the swap chain attachments dimension
     m_frame_width = window_p->getWindowData().buffer_width;
     m_frame_height = window_p->getWindowData().buffer_height;
@@ -239,6 +243,7 @@ RenderRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder()
  *
  * */
 
+
 // Return a clear render packet ready to be built 
 RenderPacket VkRenderer::getRenderPacket() 
 {
@@ -419,10 +424,12 @@ void VkRenderer::presentFrame()
     InFlightData &frame_data = getCurrentInFlightData();
     
     // Present the swap chain image
+
     m_swap_chain.presentImage(frame_data.render_semaphore);
 
     // Increment the renderer frame count
     m_frame_count += 1;
+
 }
 
 /*
@@ -434,7 +441,9 @@ void VkRenderer::presentFrame()
 // Create and initialized all the frame in flight data
 void VkRenderer::createInFlightDatas(u32 in_flight_count)
 {
+
     m_in_flight_data.resize(in_flight_count);
+
 
     for (auto& data : m_in_flight_data) {
         // Create the sync object
@@ -508,8 +517,8 @@ void VkRenderer::destroyInFlightData()
 // Get the current frame in flight data
 VkRenderer::InFlightData& VkRenderer::getCurrentInFlightData()
 {
-    u32 current_frame = m_frame_count % m_in_flight_count;
-    
+    u32 current_frame = m_frame_count % m_in_flight_count;  
+
     return m_in_flight_data.at(current_frame);
 }
 
