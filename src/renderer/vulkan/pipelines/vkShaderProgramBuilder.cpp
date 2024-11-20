@@ -14,7 +14,7 @@ namespace spvc = spirv_cross;
 
 // Build the shader program from the information 
 // and shader stage currently stored in the builder
-RendererResRef<ShaderProgram> VulkanShaderProgramBuilder::buildCache()
+RenderRef<ShaderProgram> VulkanShaderProgramBuilder::buildCache()
 {
     // Check configuration validity
     if (m_type == ShaderProgram::Type::Compute) {
@@ -83,7 +83,7 @@ RendererResRef<ShaderProgram> VulkanShaderProgramBuilder::buildCache()
         m_type
     );
 
-    return RendererResRef<ShaderProgram>(out_program_p);
+    return RenderRef<ShaderProgram>(out_program_p);
 }
 
 // Parse vertex binding description

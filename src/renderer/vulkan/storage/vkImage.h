@@ -14,7 +14,10 @@ class Device;
 // Vulkan image with memory stored on a device
 class VulkanImage : public GpuImage {
     friend class Device;
-    
+public: 
+    // Buffer unique id type
+    using Id = u64;
+
 public:
     VulkanImage() = default;
 
@@ -29,6 +32,8 @@ public:
 
     // Return the image format
     Info::Format format() const override;
+    // Return the image sample count
+    Info::Sample sample() const override;
 
     // Return the image handle
     VkImage handle() const { return m_handle; }
@@ -41,6 +46,9 @@ public:
     // Return the renderer backend that own this resource
     RendererBackend backend() const override 
     { return RendererBackend::Vulkan; };
+
+    // Return the image unique id
+    Id id() const { return m_id; }
 
 private:
     VkImage m_handle;
@@ -60,6 +68,9 @@ private:
     
     // A pointer to the device that own the image
     Device *m_device_p;
+
+    // Image unique id
+    Id m_id;
 };
 
 } // namespace cndt::vulkan
