@@ -22,7 +22,7 @@ public:
 
     // Build the shader program from the information 
     // and shader stage currently stored in the builder
-    RendererResRef<ShaderProgram> buildCache() override;
+    RenderRef<ShaderProgram> buildCache() override;
 
     // Return the renderer backend that own this resource
     RendererBackend backend() const override

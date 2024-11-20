@@ -13,7 +13,7 @@ namespace cndt::vulkan {
 void Fence::wait(u64 timeout)
 {
     VkResult res = vkWaitForFences(
-        m_device_p->logical,
+        m_device_p->logical(),
         1, &m_handle,
         VK_TRUE, 
         timeout
@@ -31,7 +31,7 @@ void Fence::wait(u64 timeout)
 void Fence::reset()
 {
     VkResult res = vkResetFences(
-        m_device_p->logical,
+        m_device_p->logical(),
         1, &m_handle
     );
     

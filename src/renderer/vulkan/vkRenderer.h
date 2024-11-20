@@ -13,7 +13,6 @@
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
-#include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkSwapChain.h"
 
@@ -48,9 +47,6 @@ public:
     };
 
 public:
-    // Draw a frame and present it
-    void draw() override;
-    
     // Set renderer v-sync 
     void setVsync(bool v_sync) override;
 
@@ -58,7 +54,13 @@ public:
     void toggleVsync() override;
 
     // Get a shader program builder
-    RendererResRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
+    RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
+
+    // Return a cleared render packet ready to be built 
+    RenderPacket getRenderPacket() override;
+
+    // Execute the given render packet
+    void executePacket(RenderPacket& packet) override;
 
 protected:
     // Initialize the renderer implementation
@@ -84,12 +86,8 @@ private:
     // End frame rendering
     void endFrame();
 
-    // Present the current swap chain frame, return true if the frame was 
-    // presented successfully to the screen
-    bool presentFrame();
-
-    // Recreate the swap chain and the swap chain render attachments
-    void recreateSwapChain();
+    // Present the current swap chain frame
+    void presentFrame();
 
     /*
      *
@@ -98,28 +96,13 @@ private:
      * */
 
     // Create and initialized all the frame in flight data
-    void createInFlightDatas();
+    void createInFlightDatas(u32 in_flight_count);
     
     // Destroy all the frame in flight data
     void destroyInFlightData();
 
     // Get the current frame in flight data
     InFlightData& getCurrentInFlightData();
-
-    /*
-     *
-     *      Render attachment functions
-     *
-     * */
-
-    // Create the swap chain render attachments using the main render pass
-    void createSwapChainAttachment();
-
-    // Destroy the swap chain render attachments
-    void destroySwapChainAttachment();
-
-    // Get the current swap chain render attachment
-    RenderAttachment& getCurrentAttachment();
 
 private:
     // Renderer delete queue
@@ -139,7 +122,6 @@ private:
 
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;
-    std::vector<RenderAttachment> m_swap_chain_attachements;
     GraphicsPipeline m_graphics_pipeline;
 
     // Frame in flight data 

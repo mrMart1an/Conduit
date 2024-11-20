@@ -8,7 +8,7 @@ namespace cndt {
 // Build the program from the shader stage and information
 // store in the builder or retrieve it from the cache if
 // no changes were made since the last call to build 
-RendererResRef<ShaderProgram> ShaderProgramBuilder::build()
+RenderRef<ShaderProgram> ShaderProgramBuilder::build()
 {
     if (m_cache.has_value()) {
         return m_cache.value();

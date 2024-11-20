@@ -20,5 +20,11 @@ VulkanImage::Info::Format VulkanImage::format() const
     return m_info.format;
 }
 
+// Return the image sample count
+VulkanImage::Info::Sample VulkanImage::sample() const
+{
+    return m_info.sample;
+}
+
 } // namespace cndt::vulkan
 

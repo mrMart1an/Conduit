@@ -33,7 +33,7 @@ VkDescriptorSet DescriptorAllocator::allocate(DescriptorLayout &layout)
     alloc_info.pSetLayouts = &set_layout;
 
     VkResult res = vkAllocateDescriptorSets(
-        m_device_p->logical,
+        m_device_p->logical(),
         &alloc_info,
         &out_set
     );
@@ -49,7 +49,7 @@ VkDescriptorSet DescriptorAllocator::allocate(DescriptorLayout &layout)
         alloc_info.descriptorPool = m_in_use_pool;
 
         vk_check(vkAllocateDescriptorSets(
-            m_device_p->logical,
+            m_device_p->logical(),
             &alloc_info,
             &out_set
         ));
@@ -70,7 +70,7 @@ void DescriptorAllocator::clearPools()
     // Clear all the full pool
     for (auto pool : m_full_pools) {
         VkResult reset_res = vkResetDescriptorPool(
-            m_device_p->logical,
+            m_device_p->logical(),
             pool,
             0
         );
@@ -142,7 +142,7 @@ VkDescriptorPool DescriptorAllocator::createPool()
     
     VkDescriptorPool out_pool;
     VkResult res = vkCreateDescriptorPool(
-        m_device_p->logical,
+        m_device_p->logical(),
         &pool_info,
         m_device_p->allocator(),
         &out_pool
@@ -173,14 +173,14 @@ void DescriptorAllocator::destroyPools()
 
     for (auto pool : m_full_pools) {
         vkDestroyDescriptorPool(
-            m_device_p->logical, 
+            m_device_p->logical(), 
             pool,
             m_device_p->allocator()
         );
     }
     for (auto pool : m_free_pools) {
         vkDestroyDescriptorPool(
-            m_device_p->logical, 
+            m_device_p->logical(), 
             pool,
             m_device_p->allocator()
         );

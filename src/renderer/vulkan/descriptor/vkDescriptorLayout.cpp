@@ -47,7 +47,7 @@ DescriptorLayout DescriptorLayoutBuilder::build(
     info.flags = flags;
 
     VkResult res = vkCreateDescriptorSetLayout(
-        m_device_p->logical,
+        m_device_p->logical(),
         &info,
         m_device_p->allocator(),
         &out_layout.m_layout

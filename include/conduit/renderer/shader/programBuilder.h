@@ -24,7 +24,7 @@ public:
     // Build the program from the shader stage and information
     // store in the builder or retrieve it from the cache if
     // no changes were made since the last call to build 
-    RendererResRef<ShaderProgram> build();
+    RenderRef<ShaderProgram> build();
 
     // Add a shader to the program, the stage is determined from the 
     // shader asset info and an exception is thrown if the stage is
@@ -78,7 +78,7 @@ protected:
     // Build the shader program from the information 
     // and shader stage currently stored in the builder
     // and update the program cache
-    virtual RendererResRef<ShaderProgram> buildCache() = 0;
+    virtual RenderRef<ShaderProgram> buildCache() = 0;
 
 protected:
     // Store the program type, this settings is determined 
@@ -108,7 +108,7 @@ protected:
     std::optional<AssetHandle<Shader>> m_compute_shader = std::nullopt;
 
     // Build cache
-    std::optional<RendererResRef<ShaderProgram>> m_cache = std::nullopt;
+    std::optional<RenderRef<ShaderProgram>> m_cache = std::nullopt;
 };
 
 // Configure the vertex input state if the current program type allow it

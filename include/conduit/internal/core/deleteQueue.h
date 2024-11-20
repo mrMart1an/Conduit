@@ -26,6 +26,6 @@ private:
     std::vector<std::function<void(void)>> m_deleters;
 };
 
-} // namespace cndt::vulkan
+} // namespace cndt
 
 #endif

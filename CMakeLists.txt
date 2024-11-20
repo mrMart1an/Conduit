@@ -21,7 +21,7 @@ option(BUILD_EXAMPLES "Build the library examples" ON)
 option(BUILD_TESTS "Build the library tests" ON)
 
 option(VULKAN_BACKEND "Enable the Vulkan rendering backend" ON)
-option(OPENGL_BACKEND "Enable the OpenGL rendering backend" OFF)
+option(OPENGL_BACKEND "Enable the OpenGL rendering backend" ON)
 
 option(GLFW_ENABLE "Use Glfw as the windowing backend" ON)
 
@@ -45,11 +45,6 @@ if (NOT PLATFORM_LINUX AND NOT PLATFORM_WINDOWS)
     )
 endif()
 
-# NOTE: Disable OpenGL support for now
-if (OPENGL_BACKEND)
-    message(FATAL_ERROR "OpenGL is not currently supported")
-endif()
-
 # If both the graphics backends are disable halt the build process
 if (NOT VULKAN_BACKEND AND NOT OPENGL_BACKEND)
     message(FATAL_ERROR "At least one graphics backend need to be enabled")
@@ -64,7 +59,7 @@ message("OpenGL rendering backend: ${OPENGL_BACKEND}")
 
 message("Glfw windowing backend: ${GLFW_ENABLE}")
 
-message("Engine log level: ${LOG_LEVEL}")
+message("Engine compile time log level: ${LOG_LEVEL}")
 
 # --------
 # Engine configuration
@@ -132,6 +127,7 @@ add_subdirectory("./extern/VulkanMemoryAllocator")
 add_subdirectory("./extern/fmt")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory("./extern/json")
+add_subdirectory("./extern/glad")
 
 # Find graphics dependency
 # Vulkan is always necessary for shaders compilation
@@ -152,12 +148,14 @@ target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/stdlibPch.h")
 target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/libPch.h")
 target_precompile_headers(${PROJECT_NAME} PUBLIC "pch/cndtPch.h")
     
+# TODO: Remove vulkan and OpenGL dependency if the backend are disabled
 target_link_libraries(${PROJECT_NAME}
     PRIVATE glfw
     PRIVATE ${VULKAN_LIB}
     PRIVATE ${OPENGL_LIB}
     PRIVATE spirv-cross-core
     PRIVATE GPUOpen::VulkanMemoryAllocator
+    PRIVATE glad
     
     PUBLIC nlohmann_json::nlohmann_json
     PUBLIC fmt::fmt

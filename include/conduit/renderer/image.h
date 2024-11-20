@@ -104,7 +104,7 @@ public:
         Format format = Format::R8G8B8A8_UNORM;
     
         // Image sample per pixel count, one sample default
-        Sample sampe = Sample::Count_1;
+        Sample sample = Sample::Count_1;
 
         // Image usage enum, default None
         UsageEnum usage = Usage::None;
@@ -129,6 +129,9 @@ public:
    
     // Return the image format
     virtual Info::Format format() const = 0;
+
+    // Return the image sample count
+    virtual Info::Sample sample() const = 0;
 
     // Return the renderer backend that own this resource
     virtual RendererBackend backend() const = 0;
