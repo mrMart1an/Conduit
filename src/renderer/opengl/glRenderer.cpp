@@ -1,4 +1,5 @@
 #include "renderer/opengl/glRenderer.h"
+#include "conduit/logging.h"
 
 #include <glad/glad.h>
 
@@ -13,7 +14,6 @@ void GlRenderer::initialize(
 ) 
 {
     m_frame_count = 0;
-    m_v_sync = true;
 
     // Store the viewport dimension
     m_frame_width = window_p->getWindowData().buffer_width;
@@ -25,7 +25,7 @@ void GlRenderer::initialize(
     m_contex_window_p = window_p;
 
     // Set v sync 
-    setVsync(m_v_sync);
+    setVsync(true);
 
     // Set the view port
     if (!m_minimized)
@@ -41,6 +41,12 @@ void GlRenderer::shutdown()
 // Resize the renderer viewport
 void GlRenderer::resize(u32 width, u32 height) 
 {
+    log::core::trace(
+        "Resizing OpenGL viewport: {}, {}",
+        m_frame_width, 
+        m_frame_height
+    );
+    
     if (width != 0 && height != 0) {
         m_frame_width = width;
         m_frame_height = height;
@@ -56,6 +62,8 @@ void GlRenderer::resize(u32 width, u32 height)
 // Set renderer v-sync 
 void GlRenderer::setVsync(bool v_sync)
 {
+    log::core::trace("Setting V-Sync to: {}", v_sync);
+    
     m_contex_window_p->glSetVSync(v_sync);
     m_v_sync = v_sync;
 }
@@ -63,7 +71,7 @@ void GlRenderer::setVsync(bool v_sync)
 // Toggle renderer v-sync
 void GlRenderer::toggleVsync()
 {
-    m_contex_window_p->glSetVSync(!m_v_sync);
+    setVsync(!m_v_sync);
 }
 
 RenderRef<ShaderProgramBuilder> GlRenderer::getShaderProgramBuilder() 

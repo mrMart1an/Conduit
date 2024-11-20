@@ -65,7 +65,6 @@ private:
     using Tables = std::tuple<Table<AssetTypes>...>;
 
 public:
-    
     // Create the asset allocator using only the builtin asset table
     AssetParser(ParserFuns parser_funs);
     // Create the asset allocator using 

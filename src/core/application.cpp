@@ -14,6 +14,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 
 namespace cndt {
 
@@ -42,7 +43,11 @@ Application::~Application() {
 // Initialize the game engine 
 void Application::engineStartup(EngineConfig config)
 {
-    config.renderer.backend = RendererBackend::OpenGL;
+    // Parse config file
+    EngineConfig json_config;
+    json_config.parseJson();
+
+    config.merge(json_config);
 
     // Load the assets manager user table if needed
     if (config.assets.user_table_path.has_value()) {

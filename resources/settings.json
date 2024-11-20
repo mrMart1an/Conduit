@@ -1,0 +1,16 @@
+{
+    "window": {
+        "width": 800,
+        "height": 600,
+
+        "start_fullscreen": false,
+        "resizable": false,
+        "floating": false
+    },
+    "renderer": {
+        "backend": "opengl"
+    },
+    "asset": {
+        "user_table_path": null
+    }
+}
