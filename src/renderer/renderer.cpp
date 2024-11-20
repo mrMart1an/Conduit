@@ -9,6 +9,9 @@
 #ifdef CNDT_VULKAN_BACKEND
 #include "renderer/vulkan/vkRenderer.h"
 #endif
+#ifdef CNDT_OPENGL_BACKEND
+#include "renderer/opengl/glRenderer.h"
+#endif
 
 namespace cndt {
 
@@ -31,11 +34,16 @@ std::unique_ptr<Renderer> Renderer::getRenderer(
         #endif
 
     } else if (backend == RendererBackend::OpenGL) {
-        throw UnsupportedBackend(
-            backend,
-            "getRenderer: OpenGl is currently not supported"
-        );
+        #ifdef CNDT_OPENGL_BACKEND
         
+        return std::make_unique<gl::GlRenderer>();
+        
+        #else
+        throw UnsupportedBackend(
+            "getRenderer: vulkan backend is disable", backend
+        );
+        #endif
+
     } else {
         throw UnsupportedBackend(backend, "getRenderer: unsupported backend");
     } 

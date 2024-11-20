@@ -38,6 +38,8 @@ void VkRenderer::initialize(
     // Store the swap chain attachments dimension
     m_frame_width = window_p->getWindowData().buffer_width;
     m_frame_height = window_p->getWindowData().buffer_height;
+    
+    m_minimized = !(m_frame_height != 0 && m_frame_width != 0); 
 
     m_in_flight_count = 2;
 
@@ -197,7 +199,8 @@ void VkRenderer::shutdown()
 }
 
 // Resize the renderer viewport
-void VkRenderer::resize(u32 width, u32 height) {
+void VkRenderer::resize(u32 width, u32 height) 
+{
     if (width != 0 && height != 0) {
         m_frame_width = width;
         m_frame_height = height;

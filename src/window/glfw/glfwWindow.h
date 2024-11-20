@@ -58,6 +58,14 @@ private:
     // Pool the window event and send them to the event bus
     void poolEvents() override;
 
+// OpenGL implementation functions
+public:
+    // Swap buffer for the OpenGL context
+    void glSwapBuffer() override;
+
+    // Set OpenGL v-sync settings
+    void glSetVSync(bool v_sync) override;
+
 // Vulkan implementation functions 
 public:
     // Retrieve a vulkan surface

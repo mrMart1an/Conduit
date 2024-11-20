@@ -42,6 +42,7 @@ set(ECS_SRC
 set(WINDOW_SRC
     "${BASE_PATH}/window/glfw/glfwWindow.cpp"
     "${BASE_PATH}/window/glfw/glfwVulkan.cpp"
+    "${BASE_PATH}/window/glfw/glfwOpenGL.cpp"
     "${BASE_PATH}/window/glfw/glfwCallbacks.cpp"
 )
 
@@ -73,6 +74,13 @@ if(VULKAN_BACKEND)
         "${BASE_PATH}/renderer/vulkan/vkSwapChain.cpp"
 
         "${BASE_PATH}/renderer/vulkan/vmaUsage.cpp"
+    )
+endif()
+
+# Opengl renderer source files
+if (OPENGL_BACKEND)
+    set(OPENGL_SRC
+        "${BASE_PATH}/renderer/opengl/glRenderer.cpp"
     )
 endif()
 
