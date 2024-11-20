@@ -59,6 +59,12 @@ struct EngineConfig {
         std::optional<std::filesystem::path> user_table_path;
     } assets;
 
+public:
+    // Default config path 
+    static constexpr const char* default_config_path = 
+        "resources/settings.json";
+
+public:
     // Fill all the field with the default values
     void setDefault();
 
@@ -66,6 +72,9 @@ struct EngineConfig {
     // if a field is not nullopt in the given object 
     // it overwrite the settings in the current config struct
     void merge(EngineConfig& config);
+
+    // Parse a json configuration file
+    void parseJson(std::filesystem::path path = default_config_path);
 };
 
 } // namespace cndt
