@@ -8,7 +8,12 @@
 
 #include "window/glfw/glfwWindow.h"
 
+#ifdef CNDT_OPENGL_BACKEND
+#include <glad/glad.h>
+#endif
+
 #include <GLFW/glfw3.h>
+
 
 namespace cndt::glfw {
 
@@ -65,7 +70,12 @@ void GlfwWindow::initialize(
 
     // If openGL is not the rendering backend disable
     // openGL context initialization
-    if (render_backend != RendererBackend::OpenGL) {
+    if (render_backend == RendererBackend::OpenGL) {
+        // TODO: Change openGL version
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    } else {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     }
     
@@ -90,7 +100,22 @@ void GlfwWindow::initialize(
         // Set the status to initialized
         m_init_status = Status::Initialized;
     }
-    
+ 
+    // Create OpenGL context and load functions
+    if (render_backend == RendererBackend::OpenGL) {
+        glfwMakeContextCurrent(m_glfw_window);
+
+        // Load the GL function
+        #ifdef CNDT_OPENGL_BACKEND
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            log::core::error("Glad failed to load OpenGL functions");
+
+            glfwTerminate();
+            throw WindowInitError("Glad failed to load OpenGL functions");
+        }    
+        #endif
+    }
+   
     // Store the current data
     glfwGetWindowPos(
         m_glfw_window, 

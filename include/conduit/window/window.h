@@ -67,6 +67,14 @@ public:
     // Fetch the required vulkan extensions
     virtual std::vector<const char*> getVkExtensions() = 0;
 
+// OpenGL implementation functions
+public:
+    // Swap buffer for the OpenGL context
+    virtual void glSwapBuffer() = 0;
+
+    // Set OpenGL v-sync settings
+    virtual void glSetVSync(bool v_sync) = 0;
+
 protected:
     // Window initialization function
     virtual void initialize(

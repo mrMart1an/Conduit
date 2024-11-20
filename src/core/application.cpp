@@ -42,6 +42,8 @@ Application::~Application() {
 // Initialize the game engine 
 void Application::engineStartup(EngineConfig config)
 {
+    config.renderer.backend = RendererBackend::OpenGL;
+
     // Load the assets manager user table if needed
     if (config.assets.user_table_path.has_value()) {
         m_asset_manager = AssetsManager(
