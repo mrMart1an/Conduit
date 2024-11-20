@@ -3,7 +3,6 @@
 #include "renderer/vulkan/pipelines/vkShaderProgram.h"
 #include "renderer/vulkan/utils/vkExceptions.h"
 
-#include "spirv.hpp"
 #include "spirv_cross.hpp"
 
 #include <vector>
@@ -110,7 +109,7 @@ VulkanShaderProgramBuilder::parseVertexAttribute() const
         return std::vector<VkVertexInputAttributeDescription>(); 
 
     // Get reflection location type information
-    spvc::Compiler comp(m_vertex_shader.value()->getSpvVec());
+    spvc::Compiler comp(m_vertex_shader.value()->getVkSpvVec());
     spvc::ShaderResources resources = comp.get_shader_resources();
 
     std::vector<std::pair<u32, spvc::SPIRType>> type_table;

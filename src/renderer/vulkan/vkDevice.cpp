@@ -985,7 +985,7 @@ VulkanShaderModule Device::createShaderModule(AssetHandle<Shader> shader)
     VkShaderModuleCreateInfo create_info = { };
         
     create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    create_info.pCode = shader->getSpv(
+    create_info.pCode = shader->getVkSpv(
         &create_info.codeSize
     );
     

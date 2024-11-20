@@ -61,29 +61,36 @@ public:
     AssetInfo(
         std::string_view asset_name,
         
-        std::filesystem::path code_spv,
-        std::filesystem::path code_glsl,
+        std::filesystem::path vk_spv,
+        std::filesystem::path vk_glsl,
+
+        std::filesystem::path gl_glsl,
 
         Shader::Type shader_type
     ) : 
         AssetInfoBase(asset_name),
-        m_code_spv(code_spv),
-        m_code_glsl(code_glsl),
+        m_vk_spv(vk_spv),
+        m_vk_glsl(vk_glsl),
+        m_gl_glsl(gl_glsl),
         m_shader_type(shader_type)
     { }
 
     // Return the shader type
     Shader::Type shaderType() const { return m_shader_type;} 
 
-    // Get the spv code path
-    std::filesystem::path pathSpv() const { return m_code_spv; }
+    // Get the vulkan spv code path
+    std::filesystem::path pathVkSpv() const { return m_vk_spv; }
+    // Get the vulkan glsl code path
+    std::filesystem::path pathVkGlsl() const { return m_vk_spv; }
     
-    // Get the glsl code path
-    std::filesystem::path pathGlsl() const { return m_code_spv; }
-    
+    // Get the OpenGL glsl code
+    std::filesystem::path pathGlGlsl() const { return m_gl_glsl; }
+
 private:
-    std::filesystem::path m_code_spv;
-    std::filesystem::path m_code_glsl;
+    std::filesystem::path m_vk_spv;
+    std::filesystem::path m_vk_glsl;
+
+    std::filesystem::path m_gl_glsl;
 
     Shader::Type m_shader_type;
 };

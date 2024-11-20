@@ -26,50 +26,68 @@ public:
 public:
     Shader() = default;
     Shader(
-        std::vector<u32>& spv_code,
-        std::vector<char>& glsl_code,
+        std::vector<u32>& vk_spv,
+        std::vector<char>& vk_glsl,
+
+        std::vector<char>& gl_glsl,
 
         Type shader_type
     ) : 
-        m_spv_code(std::move(spv_code)),
-        m_glsl_code(std::move(glsl_code)),
+        m_vk_spv(std::move(vk_spv)),
+        m_vk_glsl(std::move(vk_glsl)),
+
+        m_gl_glsl(std::move(gl_glsl)),
 
         m_type(shader_type)
     { }
 
-    // Get the Spriv byte code
+    // Get the Vulkan Spriv byte code
     // store the byte code size in bytes in the given usize variable
-    const u32* getSpv(usize *code_size_p) const 
+    const u32* getVkSpv(usize *code_size_p) const 
     { 
         if (code_size_p != nullptr)
-            *code_size_p = m_spv_code.size() * sizeof(u32);
+            *code_size_p = m_vk_spv.size() * sizeof(u32);
 
-        return m_spv_code.data(); 
+        return m_vk_spv.data(); 
     }
 
-    // Get a const reference to the spv vector
-    const std::vector<u32>& getSpvVec() const 
+    // Get a const reference to the Vulkan spv vector
+    const std::vector<u32>& getVkSpvVec() const 
     { 
-        return m_spv_code; 
+        return m_vk_spv; 
     }
 
-    // Get the GLSL shader code
+    // Get the Vulkan GLSL shader code
     // store the code size in bytes in the given usize variable
-    const char* getGlsl(usize *code_size_p) const 
+    const char* getVkGlsl(usize *code_size_p) const 
     { 
         if (code_size_p != nullptr)
-            *code_size_p  = m_glsl_code.size();
+            *code_size_p  = m_vk_glsl.size();
 
-        return m_glsl_code.data(); 
+        return m_vk_glsl.data(); 
+    }
+
+    // Get the OpenGL GLSL shader code
+    // store the code size in bytes in the given usize variable
+    const char* getGlGlsl(usize *code_size_p) const 
+    { 
+        if (code_size_p != nullptr)
+            *code_size_p  = m_vk_glsl.size();
+
+        return m_vk_glsl.data(); 
     }
 
     // Return the shader type
     Type type() const { return m_type; }
     
 private:
-    // Store the shader spriv code
-    std::vector<u32> m_spv_code;
-    std::vector<char> m_glsl_code;
+    // Store the shader vulkan spriv code
+    std::vector<u32> m_vk_spv;
+    // Store the shader vulkan glsl code
+    std::vector<char> m_vk_glsl;
+
+    // Store the shader OpenGL glsl code
+    std::vector<char> m_gl_glsl;
 
     Type m_type;
 };

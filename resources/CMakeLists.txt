@@ -5,5 +5,5 @@ add_custom_target(builtin_res ALL
 )
 
 # Compile the builtin shader
-add_subdirectory("shaders")
+add_subdirectory("shaders/vulkan")
 add_dependencies(builtin_res build_shaders)

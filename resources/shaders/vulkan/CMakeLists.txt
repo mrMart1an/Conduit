@@ -1,5 +1,5 @@
 set(SHADERS_IN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(SHADERS_OUT_DIR "${CMAKE_BINARY_DIR}/resources/shaders")
+set(SHADERS_OUT_DIR "${CMAKE_BINARY_DIR}/resources/shaders/vulkan")
 
 set(SHADERS 
 	"${SHADERS_IN_DIR}/builtin.vert" 

@@ -16,25 +16,37 @@ using json = nlohmann::json;
 // Parse shader info from json 
 AssetInfo<Shader> parseShader(std::string_view name, json element) 
 {
-    std::filesystem::path code_spv = 
-        element.at("code_spv")
+    std::filesystem::path vk_code_spv = 
+        element.at("vulkan_spv")
         .get<std::filesystem::path>();
-    std::filesystem::path code_glsl = 
-        element.at("code_glsl")
+    std::filesystem::path vk_code_glsl = 
+        element.at("vulkan_glsl")
+        .get<std::filesystem::path>();
+
+    std::filesystem::path gl_code_glsl = 
+        element.at("opengl_glsl")
         .get<std::filesystem::path>();
 
     // Test path validity
-    if (!std::filesystem::exists(code_spv)) {
+    if (!std::filesystem::exists(vk_code_spv)) {
         throw AssetTableParseError(
             "File \"{}\" for shader asset \"{}\" not found",
-            code_spv.string(),
+            vk_code_spv.string(),
             name
         );
     }
-    if (!std::filesystem::exists(code_glsl)) {
+    if (!std::filesystem::exists(vk_code_glsl)) {
         throw AssetTableParseError(
             "File \"{}\" for shader asset \"{}\" not found",
-            code_glsl.string(),
+            vk_code_glsl.string(),
+            name
+        );
+    }
+
+    if (!std::filesystem::exists(gl_code_glsl)) {
+        throw AssetTableParseError(
+            "File \"{}\" for shader asset \"{}\" not found",
+            gl_code_glsl.string(),
             name
         );
     }
@@ -74,8 +86,10 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
     return AssetInfo<Shader>(
         name,
         
-        code_spv,
-        code_glsl,
+        vk_code_spv,
+        vk_code_glsl,
+
+        gl_code_glsl,
 
         type
     );
