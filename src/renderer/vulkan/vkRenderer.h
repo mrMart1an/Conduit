@@ -13,7 +13,6 @@
 #include "renderer/vulkan/storage/vkGeometryBuffer.h"
 #include "renderer/vulkan/vkContext.h"
 #include "renderer/vulkan/vkDevice.h"
-#include "renderer/vulkan/vkRenderAttachment.h"
 #include "renderer/vulkan/vkRenderPass.h"
 #include "renderer/vulkan/vkSwapChain.h"
 
@@ -57,11 +56,11 @@ public:
     // Get a shader program builder
     RenderRef<ShaderProgramBuilder> getShaderProgramBuilder() override;
 
-    // Return a clear render graph ready to be built 
-    RenderGraph getRenderGraph() override;
+    // Return a cleared render packet ready to be built 
+    RenderPacket getRenderPacket() override;
 
-    // Execute the given render graph
-    void executeGraph(RenderGraph& graph) override;
+    // Execute the given render packet
+    void executePacket(RenderPacket& packet) override;
 
 protected:
     // Initialize the renderer implementation
@@ -123,7 +122,6 @@ private:
 
     // Render pass and related swap chain render attachment
     RenderPass m_main_render_pass;
-    std::vector<RenderAttachment> m_swap_chain_attachements;
     GraphicsPipeline m_graphics_pipeline;
 
     // Frame in flight data 

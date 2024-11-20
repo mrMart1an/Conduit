@@ -1,7 +1,7 @@
 #include "renderer/vulkan/vkRenderer.h"
 #include "conduit/assets/shader.h"
 #include "conduit/renderer/ResourceRef.h"
-#include "conduit/renderer/graph/graph.h"
+#include "conduit/renderer/packet.h"
 #include "renderer/vulkan/pipelines/vkShaderProgramBuilder.h"
 #include "renderer/vulkan/vkDevice.h"
 #include "renderer/vulkan/vkUniformData.h"
@@ -101,12 +101,12 @@ void VkRenderer::initialize(
     RenderPass::Subpass main_subpass = { };
     main_subpass.color_attachments.push_back(attachment_ref);
 
-    m_main_render_pass = m_device.createRenderPass(
-        { color_attachments },
+    RenderPass::Info render_pass_info = { };
+    render_pass_info.attachments = { color_attachments };
+    render_pass_info.dependencies = { input_dep, output_dep };
+    render_pass_info.subpasses = { main_subpass };
 
-        {input_dep, output_dep},
-        {main_subpass}
-    );
+    m_main_render_pass = m_device.createRenderPass(render_pass_info);
     m_delete_queue.addDeleter([&](){
         m_device.destroyRenderPass(m_main_render_pass);
     });
@@ -239,14 +239,14 @@ RenderRef<ShaderProgramBuilder> VkRenderer::getShaderProgramBuilder()
  *
  * */
 
-// Return a clear render graph ready to be built 
-RenderGraph VkRenderer::getRenderGraph() 
+// Return a clear render packet ready to be built 
+RenderPacket VkRenderer::getRenderPacket() 
 {
-    return RenderGraph();
+    return RenderPacket();
 }
 
-// Execute the given render graph
-void VkRenderer::executeGraph(RenderGraph& graph)
+// Execute the given render packet
+void VkRenderer::executePacket(RenderPacket& graph)
 {
     if (!beginFrame()) 
         return; 
