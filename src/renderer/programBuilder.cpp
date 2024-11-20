@@ -1,5 +1,6 @@
-#include "conduit/renderer/shader/programBuilder.h"
 #include "conduit/logging.h"
+
+#include "conduit/renderer/shader/programBuilder.h"
 #include "conduit/renderer/rendererException.h"
 #include "conduit/renderer/shader/program.h"
 
