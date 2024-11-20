@@ -98,6 +98,7 @@ void SwapChain::initializeSwapChain(
         );
     }
 
+
     // Store swap chain info, MUST be set before creating views
     m_vk_format = surface_format.format; 
     if (m_vk_format == VK_FORMAT_B8G8R8A8_SRGB)
@@ -113,12 +114,14 @@ void SwapChain::initializeSwapChain(
     m_v_sync = v_sync;
 
     m_frame_in_flight = frame_in_flight;
+
     m_current_image = 0;
     
     m_outdated = false;
 
     // Create the image views 
     createImages();
+
 }
 
 // Private shutdown code, used by the shutdown and 

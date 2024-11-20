@@ -172,7 +172,7 @@ private:
     // Store the swap chain Vulkan images
     u32 m_image_count;
     std::vector<VulkanImage> m_images;
-    
+
     // Index to the current image in the images vector
     u32 m_current_image;
 
