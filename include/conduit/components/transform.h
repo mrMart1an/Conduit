@@ -62,7 +62,7 @@ public:
         return translate * rotate * scale;
     }
     
-private:
+protected:
     // Store the object position relative to the parent object
     glm::vec3 m_position;
     // Store the object rotation relative to the parent object
@@ -70,6 +70,13 @@ private:
     // Store the object scale
     glm::vec3 m_scale;
 };
+
+// Global Object transform in world space
+class GlobalTransform : public Transform 
+{ 
+    GlobalTransform() : Transform() { };
+};
+
 
 } // namespace cndt
 

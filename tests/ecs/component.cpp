@@ -5,7 +5,6 @@
 #include "conduit/ecs/world.h"
 #include "conduit/internal/ecs/componentRegister.h"
 
-#include <mutex>
 #include <vector>
 
 using namespace cndt;

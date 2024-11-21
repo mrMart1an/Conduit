@@ -17,7 +17,7 @@ class Device;
 class DescriptorAllocator {
     friend class Device;
     
-    static constexpr u32 m_staring_set_per_pool = 20;
+    static constexpr u32 m_starting_set_per_pool = 20;
 
 public:
     struct PoolSizeRatio {

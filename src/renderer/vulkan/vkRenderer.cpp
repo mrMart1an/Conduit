@@ -142,15 +142,7 @@ void VkRenderer::initialize(
     program_builder->addStage(m_asset_manager.get<Shader>("builtinVert"));
     program_builder->addStage(m_asset_manager.get<Shader>("builtinFrag"));
 
-    VertexLayout vertex_layout;
-    vertex_layout.setLayout
-        <Vertex3D, glm::vec3, glm::vec3, glm::vec2>
-    (
-        {0, &Vertex3D::position, VertexLayout::Format::f32, 3},
-        {1, &Vertex3D::color, VertexLayout::Format::f32, 3},
-        {2, &Vertex3D::text_coord, VertexLayout::Format::f32, 2}
-    );
-    program_builder->configureInputVertex(vertex_layout);
+    program_builder->configureInputVertex(Vertex3D::layout());
 
     ShaderProgram::RasterConfig raster_config = { };
     program_builder->configureRasterizer(raster_config);
