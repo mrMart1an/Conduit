@@ -436,7 +436,7 @@ VulkanShaderProgramBuilder::parseDepthStencilInfo() const
 
 // Convert vertex input and count to vkFormat
 VkFormat VulkanShaderProgramBuilder::getVkFormat(
-    ShaderProgram::Format format,
+    VertexLayout::Format format,
     u32 size,
     spvc::SPIRType loc_type
 ) const {
@@ -459,16 +459,16 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
         loc_type.basetype == spvc::SPIRType::Double 
     ) {
         if (
-            format != ShaderProgram::Format::i64 ||
-            format != ShaderProgram::Format::u64 ||
-            format != ShaderProgram::Format::f64 
+            format != VertexLayout::Format::i64 ||
+            format != VertexLayout::Format::u64 ||
+            format != VertexLayout::Format::f64 
         ) {
             goto invalid_format;
         }
     }
 
     switch (format) {
-        case ShaderProgram::Format::u8: {
+        case VertexLayout::Format::u8: {
             switch (size) {
                 case 1:
                     if (shader_float)
@@ -495,7 +495,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::u16: {
+        case VertexLayout::Format::u16: {
             switch (size) {
                 case 1:
                     if (shader_float)
@@ -522,7 +522,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::u32: {
+        case VertexLayout::Format::u32: {
             if (shader_float)
                 goto invalid_format;
 
@@ -540,7 +540,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::u64: {
+        case VertexLayout::Format::u64: {
             if (shader_float)
                 goto invalid_format;
 
@@ -555,7 +555,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
             }
         }
 
-        case ShaderProgram::Format::i8: {
+        case VertexLayout::Format::i8: {
             switch (size) {
                 case 1:
                     if (shader_float)
@@ -582,7 +582,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::i16: {
+        case VertexLayout::Format::i16: {
             switch (size) {
                 case 1:
                     if (shader_float)
@@ -609,7 +609,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::i32: {
+        case VertexLayout::Format::i32: {
             if (shader_float)
                 goto invalid_format;
 
@@ -627,7 +627,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::i64: {
+        case VertexLayout::Format::i64: {
             if (shader_float)
                 goto invalid_format;
 
@@ -642,7 +642,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
             }
         }
 
-        case ShaderProgram::Format::f16: {
+        case VertexLayout::Format::f16: {
             if (!shader_float)
                 goto invalid_format;
 
@@ -660,7 +660,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::f32: {
+        case VertexLayout::Format::f32: {
             if (!shader_float)
                 goto invalid_format;
 
@@ -678,7 +678,7 @@ VkFormat VulkanShaderProgramBuilder::getVkFormat(
                     goto invalid_size;
             }
         }
-        case ShaderProgram::Format::f64: {
+        case VertexLayout::Format::f64: {
             if (!shader_float)
                 goto invalid_format;
 

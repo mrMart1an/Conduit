@@ -129,4 +129,28 @@ void ShaderProgramBuilder::clear()
     m_cache = std::nullopt;
 }
 
+// Configure the vertex input state if the current program type allow it
+// Take a list of vertex pointer to member as argument to determine 
+// the size and the offset of the vertex member variable
+//
+// if the program type is not yet determined this function 
+// set it to graphics
+void ShaderProgramBuilder::configureInputVertex(const VertexLayout& layout) {    
+    if (m_type == ShaderProgram::Type::Compute) {
+        throw ShaderProgramInvalidOption(
+            backend(),
+            "Invalid settings for compute program"
+        );
+    }
+
+    // Set the shader program to graphics
+    m_type = ShaderProgram::Type::Graphics;
+ 
+    // Store a new vertex config struct
+    m_vertex_config = layout;
+    
+    // Reset the cache
+    m_cache = std::nullopt;
+}
+
 } // namespace cndt
