@@ -94,6 +94,9 @@ private:
     u64 m_last_version;
 };
 
+// TODO This code is a mess to be fixed as soon as I 
+// remember how it actually work
+
 // Update the query element list
 template <typename... CompTypes>
 void QueryStorage<CompTypes...>::updateQuery()

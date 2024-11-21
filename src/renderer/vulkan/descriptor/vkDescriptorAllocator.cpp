@@ -116,7 +116,7 @@ VkDescriptorPool DescriptorAllocator::createPool()
     // If the set per pool variable is set to 0 
     // make it equal to the stating set per pool constant
     if (m_set_per_pool == 0)
-        m_set_per_pool = DescriptorAllocator::m_staring_set_per_pool;
+        m_set_per_pool = DescriptorAllocator::m_starting_set_per_pool;
     
     // Calculate the pool sizes
     std::vector<VkDescriptorPoolSize> pool_sizes;

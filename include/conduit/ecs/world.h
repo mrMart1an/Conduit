@@ -40,7 +40,9 @@ public:
 
     // Create a query for the given arguments list
     // the query will store a list of entity witch are associated 
-    // with all of the given components
+    // with all of the given components.
+    // The entities return by the query are guarantied to ordered
+    // be in crescent order
     template<typename... ComponentsTypes>
     Query<ComponentsTypes...> getQuery();
 
