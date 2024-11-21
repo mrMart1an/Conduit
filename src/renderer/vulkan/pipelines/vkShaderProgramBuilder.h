@@ -49,7 +49,7 @@ public:
 
     // Convert vertex input and count to vkFormat
     VkFormat getVkFormat(
-        ShaderProgram::Format format,
+        VertexLayout::Format format,
         u32 size,
         spirv_cross::SPIRType loc_type
     ) const;
