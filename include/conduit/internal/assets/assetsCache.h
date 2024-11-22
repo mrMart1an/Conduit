@@ -63,7 +63,7 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
     Cache<AssetType>& cache = std::get<Cache<AssetType>>(m_caches);
     std::weak_ptr<AssetStorage<AssetType>> storage_p = cache[asset_name];
 
-    // If the asset is cahced return an handle to it
+    // If the asset is cached return an handle to it
     // load the asset in the cache otherwise
     if (auto storage = storage_p.lock()) {
         return AssetHandle<AssetType>(storage);
