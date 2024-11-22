@@ -106,7 +106,7 @@ void SwapChain::initializeSwapChain(
     else if (m_vk_format == VK_FORMAT_B8G8R8A8_UNORM)
         m_format = GpuImage::Info::Format::B8G8R8A8_UNORM;
     else 
-        throw UnexpectedError("Swap chain using unknown format");
+        throw UnexpectedVkError("Swap chain using unknown format");
 
     m_swap_chain_image_usage = swap_chain_image_usage;
     m_surface_extent = extent;

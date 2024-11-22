@@ -81,6 +81,9 @@ endif()
 if (OPENGL_BACKEND)
     set(OPENGL_SRC
         "${BASE_PATH}/renderer/opengl/glRenderer.cpp"
+
+        "${BASE_PATH}/renderer/opengl/shaders/glShaderProgram.cpp"
+        "${BASE_PATH}/renderer/opengl/shaders/glShaderProgramBuilder.cpp"
     )
 endif()
 

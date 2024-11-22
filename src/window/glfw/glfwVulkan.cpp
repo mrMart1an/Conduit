@@ -50,13 +50,13 @@ std::vector<const char*> GlfwWindow::getVkExtensions()
 
     // Check if the call was successful
     if (out_exts == NULL) {
-        throw vulkan::UnexpectedError(
+        throw vulkan::UnexpectedVkError(
             "glfwGetRequiredInstanceExtensions returned NULL"
         );
     }
 
     if (ext_count < 1) {
-        throw vulkan::UnexpectedError(
+        throw vulkan::UnexpectedVkError(
             "glfwGetRequiredInstanceExtensions returned zero extensions"
         );
     }
