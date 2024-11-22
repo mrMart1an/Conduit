@@ -76,10 +76,10 @@ public:
             ~Capability() = delete;
     
             static constexpr CapabilityEnum None = 0;
-            static constexpr CapabilityEnum Graphics = BIT(0);
-            static constexpr CapabilityEnum Compute = BIT(1);
-            static constexpr CapabilityEnum Transfer = BIT(2);
-            static constexpr CapabilityEnum Present = BIT(3);
+            static constexpr CapabilityEnum Graphics = CNDT_BIT(0);
+            static constexpr CapabilityEnum Compute = CNDT_BIT(1);
+            static constexpr CapabilityEnum Transfer = CNDT_BIT(2);
+            static constexpr CapabilityEnum Present = CNDT_BIT(3);
         };
 
     public:

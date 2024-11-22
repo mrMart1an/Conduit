@@ -1537,8 +1537,8 @@ bool Device::checkDeviceFeatures(
     VkPhysicalDeviceFeatures required_features,
     VkPhysicalDeviceFeatures available_features
 ) {
-    STATIC_ASSERT(sizeof(VkBool32) == 4);
-    STATIC_ASSERT(sizeof(VkPhysicalDeviceFeatures) % sizeof(VkBool32) == 0);
+    CNDT_STATIC_ASSERT(sizeof(VkBool32) == 4);
+    CNDT_STATIC_ASSERT(sizeof(VkPhysicalDeviceFeatures) % sizeof(VkBool32) == 0);
     
     #define FEATURE_COUNT sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32)
     

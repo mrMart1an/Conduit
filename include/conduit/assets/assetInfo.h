@@ -51,7 +51,12 @@ private:
 
 // General asset info template
 template<typename AssetType>
-class AssetInfo : public AssetInfoBase { };
+class AssetInfo : public AssetInfoBase 
+{ 
+    CNDT_STATIC_ERROR(
+        "AssetInfo not immplemented for this type"
+    );
+};
 
 // Store a shader asset information
 template<>
@@ -133,8 +138,10 @@ class AssetInfo<Mesh> : public AssetInfoBase {
 public:
     enum class FileType {
         Undefined,
-        Obj
+        Obj,
+        Gltf
     };
+
 public:
     AssetInfo() = default;
     AssetInfo(

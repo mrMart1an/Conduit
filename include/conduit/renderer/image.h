@@ -83,15 +83,15 @@ public:
         struct Usage {
             static constexpr UsageEnum None = 0;
 
-            static constexpr UsageEnum TransferSrc            = BIT(0);
-            static constexpr UsageEnum TransferDst            = BIT(1);
+            static constexpr UsageEnum TransferSrc            = CNDT_BIT(0);
+            static constexpr UsageEnum TransferDst            = CNDT_BIT(1);
 
-            static constexpr UsageEnum Storage                = BIT(2);
-            static constexpr UsageEnum Sampled                = BIT(3);
+            static constexpr UsageEnum Storage                = CNDT_BIT(2);
+            static constexpr UsageEnum Sampled                = CNDT_BIT(3);
 
-            static constexpr UsageEnum ColorAttachment        = BIT(4);
-            static constexpr UsageEnum DepthStencilAttachment = BIT(5);
-            static constexpr UsageEnum InputAttachment        = BIT(6);
+            static constexpr UsageEnum ColorAttachment        = CNDT_BIT(4);
+            static constexpr UsageEnum DepthStencilAttachment = CNDT_BIT(5);
+            static constexpr UsageEnum InputAttachment        = CNDT_BIT(6);
 
             Usage() = delete;
         };
