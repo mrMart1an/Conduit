@@ -37,13 +37,13 @@ public:
         struct Usage {
             static constexpr UsageEnum None          = 0;
     
-            static constexpr UsageEnum TransferSrc   = BIT(0);
-            static constexpr UsageEnum TransferDst   = BIT(1);
+            static constexpr UsageEnum TransferSrc   = CNDT_BIT(0);
+            static constexpr UsageEnum TransferDst   = CNDT_BIT(1);
     
-            static constexpr UsageEnum UniformBuffer = BIT(2);
-            static constexpr UsageEnum StorageBuffer = BIT(3);
-            static constexpr UsageEnum VertexBuffer  = BIT(4);
-            static constexpr UsageEnum IndexBuffer   = BIT(5);
+            static constexpr UsageEnum UniformBuffer = CNDT_BIT(2);
+            static constexpr UsageEnum StorageBuffer = CNDT_BIT(3);
+            static constexpr UsageEnum VertexBuffer  = CNDT_BIT(4);
+            static constexpr UsageEnum IndexBuffer   = CNDT_BIT(5);
     
             Usage() = delete;
         };

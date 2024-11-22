@@ -14,15 +14,19 @@
 #define CNDT_ABORT() std::abort()
 
 // Compile time static assertion 
-#define STATIC_ASSERT(cond)                      \
+#define CNDT_STATIC_ASSERT(cond)                      \
     static_assert(cond, "assert fail: " #cond)
+
+// Compile time error 
+#define CNDT_STATIC_ERROR(err)                              \
+    static_assert(false, err)
 
 // Return a integer with all bit set to 0 
 // except the one at the given index starting from 0 
 // for the least significant bit
 // 
 // BIT(0) = 0001;  BIT(1) = 0010  BIT(2) = 0100
-#define BIT(x) (1 << x)
+#define CNDT_BIT(x) (1 << x)
 
 /*
  *
@@ -71,21 +75,21 @@ typedef uint8_t   b8;
 typedef uint32_t  b32;
 
 // Type size checks
-STATIC_ASSERT(sizeof(u8)  == 1);
-STATIC_ASSERT(sizeof(u16) == 2);
-STATIC_ASSERT(sizeof(u32) == 4);
-STATIC_ASSERT(sizeof(u64) == 8);
+CNDT_STATIC_ASSERT(sizeof(u8)  == 1);
+CNDT_STATIC_ASSERT(sizeof(u16) == 2);
+CNDT_STATIC_ASSERT(sizeof(u32) == 4);
+CNDT_STATIC_ASSERT(sizeof(u64) == 8);
 
-STATIC_ASSERT(sizeof(i8)  == 1);
-STATIC_ASSERT(sizeof(i16) == 2);
-STATIC_ASSERT(sizeof(i32) == 4);
-STATIC_ASSERT(sizeof(i64) == 8);
+CNDT_STATIC_ASSERT(sizeof(i8)  == 1);
+CNDT_STATIC_ASSERT(sizeof(i16) == 2);
+CNDT_STATIC_ASSERT(sizeof(i32) == 4);
+CNDT_STATIC_ASSERT(sizeof(i64) == 8);
 
-STATIC_ASSERT(sizeof(f32) == 4);
-STATIC_ASSERT(sizeof(f64) == 8);
+CNDT_STATIC_ASSERT(sizeof(f32) == 4);
+CNDT_STATIC_ASSERT(sizeof(f64) == 8);
 
-STATIC_ASSERT(sizeof(b8)  == 1);
-STATIC_ASSERT(sizeof(b32) == 4);
+CNDT_STATIC_ASSERT(sizeof(b8)  == 1);
+CNDT_STATIC_ASSERT(sizeof(b32) == 4);
 
 }
 
