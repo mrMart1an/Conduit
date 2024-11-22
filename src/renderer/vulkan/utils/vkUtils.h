@@ -31,7 +31,7 @@ constexpr void vk_check(
     std::source_location src_loc = std::source_location::current()
 ) {
     if (result != VK_SUCCESS) {
-        throw UnexpectedError(
+        throw UnexpectedVkError(
             "Unexpected vulkan error {}",
             vk_error_str(result, src_loc)
         );

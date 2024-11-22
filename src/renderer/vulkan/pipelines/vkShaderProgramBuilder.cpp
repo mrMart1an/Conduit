@@ -52,7 +52,7 @@ RenderRef<ShaderProgram> VulkanShaderProgramBuilder::buildCache()
     }
     
     // Parse shader stage modules
-    std::vector<VulkanShaderModule> modules = parseShaderModule();
+    std::vector<VulkanShaderModule> modules = parseShaderModules();
 
     // Parse rasterizer and multi sampling information
     VkPipelineRasterizationStateCreateInfo rasterizer_info =
@@ -213,7 +213,7 @@ VulkanShaderProgramBuilder::parseVertexAttribute() const
 
 // Parse the shader modules
 std::vector<VulkanShaderModule> 
-VulkanShaderProgramBuilder::parseShaderModule() const
+VulkanShaderProgramBuilder::parseShaderModules() const
 {
     // Crete shader module vector
     std::vector<VulkanShaderModule> modules;

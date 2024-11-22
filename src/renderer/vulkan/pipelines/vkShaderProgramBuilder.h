@@ -45,7 +45,7 @@ public:
     parseVertexAttribute() const;
 
     // Parse the shader modules
-    std::vector<VulkanShaderModule> parseShaderModule() const;
+    std::vector<VulkanShaderModule> parseShaderModules() const;
 
     // Convert vertex input and count to vkFormat
     VkFormat getVkFormat(

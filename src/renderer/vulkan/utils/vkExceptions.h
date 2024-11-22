@@ -28,10 +28,10 @@ public:
 };
 
 // Unexpected vulkan error
-class UnexpectedError : public VulkanException {
+class UnexpectedVkError : public VulkanException {
 public:
     template<typename... Args>
-    UnexpectedError(
+    UnexpectedVkError(
         fmt::format_string<Args...> msg, Args&&... args
     ) : 
         VulkanException(msg, std::forward<Args>(args)...)
