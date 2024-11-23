@@ -90,8 +90,6 @@ AssetParser<AssetTypes...>::Table<AssetType>::Table(json type_table) {
         try {
             Table::Key key(element.key());
 
-            log::core::info("{}: {}", assetTableName<AssetType>(), key);
-
             // Check for duplicate element 
             // (Should never happen with current json lib)
             if (m_table_map.find(key) != m_table_map.end()) {
@@ -110,6 +108,13 @@ AssetParser<AssetTypes...>::Table<AssetType>::Table(json type_table) {
                     element.value()
                 );
             m_table_map[key] = info;
+
+            // Log the table entry creation
+            log::core::debug(
+                "Using asset: \"{}\" ({})",
+                key,
+                assetTableName<AssetType>()
+            );
 
         } catch (std::exception &e) {
             log::core::error(

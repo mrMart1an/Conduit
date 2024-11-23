@@ -18,18 +18,26 @@ AssetInfo<Mesh> parseTableEntry<Mesh>(
     std::string_view name,
     json element
 ) {   
-    std::filesystem::path src = 
-        element.at("src")
-        .get<std::filesystem::path>();
-    
-    // Debug log
-    log::core::debug(
-        "Using mesh asset: \"{}\"",
-        name
-    );
+    // Get and check json elements
+    json src_j = element["src"];
+    if (src_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset mesh \"{}\" missing keyword \"src\"",
+            name
+        );
+    }
+    json type_j = element["type"];
+    if (type_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset mesh \"{}\" missing keyword \"type\"",
+            name
+        );
+    }
+
+    std::filesystem::path src = src_j.get<std::filesystem::path>();
     
     // Get the shader type
-    std::string_view type_str = element.at("type").get<std::string_view>();
+    std::string_view type_str = type_j.get<std::string_view>();
     AssetInfo<Mesh>::FileType type;
     
     if (type_str == "obj")
