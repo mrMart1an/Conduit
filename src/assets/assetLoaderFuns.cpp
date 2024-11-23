@@ -1,5 +1,6 @@
 #include "conduit/assets/assetsManagerException.h"
 #include "conduit/assets/assetInfo.h"
+#include "conduit/assets/assetsTypeFuns.h"
 
 #include "conduit/assets/mesh.h"
 #include "conduit/assets/shader.h"
@@ -12,11 +13,13 @@
 #include <memory>
 #include <vector>
 
-namespace cndt::internal {
+namespace cndt {
 
 // Parse shader from the given shader info 
-std::shared_ptr<AssetStorage<Shader>> loadShader(AssetInfo<Shader>& info) 
-{
+template <>
+std::shared_ptr<AssetStorage<Shader>> loadAsset<Shader>(
+    AssetInfo<Shader>& info
+) {
     // Load the vulkan spv code byte in memory 
     std::filesystem::path vk_spv_path = info.pathVkSpv();
     std::vector<u32> vk_spv_code;
@@ -137,21 +140,25 @@ std::shared_ptr<AssetStorage<Shader>> loadShader(AssetInfo<Shader>& info)
     );
 }
 
-// Parse texture from the given texture info 
-std::shared_ptr<AssetStorage<Texture>> loadTexture(AssetInfo<Texture>& info) 
-{
-    return std::make_shared<AssetStorage<Texture>>(
-        info,
-        std::make_unique<Texture>()
-    );
-}
-
 // Load a mesh from the given mesh info 
-std::shared_ptr<AssetStorage<Mesh>> loadMesh(AssetInfo<Mesh>& info)
-{
+template <>
+std::shared_ptr<AssetStorage<Mesh>> loadAsset<Mesh>(
+    AssetInfo<Mesh>& info
+) {
     return std::make_shared<AssetStorage<Mesh>>(
         info,
         std::make_unique<Mesh>()
+    );
+}
+
+// Parse texture from the given texture info 
+template <>
+std::shared_ptr<AssetStorage<Texture>> loadAsset<Texture>(
+    AssetInfo<Texture>& info
+) {
+    return std::make_shared<AssetStorage<Texture>>(
+        info,
+        std::make_unique<Texture>()
     );
 }
 

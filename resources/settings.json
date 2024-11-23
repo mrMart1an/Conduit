@@ -8,7 +8,7 @@
         "floating": false
     },
     "renderer": {
-        "backend": "opengl"
+        "backend": "vulkan"
     },
     "asset": {
         "user_table_path": null

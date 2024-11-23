@@ -1,21 +1,26 @@
+#include "conduit/assets/mesh.h"
+#include "conduit/assets/texture.h"
 #include "conduit/logging.h"
 
 #include "conduit/assets/assetsManagerException.h"
 #include "conduit/assets/shader.h"
 #include "conduit/assets/assetInfo.h"
+#include "conduit/assets/assetsTypeFuns.h"
 
 #include <filesystem>
 
 #include <nlohmann/json.hpp>
-#include <fmt/format.h>
 
-namespace cndt::internal {
+namespace cndt {
 
 using json = nlohmann::json;
 
 // Parse shader info from json 
-AssetInfo<Shader> parseShader(std::string_view name, json element) 
-{
+template <>
+AssetInfo<Shader> parseTableEntry<Shader>(
+    std::string_view name,
+    json element
+) {
     std::filesystem::path vk_code_spv = 
         element.at("vulkan_spv")
         .get<std::filesystem::path>();
@@ -96,8 +101,11 @@ AssetInfo<Shader> parseShader(std::string_view name, json element)
 }
 
 // Parse texture info from json 
-AssetInfo<Texture> parseTexture(std::string_view name, json element) 
-{
+template <>
+AssetInfo<Texture> parseTableEntry<Texture>(
+    std::string_view name,
+    json element
+) {
     std::filesystem::path src = 
         element.at("src")
         .get<std::filesystem::path>();
@@ -144,8 +152,11 @@ AssetInfo<Texture> parseTexture(std::string_view name, json element)
 }
 
 // Parse mesh info from json 
-AssetInfo<Mesh> parseMesh(std::string_view name, json element) 
-{   
+template <>
+AssetInfo<Mesh> parseTableEntry<Mesh>(
+    std::string_view name,
+    json element
+) {   
     std::filesystem::path src = 
         element.at("src")
         .get<std::filesystem::path>();

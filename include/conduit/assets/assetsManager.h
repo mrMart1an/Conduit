@@ -8,6 +8,7 @@
 #include "conduit/internal/assets/assetsCache.h"
 
 #include <string_view>
+#include <vector>
 
 namespace cndt {
 
@@ -19,6 +20,9 @@ public:
     // Create an asset manager using 
     // the builtin asset table and a user defined asset table
     AssetsManager(std::filesystem::path asset_table_path);
+    // Create an asset manager using 
+    // the builtin asset table and list of user defined asset tables
+    AssetsManager(std::vector<std::filesystem::path> asset_table_paths);
     
     // Get an asset handle from the given asset name or file path
     template<typename AssetType>
