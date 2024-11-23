@@ -30,30 +30,6 @@ AssetInfo<Shader> parseTableEntry<Shader>(
         element.at("opengl_glsl")
         .get<std::filesystem::path>();
 
-    // Test path validity
-    if (!std::filesystem::exists(vk_code_spv)) {
-        throw AssetTableParseError(
-            "File \"{}\" for shader asset \"{}\" not found",
-            vk_code_spv.string(),
-            name
-        );
-    }
-    if (!std::filesystem::exists(vk_code_glsl)) {
-        throw AssetTableParseError(
-            "File \"{}\" for shader asset \"{}\" not found",
-            vk_code_glsl.string(),
-            name
-        );
-    }
-
-    if (!std::filesystem::exists(gl_code_glsl)) {
-        throw AssetTableParseError(
-            "File \"{}\" for shader asset \"{}\" not found",
-            gl_code_glsl.string(),
-            name
-        );
-    }
-
     // Get the shader type
     std::string_view type_str = element.at("type").get<std::string_view>();
     Shader::Type type;

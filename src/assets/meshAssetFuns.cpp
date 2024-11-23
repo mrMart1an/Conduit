@@ -28,15 +28,6 @@ AssetInfo<Mesh> parseTableEntry<Mesh>(
         name
     );
     
-    // Test path validity
-    if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(
-            "Source file \"{}\" for mesh asset \"{}\" not found",
-            src.string(),
-            name
-        );
-    }
-    
     // Get the shader type
     std::string_view type_str = element.at("type").get<std::string_view>();
     AssetInfo<Mesh>::FileType type;
