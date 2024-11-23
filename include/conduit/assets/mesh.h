@@ -3,6 +3,8 @@
 
 #include "conduit/renderer/vertex.h"
 
+#include "conduit/assets/assetInfo.h"
+
 #include <vector>
 
 namespace cndt {
@@ -41,6 +43,41 @@ private:
     std::vector<Vertex3D> m_verticies;
     // List of indices 
     std::vector<u32> m_indices;
+};
+
+// Store a texture asset information
+template<>
+class AssetInfo<Mesh> : public AssetInfoBase {
+public:
+    enum class FileType {
+        Undefined,
+        Obj,
+        Gltf
+    };
+
+public:
+    AssetInfo() = default;
+    AssetInfo(
+        std::string_view asset_name,
+        
+        std::filesystem::path mesh_path,
+        FileType file_type
+    ) : 
+        AssetInfoBase(asset_name),
+        m_mesh_path(mesh_path),
+        m_file_type(file_type)
+    { }
+
+    // Get the mesh file path
+    std::filesystem::path path() const { return m_mesh_path; }
+    
+    // Get the mesh file type
+    FileType fileType() const { return m_file_type; }
+    
+private:
+    std::filesystem::path m_mesh_path;
+    
+    FileType m_file_type;
 };
 
 } // namespace cndt

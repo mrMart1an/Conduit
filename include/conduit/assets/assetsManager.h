@@ -3,6 +3,8 @@
 
 #include "conduit/assets/handle.h"
 #include "conduit/assets/shader.h"
+#include "conduit/assets/texture.h"
+#include "conduit/assets/mesh.h"
 
 #include "conduit/internal/assets/assetParser.h"
 #include "conduit/internal/assets/assetsCache.h"

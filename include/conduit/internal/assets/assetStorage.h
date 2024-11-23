@@ -1,6 +1,8 @@
 #ifndef CNDT_ASSET_STORAGE_H
 #define CNDT_ASSET_STORAGE_H
 
+#include "conduit/defines.h"
+
 #include "conduit/assets/assetInfo.h"
 #include "conduit/assets/assetsManagerException.h"
 
