@@ -1,12 +1,12 @@
 #ifndef CNDT_ASSETS_CACHE_H
 #define CNDT_ASSETS_CACHE_H
 
+#include "conduit/assets/assetInfo.h"
 #include "conduit/logging.h"
 
 #include "conduit/assets/handle.h"
 #include "conduit/assets/assetsTypeFuns.h"
 
-#include "conduit/internal/assets/assetParser.h"
 #include "conduit/internal/assets/assetStorage.h"
 
 #include <memory>
@@ -33,12 +33,12 @@ public:
     // Load a new asset if this is the asset is not already cached
     template<typename AssetType>
     AssetHandle<AssetType> getHandle(
-        AssetParser<AssetTypes...>& parser,
-        std::string_view asset_name
+        std::string_view asset_name,
+        std::optional<AssetInfo<AssetType>> asset_info
     );
 
 private:
-    // Store the chaced asset storage
+    // Store the cached asset storage
     std::tuple<Cache<AssetTypes>...> m_caches; 
 };
 
@@ -47,8 +47,8 @@ private:
 template<typename... AssetTypes>
 template<typename AssetType>
 AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
-    AssetParser<AssetTypes...>& parser,
-    std::string_view asset_name
+    std::string_view asset_name,
+    std::optional<AssetInfo<AssetType>> asset_info
 ) {
     Cache<AssetType>& cache = std::get<Cache<AssetType>>(m_caches);
     std::weak_ptr<AssetStorage<AssetType>> storage_p = cache[asset_name];
@@ -60,26 +60,36 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
         return AssetHandle<AssetType>(storage);
     } else {
         // Get the asset info from the parser and log a message
-        AssetInfo<AssetType> asset_info = 
-            parser.template getInfo<AssetType>(asset_name);
-
         log::core::trace(
             "Asset manager: loading asset \"{}\"",
             asset_name
         );
 
-        // Use the asset type loader to load the asset in the cache
-        std::unique_ptr<AssetType> asset_p = loadAsset<AssetType>(asset_info);
+        // If the asset was in the table and has a valid info struct 
+        // load it and cache it, otherwise return an unavailable handle
+        if (asset_info.has_value()) {
+            // Use the asset type loader to load the asset in the cache
+            std::unique_ptr<AssetType> asset_p = 
+                loadAsset<AssetType>(asset_info.value());
 
-        auto new_storage = std::make_shared<AssetStorage<AssetType>>(
-            asset_info,
-            std::move(asset_p)
-        );
+            auto new_storage = std::make_shared<AssetStorage<AssetType>>(
+                asset_info.value(),
+                std::move(asset_p)
+            );
 
-        // Store the asset storage in the cache and return the handle
-        cache[asset_name] = new_storage;
+            // Store the asset storage in the cache and return the handle
+            cache[asset_name] = new_storage;
 
-        return AssetHandle<AssetType>(new_storage);
+            return AssetHandle<AssetType>(new_storage);
+        } else {
+            auto empty_storage = std::make_shared<AssetStorage<AssetType>>();
+
+            // Store the empty storage in case a future asset update
+            // make the asset available
+            cache[asset_name] = empty_storage;
+
+            return AssetHandle<AssetType>(empty_storage);
+        }
     }
 }
 

@@ -62,7 +62,7 @@ public:
     // Take asset_name as input
     // Throw an asset not found exception if the asset doesn't exist 
     template<typename AssetType>
-    AssetInfo<AssetType> getInfo(std::string_view asset_name);
+    std::optional<AssetInfo<AssetType>> getInfo(std::string_view asset_name);
 
 private:
     // Create a tables tuple from the given file path
@@ -159,7 +159,18 @@ AssetParser<AssetTypes...>::AssetParser(
 
     // Add the user tables
     for (auto& path : asset_table_paths) {
-        m_tables.emplace_back(createTable(path));
+        // For user table error warn the user but catch exception
+        try {
+            m_tables.emplace_back(createTable(path));
+
+        } catch (std::exception &e) {
+            log::core::error(
+                "Error while parsing asset table \"{}\": {} - ({})",
+                path.string(),
+                e.what(),
+                "All the table assets will be ingored"
+            );
+        }
     }
 }
 
@@ -168,7 +179,7 @@ AssetParser<AssetTypes...>::AssetParser(
 // Throw an asset not found exception if the asset doesn't exist 
 template<typename... AssetTypes>
 template<typename AssetType>
-AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
+std::optional<AssetInfo<AssetType>> AssetParser<AssetTypes...>::getInfo(
     std::string_view asset_name
 ) {
     // Look for the asset in the tables starting from the last
@@ -182,12 +193,8 @@ AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
         }
     }
 
-    // If the asset was not found in any table throw an exception
-    throw AssetNotFound(
-        "{} asset \"{}\" not found",
-        assetTableName<AssetType>(),
-        asset_name
-    );
+    // Return nullopt if the asset was not found anywhere
+    return std::nullopt;
 }
 
 // Create a tables tuple from the given file path
