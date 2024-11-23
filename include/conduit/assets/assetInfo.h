@@ -51,10 +51,7 @@ private:
 
 // General asset info template
 template<typename AssetType>
-class AssetInfo : public AssetInfoBase 
-{ 
-    CNDT_STATIC_ERROR("AssetInfo not immplemented for this type");
-};
+class AssetInfo;
 
 // Store a shader asset information
 template<>

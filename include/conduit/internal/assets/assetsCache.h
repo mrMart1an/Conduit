@@ -1,10 +1,13 @@
 #ifndef CNDT_ASSETS_CACHE_H
 #define CNDT_ASSETS_CACHE_H
 
+#include "conduit/logging.h"
+
 #include "conduit/assets/handle.h"
+#include "conduit/assets/assetsTypeFuns.h"
+
 #include "conduit/internal/assets/assetParser.h"
 #include "conduit/internal/assets/assetStorage.h"
-#include "conduit/logging.h"
 
 #include <functional>
 #include <memory>
@@ -31,10 +34,7 @@ private:
     >;
 
 public:
-    AssetsCache() : m_loaders(), m_caches() { }
-    AssetsCache(std::tuple<Loader<AssetTypes>...> loaders) : 
-        m_loaders(loaders), m_caches()
-    { }
+    AssetsCache() :  m_caches() { }
 
     // Get an asset handle
     // Load a new asset if this is the asset is not already cached
@@ -45,9 +45,6 @@ public:
     );
 
 private:
-    // Store the asset loading function
-    std::tuple<Loader<AssetTypes>...> m_loaders;
-
     // Store the chaced asset storage
     std::tuple<Cache<AssetTypes>...> m_caches; 
 };
@@ -78,9 +75,8 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
         );
 
         // Use the asset type loader to load the asset in the cache
-        Loader<AssetType> loader = std::get<Loader<AssetType>>(m_loaders);
         std::shared_ptr<AssetStorage<AssetType>> new_storage =
-            loader(asset_info);
+            loadAsset<AssetType>(asset_info);
 
         // Store the asset storage in the cache and return the handle
         cache[asset_name] = new_storage;

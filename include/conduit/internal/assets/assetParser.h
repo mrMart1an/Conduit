@@ -3,15 +3,15 @@
 
 #include "conduit/assets/assetsManagerException.h"
 #include "conduit/assets/assetInfo.h"
+#include "conduit/assets/assetsTypeFuns.h"
+#include "conduit/defines.h"
+#include "conduit/logging.h"
 
-#include <array>
 #include <filesystem>
 #include <fstream>
-#include <functional>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
-#include <utility>
 
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
@@ -25,16 +25,6 @@ class AssetParser {
 private:
     static constexpr const char* builtin_table_path =
         "resources/builtin_table.json";
-   
-public:
-    template <typename AssetType>
-    using ParserFun = 
-        std::function<AssetInfo<AssetType>(std::string_view, json)>;
-
-    // Store the parsing function for each type
-    using ParserFuns = std::tuple<
-        std::pair<std::string_view, ParserFun<AssetTypes>>
-    ...>;
     
 private:
     // Store the asset table
@@ -44,10 +34,7 @@ private:
         // Create an empty table
         Table() = default;
         // Load the table from a json file
-        Table(
-            json type_table,
-            ParserFun<AssetType> parser
-        );
+        Table(json type_table);
         
         // Get the asset info in the map
         // Return an empty option if the asset doesn't exist
@@ -66,14 +53,10 @@ private:
 
 public:
     // Create the asset allocator using only the builtin asset table
-    AssetParser(ParserFuns parser_funs);
+    AssetParser();
     // Create the asset allocator using 
-    // the builtin asset table and a user defined asset table
-    AssetParser(
-        std::filesystem::path asset_table_path,
-        
-        ParserFuns parser_funs
-    );
+    // the builtin asset table and a list of user defined asset tables
+    AssetParser(std::vector<std::filesystem::path> asset_table_paths);
     
     // Find an asset check if it exist and return a valid asset info struct
     // Take asset_name as input
@@ -83,24 +66,11 @@ public:
 
 private:
     // Create a tables tuple from the given file path
-    template <usize... Is>
-    Tables createTable(
-        std::filesystem::path table_path,
-        
-        ParserFuns parser_funs,
-        
-        std::index_sequence<Is...>
-    );
+    Tables createTable(std::filesystem::path table_path);
 
 private:
-    // Json builtin asset table
-    Tables m_builtin_table;
-
-    // Json user defined asset table
-    Tables m_user_table;
-    
-    // Store the type names for logging purpose
-    std::array<std::string_view, sizeof...(AssetTypes)> m_type_names;
+    // Json asset tables
+    std::vector<Tables> m_tables;
 };
 
 /*
@@ -112,15 +82,26 @@ private:
 // Load the table from a json file
 template<typename... AssetTypes>
 template<typename AssetType>
-AssetParser<AssetTypes...>::Table<AssetType>::Table(
-    json type_table,
-    std::function<AssetInfo<AssetType>(std::string_view, json)> parser_fun
-) {
+AssetParser<AssetTypes...>::Table<AssetType>::Table(json type_table) {
     for (auto& element : type_table.items()) {
-        m_table_map[std::string(element.key())] = parser_fun(
-            element.key(),
-            element.value()
-        );
+        // Catch exception during parsing and print them to screen
+        // in case of error no asset will be added to the table
+        try {
+            // Add the entry to the table
+            m_table_map[std::string(element.key())] = 
+                parseTableEntry<AssetType>(
+                    element.key(),
+                    element.value()
+                );
+
+        } catch (std::exception &e) {
+            log::core::error(
+                "Error while parsing {} asset \"{}\": {}", 
+                assetTableName<AssetType>(),
+                element.key(),
+                e.what()
+            );
+        }
     }
 }
 
@@ -149,52 +130,23 @@ AssetParser<AssetTypes...>::Table<AssetType>::getInfo(
 
 // Create the asset allocator using only the builtin asset table
 template<typename... AssetTypes>
-AssetParser<AssetTypes...>::AssetParser(
-    ParserFuns parser_funs
-) {
-    m_type_names = {
-        std::get<std::pair<std::string_view, ParserFun<AssetTypes>>>(
-            parser_funs
-        ).first...
-    };
-    
-    m_builtin_table = createTable(
-        builtin_table_path, 
-        parser_funs, 
-        std::index_sequence_for<AssetTypes...>{}
-    );
+AssetParser<AssetTypes...>::AssetParser() {
+    m_tables.push_back(createTable(builtin_table_path));
 }
 
 // Create the asset allocator using 
-// the builtin asset table and a user defined asset table
+// the builtin asset table and a list of user defined asset tables
 template<typename... AssetTypes>
 AssetParser<AssetTypes...>::AssetParser(
-    std::filesystem::path asset_table_path,
-    
-    ParserFuns parser_funs
+    std::vector<std::filesystem::path> asset_table_paths
 ) {
-    m_type_names = {
-        std::get<std::pair<std::string_view, ParserFun<AssetTypes>>>(
-            parser_funs
-        ).first...
-    };
+    m_tables.push_back(createTable(builtin_table_path));
 
-    m_builtin_table = createTable(
-        builtin_table_path, 
-        parser_funs, 
-        std::index_sequence_for<AssetTypes...>{}
-    );
-
-    m_user_table = createTable(
-        asset_table_path, 
-        parser_funs, 
-        std::index_sequence_for<AssetTypes...>{}
-    );
+    // Add the user tables
+    for (auto& path : asset_table_paths) {
+        m_tables.emplace_back(createTable(path));
+    }
 }
-
-// Helper template to find the index of a type in a parameter pack
-template <typename T, typename... Types>
-struct IndexOf;
 
 // Find an asset check if it exist and return a valid asset info struct
 // Take asset_name as input
@@ -204,43 +156,30 @@ template<typename AssetType>
 AssetInfo<AssetType> AssetParser<AssetTypes...>::getInfo(
     std::string_view asset_name
 ) {
-    // Look for the asset in the user asset table
-    auto location = std::get<Table<AssetType>>(
-        m_user_table
-    ).getInfo(asset_name);
+    // Look for the asset in the tables starting from the last
+    // (The user define table are more likely to store the asset)
+    for (usize i = m_tables.size() - 1; i >= 0; i--) {
+        auto info = std::get<Table<AssetType>>(m_tables[i])
+            .getInfo(asset_name);
 
-    if (location.has_value()) {
-        return location.value();
-    } 
-    
-    // If the asset was not found in the user asset table 
-    // look for it in the builtin asset table
-    location = std::get<Table<AssetType>>(
-        m_builtin_table
-    ).getInfo(asset_name);
-
-    if (location.has_value()) {
-        return location.value();
-    } 
+        if (info.has_value()) {
+            return info.value();
+        }
+    }
 
     // If the asset was not found in any table throw an exception
     throw AssetNotFound(
         "{} asset \"{}\" not found",
-        m_type_names[IndexOf<AssetType, AssetTypes...>::value],
+        assetTableName<AssetType>(),
         asset_name
     );
 }
 
 // Create a tables tuple from the given file path
 template<typename... AssetTypes>
-template <usize... Is>
 typename AssetParser<AssetTypes...>::Tables
 AssetParser<AssetTypes...>::createTable(
-    std::filesystem::path table_path,
-    
-    ParserFuns parser_funs,
-    
-    std::index_sequence<Is...>
+    std::filesystem::path table_path
 ) {
     if(!std::filesystem::exists(table_path)) {
         throw AssetTableNotFound(
@@ -255,10 +194,7 @@ AssetParser<AssetTypes...>::createTable(
         json table = json::parse(f);
 
         return std::make_tuple(
-            Table<AssetTypes>(
-                table.at(std::get<Is>(parser_funs).first),
-                std::get<Is>(parser_funs).second
-            )...
+            Table<AssetTypes>(table.at(assetTableName<AssetTypes>()))...
         );
         
     } catch (std::exception &e) {
@@ -269,18 +205,6 @@ AssetParser<AssetTypes...>::createTable(
         );
     }
 }
-
-// Recursive case
-template <typename T, typename First, typename... Rest>
-struct IndexOf<T, First, Rest...> {
-    static constexpr usize value = 1 + IndexOf<T, Rest...>::value;
-};
-
-// Base case
-template <typename T, typename... Rest>
-struct IndexOf<T, T, Rest...> {
-    static constexpr usize value = 0;
-};
 
 } // namespace cndt::internal
 
