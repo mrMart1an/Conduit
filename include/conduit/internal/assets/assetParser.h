@@ -1,11 +1,12 @@
 #ifndef CNDT_ASSET_PARSER_H
 #define CNDT_ASSET_PARSER_H
 
+#include "conduit/defines.h"
+#include "conduit/logging.h"
+
 #include "conduit/assets/assetsManagerException.h"
 #include "conduit/assets/assetInfo.h"
 #include "conduit/assets/assetsTypeFuns.h"
-#include "conduit/defines.h"
-#include "conduit/logging.h"
 
 #include <filesystem>
 #include <fstream>

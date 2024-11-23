@@ -1,19 +1,104 @@
 #include "conduit/assets/assetsManagerException.h"
-#include "conduit/assets/assetInfo.h"
 #include "conduit/assets/assetsTypeFuns.h"
-
-#include "conduit/assets/mesh.h"
 #include "conduit/assets/shader.h"
-#include "conduit/assets/texture.h"
-
-#include <filesystem>
 #include <fstream>
-#include <memory>
-#include <vector>
 
 namespace cndt {
 
-// Parse shader from the given shader info 
+using json = nlohmann::json;
+
+// Return shader asset table name (the json key to the asset table)
+template <>
+std::string assetTableName<Shader>() {
+    return "shaders";
+}
+
+// Parse shader info from json 
+template <>
+AssetInfo<Shader> parseTableEntry<Shader>(
+    std::string_view name,
+    json element
+) {
+    std::filesystem::path vk_code_spv = 
+        element.at("vulkan_spv")
+        .get<std::filesystem::path>();
+    std::filesystem::path vk_code_glsl = 
+        element.at("vulkan_glsl")
+        .get<std::filesystem::path>();
+
+    std::filesystem::path gl_code_glsl = 
+        element.at("opengl_glsl")
+        .get<std::filesystem::path>();
+
+    // Test path validity
+    if (!std::filesystem::exists(vk_code_spv)) {
+        throw AssetTableParseError(
+            "File \"{}\" for shader asset \"{}\" not found",
+            vk_code_spv.string(),
+            name
+        );
+    }
+    if (!std::filesystem::exists(vk_code_glsl)) {
+        throw AssetTableParseError(
+            "File \"{}\" for shader asset \"{}\" not found",
+            vk_code_glsl.string(),
+            name
+        );
+    }
+
+    if (!std::filesystem::exists(gl_code_glsl)) {
+        throw AssetTableParseError(
+            "File \"{}\" for shader asset \"{}\" not found",
+            gl_code_glsl.string(),
+            name
+        );
+    }
+
+    // Get the shader type
+    std::string_view type_str = element.at("type").get<std::string_view>();
+    Shader::Type type;
+    
+    if (type_str == "vertex")
+        type = Shader::Type::Vertex;
+    else if (type_str == "fragment")
+        type = Shader::Type::Fragment;
+    else if (type_str == "geometry")
+        type = Shader::Type::Geometry;
+    else if (type_str == "tesseletion_control")
+        type = Shader::Type::TessellationControl;
+    else if (type_str == "tesseletion_evaluation")
+        type = Shader::Type::TessellationEval;
+    else if (type_str == "compute")
+        type = Shader::Type::Compute;
+        
+    else {
+        throw AssetTableParseError(
+            "Asset shader \"{}\" unknow type: \"{}\"",
+            name,
+            type_str
+        );
+    }
+
+    // Debug log
+    log::core::debug(
+        "Using {} shader asset: \"{}\"",
+        type_str,
+        name
+    );
+    
+    return AssetInfo<Shader>(
+        name,
+        
+        vk_code_spv,
+        vk_code_glsl,
+
+        gl_code_glsl,
+
+        type
+    );
+}
+
+// Load shader from the given shader info 
 template <>
 std::unique_ptr<Shader> loadAsset<Shader>(
     AssetInfo<Shader>& info
@@ -131,20 +216,4 @@ std::unique_ptr<Shader> loadAsset<Shader>(
     );
 }
 
-// Load a mesh from the given mesh info 
-template <>
-std::unique_ptr<Mesh> loadAsset<Mesh>(
-    AssetInfo<Mesh>& info
-) {
-    return std::make_unique<Mesh>();
-}
-
-// Parse texture from the given texture info 
-template <>
-std::unique_ptr<Texture> loadAsset<Texture>(
-    AssetInfo<Texture>& info
-) {
-    return std::make_unique<Texture>();
-}
-
-} // namespace cndt::internal
+} // namespace cndt

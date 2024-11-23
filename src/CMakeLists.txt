@@ -19,9 +19,9 @@ set(CORE_SRC
 
 # Assets manager source file
 set(ASSETS_SRC
-    "${BASE_PATH}/assets/assetParserFuns.cpp" 
-    "${BASE_PATH}/assets/assetLoaderFuns.cpp" 
-    "${BASE_PATH}/assets/assetTableNameFuns.cpp" 
+    "${BASE_PATH}/assets/meshAssetFuns.cpp" 
+    "${BASE_PATH}/assets/shaderAssetFuns.cpp" 
+    "${BASE_PATH}/assets/textureAssetFuns.cpp" 
 )
 
 # Config manager source file
