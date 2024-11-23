@@ -22,33 +22,6 @@ AssetInfo<Texture> parseTableEntry<Texture>(
         element.at("src")
         .get<std::filesystem::path>();
 
-    // Norm will be empty unless explicitly specified in the json element
-    std::filesystem::path norm = {};
-    
-    if (element.find("norm") != element.end()) {
-        json norm_j = element.at("norm");
-
-        if (!norm_j.is_null()) {
-            norm = norm_j.get<std::filesystem::path>();
-        }
-    }
-
-    // Test path validity
-    if (!std::filesystem::exists(src)) {
-        throw AssetTableParseError(
-            "Source file \"{}\" for texture asset \"{}\" not found",
-            src.string(),
-            name
-        );
-    }
-    if (!std::filesystem::exists(norm) && !norm.empty()) {
-        throw AssetTableParseError(
-            "Normal file \"{}\" for texture asset \"{}\" not found",
-            norm.string(),
-            name
-        );
-    }
-    
     // Debug log
     log::core::debug(
         "Using texture asset: \"{}\"",
@@ -57,9 +30,7 @@ AssetInfo<Texture> parseTableEntry<Texture>(
     
     return AssetInfo<Texture>(
         name,
-
-        src,
-        norm
+        src
     );
 }
 

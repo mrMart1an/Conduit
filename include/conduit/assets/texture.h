@@ -19,24 +19,17 @@ public:
     AssetInfo(
         std::string_view asset_name,
         
-        std::filesystem::path src_path,
-        std::filesystem::path norm_path
+        std::filesystem::path src_path
     ) : 
         AssetInfoBase(asset_name),
-        m_src_path(src_path),
-        m_norm_path(norm_path)
+        m_src_path(src_path)
     { }
 
     // Get the source image file path
     std::filesystem::path srcPath() const { return m_src_path; }
     
-    // Get the image normal file path
-    // this path is guarantied to be valid only if not empty
-    std::filesystem::path normPath() const { return m_norm_path; }
-    
 private:
     std::filesystem::path m_src_path;
-    std::filesystem::path m_norm_path;
 };
 
 } // namespace cndt
