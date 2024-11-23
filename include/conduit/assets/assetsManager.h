@@ -13,16 +13,19 @@
 namespace cndt {
 
 // Manage and cache the engine asset
+template <typename... AssetTypes>
 class AssetsManager {
 public:
     // Create an asset manager using only the builtin asset table
-    AssetsManager();
+    AssetsManager() : m_parser(), m_cache() { };
     // Create an asset manager using 
     // the builtin asset table and a user defined asset table
-    AssetsManager(std::filesystem::path asset_table_path);
+    AssetsManager(std::filesystem::path asset_table_path) :
+        m_parser({asset_table_path}), m_cache() { };
     // Create an asset manager using 
     // the builtin asset table and list of user defined asset tables
-    AssetsManager(std::vector<std::filesystem::path> asset_table_paths);
+    AssetsManager(std::vector<std::filesystem::path> asset_table_paths) :
+        m_parser(asset_table_paths), m_cache() { };
     
     // Get an asset handle from the given asset name or file path
     template<typename AssetType>
@@ -34,9 +37,11 @@ private:
 };
     
 // Get an asset handle from the given asset name or file path
+template <typename... AssetTypes>
 template<typename AssetType>
-AssetHandle<AssetType> AssetsManager::get(std::string_view asset_name)
-{
+AssetHandle<AssetType> AssetsManager<AssetTypes...>::get(
+    std::string_view asset_name
+) {
     return m_cache.getHandle<AssetType>(
         m_parser,
         asset_name

@@ -1,15 +1,20 @@
 #ifndef CNDT_APPLICATION_H
 #define CNDT_APPLICATION_H
 
-#include "conduit/assets/assetsManager.h"
-#include "conduit/config/engineConfig.h"
 #include "conduit/defines.h"
+
+#include "conduit/config/engineConfig.h"
 
 #include "conduit/ecs/world.h"
 #include "conduit/events/eventBus.h"
 #include "conduit/renderer/renderer.h"
 #include "conduit/window/window.h"
 #include "conduit/internal/core/deleteQueue.h"
+
+#include "conduit/assets/assetsManager.h"
+#include "conduit/assets/mesh.h"
+#include "conduit/assets/shader.h"
+#include "conduit/assets/texture.h"
 
 #include <memory>
 
@@ -62,7 +67,7 @@ protected:
     bool m_run_application;
 
     // Asset manager
-    AssetsManager m_asset_manager;
+    AssetsManager<Shader, Texture, Mesh> m_asset_manager;
 
     // Application event bus
     EventBus m_event_bus;

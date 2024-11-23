@@ -9,12 +9,9 @@
 
 namespace cndt {
 
-class AssetsManager;
-
 // Store the asset and the associated information
 template<typename AssetType>
 class AssetStorage {
-    friend class AssetsManager;
     
 public:
     AssetStorage(
