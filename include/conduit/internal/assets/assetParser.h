@@ -104,11 +104,12 @@ AssetParser<AssetTypes...>::Table<AssetType>::Table(json type_table) {
             }
 
             // Add the entry to the table
-            m_table_map[key] = 
+            AssetInfo<AssetType> info = 
                 parseTableEntry<AssetType>(
                     element.key(),
                     element.value()
                 );
+            m_table_map[key] = info;
 
         } catch (std::exception &e) {
             log::core::error(
@@ -162,7 +163,7 @@ AssetParser<AssetTypes...>::AssetParser(
     for (auto& path : asset_table_paths) {
         // For user table error warn the user but catch exception
         try {
-            m_tables.emplace_back(createTable(path));
+            m_tables.push_back(createTable(path));
 
         } catch (std::exception &e) {
             log::core::error(
@@ -185,8 +186,8 @@ std::optional<AssetInfo<AssetType>> AssetParser<AssetTypes...>::getInfo(
 ) {
     // Look for the asset in the tables starting from the last
     // (The user define table are more likely to store the asset)
-    for (usize i = m_tables.size() - 1; i >= 0; i--) {
-        auto info = std::get<Table<AssetType>>(m_tables[i])
+    for (usize i = m_tables.size(); i != 0; i--) {
+        auto info = std::get<Table<AssetType>>(m_tables[i - 1])
             .getInfo(asset_name);
 
         if (info.has_value()) {
