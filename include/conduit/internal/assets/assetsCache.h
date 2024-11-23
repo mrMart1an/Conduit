@@ -68,19 +68,39 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
         // If the asset was in the table and has a valid info struct 
         // load it and cache it, otherwise return an unavailable handle
         if (asset_info.has_value()) {
-            // Use the asset type loader to load the asset in the cache
-            std::unique_ptr<AssetType> asset_p = 
-                loadAsset<AssetType>(asset_info.value());
+            try {
+                // Use the asset type loader to load the asset in the cache
+                std::unique_ptr<AssetType> asset_p = 
+                    loadAsset<AssetType>(asset_info.value());
 
-            auto new_storage = std::make_shared<AssetStorage<AssetType>>(
-                asset_info.value(),
-                std::move(asset_p)
-            );
+                auto new_storage = std::make_shared<AssetStorage<AssetType>>(
+                    asset_info.value(),
+                    std::move(asset_p)
+                );
+    
+                // Store the asset storage in the cache and return the handle
+                cache[asset_name] = new_storage;
+    
+                return AssetHandle<AssetType>(new_storage);
 
-            // Store the asset storage in the cache and return the handle
-            cache[asset_name] = new_storage;
+            } catch (std::exception& e) {
+                // In case of exception return a null handle and 
+                // warn the user
+                log::core::error(
+                    "Error during asset \"{}\" loading: {}",
+                    asset_name,
+                    e.what()
+                );
 
-            return AssetHandle<AssetType>(new_storage);
+                auto empty_storage =
+                    std::make_shared<AssetStorage<AssetType>>();
+
+                // Store the empty storage in case a future asset update
+                // make the asset available
+                cache[asset_name] = empty_storage;
+
+                return AssetHandle<AssetType>(empty_storage);
+            }
         } else {
             auto empty_storage = std::make_shared<AssetStorage<AssetType>>();
 
