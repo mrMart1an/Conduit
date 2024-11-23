@@ -38,7 +38,15 @@ public:
                 m_info.assetName()
             );
         }
-        
+
+        // Check if the asset pointer is null, should never happen
+        if (m_asset == nullptr) {
+            throw AssetUnavailable(
+                "Asset  \"{}\" pointer in null, this is an engine bug",
+                m_info.assetName()
+            );
+        }
+
         return m_asset.get(); 
     }
 
