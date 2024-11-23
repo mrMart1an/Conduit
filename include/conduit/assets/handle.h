@@ -25,13 +25,16 @@ public:
     { }
 
     // Return true if the handle point to an available asset
-    bool isAvailable() const { return m_ptr->info().isAvailable(); }
+    bool isAvailable() const { return m_ptr->isAvailable(); }
 
     // Return true if the asset was update since the last time
     // this function was called
+    //
+    // return true if the function was never called 
+    // and the asset is available
     bool wasUpdated()
     {
-        u64 new_version = m_ptr->info().version();
+        u64 new_version = m_ptr->version();
         
         if (m_old_version != new_version) {
             m_old_version = new_version;
@@ -46,12 +49,14 @@ public:
     const AssetInfo<AssetType>& info() const { return m_ptr->info(); }
      
     // Overload the dereferencing operator
+    // Generate exception if the handle is unavailable
     const AssetType& operator * () const 
     { 
         return m_ptr->asset(); 
     }
     
     // Overloading arrow operator so that
+    // Generate exception if the handle is unavailable
     const AssetType* operator->() const 
     { 
         return m_ptr->asset(); 

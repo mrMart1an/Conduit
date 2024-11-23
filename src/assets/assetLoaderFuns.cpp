@@ -6,8 +6,6 @@
 #include "conduit/assets/shader.h"
 #include "conduit/assets/texture.h"
 
-#include "conduit/internal/assets/assetStorage.h"
-
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -17,7 +15,7 @@ namespace cndt {
 
 // Parse shader from the given shader info 
 template <>
-std::shared_ptr<AssetStorage<Shader>> loadAsset<Shader>(
+std::unique_ptr<Shader> loadAsset<Shader>(
     AssetInfo<Shader>& info
 ) {
     // Load the vulkan spv code byte in memory 
@@ -122,44 +120,31 @@ std::shared_ptr<AssetStorage<Shader>> loadAsset<Shader>(
         );
     }
 
-    // Make the asset available
-    info.setAvailable(true);
-    info.incrementVersion();
-
     // Create and return a shared pointer storing the asset storage
-    return std::make_shared<AssetStorage<Shader>>(
-        info,
-        std::make_unique<Shader>(
-            vk_spv_code,
-            vk_glsl_code,
+    return std::make_unique<Shader>(
+        vk_spv_code,
+        vk_glsl_code,
 
-            gl_glsl_code,
+        gl_glsl_code,
 
-            info.shaderType()
-        )
+        info.shaderType()
     );
 }
 
 // Load a mesh from the given mesh info 
 template <>
-std::shared_ptr<AssetStorage<Mesh>> loadAsset<Mesh>(
+std::unique_ptr<Mesh> loadAsset<Mesh>(
     AssetInfo<Mesh>& info
 ) {
-    return std::make_shared<AssetStorage<Mesh>>(
-        info,
-        std::make_unique<Mesh>()
-    );
+    return std::make_unique<Mesh>();
 }
 
 // Parse texture from the given texture info 
 template <>
-std::shared_ptr<AssetStorage<Texture>> loadAsset<Texture>(
+std::unique_ptr<Texture> loadAsset<Texture>(
     AssetInfo<Texture>& info
 ) {
-    return std::make_shared<AssetStorage<Texture>>(
-        info,
-        std::make_unique<Texture>()
-    );
+    return std::make_unique<Texture>();
 }
 
 } // namespace cndt::internal

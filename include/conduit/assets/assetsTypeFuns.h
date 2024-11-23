@@ -1,9 +1,7 @@
 #ifndef CNDT_ASSETS_FUNS_H
 #define CNDT_ASSETS_FUNS_H
 
-
 #include "conduit/assets/assetInfo.h"
-#include "conduit/internal/assets/assetStorage.h"
 
 #include <nlohmann/json.hpp>
 
@@ -29,7 +27,7 @@ AssetInfo<AssetType> parseTableEntry(std::string_view, nlohmann::json);
 // return a shared pointer to the asset an asset storage function 
 // containing the asset
 template <typename AssetType>
-std::shared_ptr<AssetStorage<AssetType>> loadAsset(AssetInfo<AssetType>&); 
+std::unique_ptr<AssetType> loadAsset(AssetInfo<AssetType>&); 
 
 } // namespace cndt
 

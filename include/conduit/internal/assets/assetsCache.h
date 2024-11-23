@@ -69,11 +69,16 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
         );
 
         // Use the asset type loader to load the asset in the cache
-        std::shared_ptr<AssetStorage<AssetType>> new_storage =
-            loadAsset<AssetType>(asset_info);
+        std::unique_ptr<AssetType> asset_p = loadAsset<AssetType>(asset_info);
+
+        auto new_storage = std::make_shared<AssetStorage<AssetType>>(
+            asset_info,
+            std::move(asset_p)
+        );
 
         // Store the asset storage in the cache and return the handle
         cache[asset_name] = new_storage;
+
         return AssetHandle<AssetType>(new_storage);
     }
 }
