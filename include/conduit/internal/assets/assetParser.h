@@ -87,8 +87,23 @@ AssetParser<AssetTypes...>::Table<AssetType>::Table(json type_table) {
         // Catch exception during parsing and print them to screen
         // in case of error no asset will be added to the table
         try {
+            Table::Key key(element.key());
+
+            log::core::info("{}: {}", assetTableName<AssetType>(), key);
+
+            // Check for duplicate element 
+            // (Should never happen with current json lib)
+            if (m_table_map.find(key) != m_table_map.end()) {
+                log::core::error(
+                    "Duplicate asset \"{}\" in {}; {}",
+                    key,
+                    assetTableName<AssetType>(),
+                    "Using the last declared asset"
+                );
+            }
+
             // Add the entry to the table
-            m_table_map[std::string(element.key())] = 
+            m_table_map[key] = 
                 parseTableEntry<AssetType>(
                     element.key(),
                     element.value()

@@ -9,7 +9,6 @@
 #include "conduit/internal/assets/assetParser.h"
 #include "conduit/internal/assets/assetStorage.h"
 
-#include <functional>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -26,12 +25,6 @@ private:
             std::string_view,
             std::weak_ptr<AssetStorage<AssetType>>
         >;
-
-    // Function used to load an asset in the cache
-    template<typename AssetType>
-    using Loader = std::function<
-        std::shared_ptr<AssetStorage<AssetType>>(AssetInfo<AssetType>&)
-    >;
 
 public:
     AssetsCache() :  m_caches() { }
@@ -62,7 +55,8 @@ AssetHandle<AssetType> AssetsCache<AssetTypes...>::getHandle(
 
     // If the asset is cached return an handle to it
     // load the asset in the cache otherwise
-    if (auto storage = storage_p.lock()) {
+    if (!storage_p.expired()) {
+        auto storage = storage_p.lock();
         return AssetHandle<AssetType>(storage);
     } else {
         // Get the asset info from the parser and log a message
