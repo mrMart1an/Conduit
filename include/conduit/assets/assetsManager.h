@@ -37,14 +37,17 @@ private:
 };
     
 // Get an asset handle from the given asset name or file path
+// If the asset is not found return an handle to an unavailable asset
 template <typename... AssetTypes>
 template<typename AssetType>
 AssetHandle<AssetType> AssetsManager<AssetTypes...>::get(
     std::string_view asset_name
 ) {
+    auto info = m_parser.getInfo<AssetType>(asset_name);
+
     return m_cache.getHandle<AssetType>(
-        m_parser,
-        asset_name
+        asset_name,
+        info
     );
 }
 
