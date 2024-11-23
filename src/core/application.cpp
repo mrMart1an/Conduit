@@ -1,4 +1,3 @@
-#include "conduit/assets/assetsManager.h"
 #include "conduit/internal/core/deleteQueue.h"
 
 #include "conduit/application.h"
@@ -7,6 +6,10 @@
 #include "conduit/renderer/packet.h"
 #include "conduit/renderer/renderer.h"
 #include "conduit/time.h"
+
+#include "conduit/assets/assetsManager.h"
+#include "conduit/assets/shader.h"
+#include "conduit/assets/texture.h"
 
 #include "window/glfw/glfwWindow.h"
 
@@ -51,7 +54,7 @@ void Application::engineStartup(EngineConfig config)
 
     // Load the assets manager user table if needed
     if (config.assets.user_table_path.has_value()) {
-        m_asset_manager = AssetsManager(
+        m_asset_manager = AssetsManager<Shader, Texture, Mesh>(
             config.assets.user_table_path.value()
         );
     }
