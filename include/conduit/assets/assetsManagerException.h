@@ -56,14 +56,14 @@ public:
 
 /*
  *
- *      Shader loading exceptions
+ *      Loading exceptions
  *
  * */
 
-class ShaderLoadingError : public AssetException {
+class AssetLoadingError : public AssetException {
 public:
     template<typename... Args>
-    ShaderLoadingError(
+    AssetLoadingError(
         fmt::format_string<Args...> msg, Args&&... args
     ) : AssetException(msg, std::forward<Args>(args)...) { }      
 };

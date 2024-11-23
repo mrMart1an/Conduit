@@ -19,19 +19,47 @@ AssetInfo<Shader> parseTableEntry<Shader>(
     std::string_view name,
     json element
 ) {
+    // Get and check json elements
+    json vk_code_spv_j = element["vulkan_spv"];
+    json vk_code_glsl_j = element["vulkan_glsl"];
+    json gl_code_glsl_j = element["opengl_glsl"];
+    if (vk_code_spv_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset shader \"{}\" missing keyword \"vulkan_spv\"",
+            name
+        );
+    }
+    if (vk_code_glsl_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset shader \"{}\" missing keyword \"vulkan_glsl\"",
+            name
+        );
+    }
+    if (gl_code_glsl_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset shader \"{}\" missing keyword \"opengl_glsl\"",
+            name
+        );
+    }
+    json type_j = element["type"];
+    if (type_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset shader \"{}\" missing keyword \"type\"",
+            name
+        );
+    }
+
+    // Store the file path
     std::filesystem::path vk_code_spv = 
-        element.at("vulkan_spv")
-        .get<std::filesystem::path>();
+        vk_code_spv_j.get<std::filesystem::path>();
     std::filesystem::path vk_code_glsl = 
-        element.at("vulkan_glsl")
-        .get<std::filesystem::path>();
+        vk_code_glsl_j.get<std::filesystem::path>();
 
     std::filesystem::path gl_code_glsl = 
-        element.at("opengl_glsl")
-        .get<std::filesystem::path>();
+        gl_code_glsl_j.get<std::filesystem::path>();
 
     // Get the shader type
-    std::string_view type_str = element.at("type").get<std::string_view>();
+    std::string_view type_str = type_j.get<std::string_view>();
     Shader::Type type;
     
     if (type_str == "vertex")
@@ -55,13 +83,6 @@ AssetInfo<Shader> parseTableEntry<Shader>(
         );
     }
 
-    // Debug log
-    log::core::debug(
-        "Using {} shader asset: \"{}\"",
-        type_str,
-        name
-    );
-    
     return AssetInfo<Shader>(
         name,
         
@@ -79,8 +100,31 @@ template <>
 std::unique_ptr<Shader> loadAsset<Shader>(
     AssetInfo<Shader>& info
 ) {
-    // Load the vulkan spv code byte in memory 
+    // Checking path existence
     std::filesystem::path vk_spv_path = info.pathVkSpv();
+    std::filesystem::path vk_glsl_path = info.pathVkGlsl();
+    std::filesystem::path gl_glsl_path = info.pathVkGlsl();
+
+    if(!std::filesystem::exists(vk_spv_path)) {
+        throw AssetLoadingError(
+            "Vulkan spv file at: \"{}\" not found",
+            vk_spv_path.string()
+        );
+    }
+    if(!std::filesystem::exists(vk_glsl_path)) {
+        throw AssetLoadingError(
+            "Vulkan glsl file at: \"{}\" not found",
+            vk_spv_path.string()
+        );
+    }
+    if(!std::filesystem::exists(gl_glsl_path)) {
+        throw AssetLoadingError(
+            "OpenGL glsl file at: \"{}\" not found",
+            vk_spv_path.string()
+        );
+    }
+
+    // Load the vulkan spv code byte in memory 
     std::vector<u32> vk_spv_code;
 
     try {
@@ -90,7 +134,7 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         );
 
         if(vk_spv_file.fail()) {
-            throw ShaderLoadingError(
+            throw AssetLoadingError(
                 "failed to open file: {}",
                 vk_spv_path.string()
             );
@@ -107,14 +151,13 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         vk_spv_file.close();
 
     } catch (std::exception& e) {
-        throw ShaderLoadingError(
+        throw AssetLoadingError(
             "Shader spv code loading error: {}",
             e.what()
         );
     }
 
     // Load the vulkan glsl code byte in memory 
-    std::filesystem::path vk_glsl_path = info.pathVkGlsl();
     std::vector<char> vk_glsl_code;
 
     try {
@@ -124,7 +167,7 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         );
 
         if(vk_glsl_file.fail()) {
-            throw ShaderLoadingError(
+            throw AssetLoadingError(
                 "failed to open file: {}",
                 vk_spv_path.string()
             );
@@ -141,14 +184,13 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         vk_glsl_file.close();
 
     } catch (std::exception& e) {
-        throw ShaderLoadingError(
+        throw AssetLoadingError(
             "Shader vulkan glsl code loading error: {}",
             e.what()
         );
     }
 
     // Load the vulkan glsl code byte in memory 
-    std::filesystem::path gl_glsl_path = info.pathVkGlsl();
     std::vector<char> gl_glsl_code;
 
     try {
@@ -158,7 +200,7 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         );
 
         if(gl_glsl_file.fail()) {
-            throw ShaderLoadingError(
+            throw AssetLoadingError(
                 "failed to open file: {}",
                 vk_spv_path.string()
             );
@@ -175,7 +217,7 @@ std::unique_ptr<Shader> loadAsset<Shader>(
         gl_glsl_file.close();
 
     } catch (std::exception& e) {
-        throw ShaderLoadingError(
+        throw AssetLoadingError(
             "Shader OpenGL glsl code loading error: {}",
             e.what()
         );

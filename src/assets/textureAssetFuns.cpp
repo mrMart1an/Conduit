@@ -18,16 +18,18 @@ AssetInfo<Texture> parseTableEntry<Texture>(
     std::string_view name,
     json element
 ) {
-    std::filesystem::path src = 
-        element.at("src")
-        .get<std::filesystem::path>();
-
-    // Debug log
-    log::core::debug(
-        "Using texture asset: \"{}\"",
-        name
-    );
+    // Get and check json elements
+    json src_j = element["src"];
+    if (src_j.is_null()) {
+        throw AssetTableParseError(
+            "Asset texture \"{}\" missing keyword \"src\"",
+            name
+        );
+    }
     
+    // Store the source path
+    std::filesystem::path src = src_j.get<std::filesystem::path>();
+
     return AssetInfo<Texture>(
         name,
         src
