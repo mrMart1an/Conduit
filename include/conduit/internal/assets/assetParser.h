@@ -41,7 +41,7 @@ private:
         // Return an empty option if the asset doesn't exist
         std::optional<AssetInfo<AssetType>> getInfo(
             std::string_view asset_name
-        );
+        ) const;
         
     private:
         using Key = std::string;
@@ -63,7 +63,9 @@ public:
     // Take asset_name as input
     // Throw an asset not found exception if the asset doesn't exist 
     template<typename AssetType>
-    std::optional<AssetInfo<AssetType>> getInfo(std::string_view asset_name);
+    std::optional<AssetInfo<AssetType>> getInfo(
+        std::string_view asset_name
+    ) const;
 
 private:
     // Create a tables tuple from the given file path
@@ -134,11 +136,13 @@ template<typename AssetType>
 std::optional<AssetInfo<AssetType>>
 AssetParser<AssetTypes...>::Table<AssetType>::getInfo(
     std::string_view asset_name
-) {
+) const {
     std::string key(asset_name);
 
-    if(m_table_map.find(key) != m_table_map.end()) {
-        return m_table_map[key];
+    auto info_it = m_table_map.find(key);
+
+    if (info_it != m_table_map.end()) {
+        return info_it->second;
     }
     
     return std::nullopt;
@@ -188,7 +192,7 @@ template<typename... AssetTypes>
 template<typename AssetType>
 std::optional<AssetInfo<AssetType>> AssetParser<AssetTypes...>::getInfo(
     std::string_view asset_name
-) {
+) const {
     // Look for the asset in the tables starting from the last
     // (The user define table are more likely to store the asset)
     for (usize i = m_tables.size(); i != 0; i--) {

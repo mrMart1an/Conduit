@@ -1,6 +1,7 @@
 #ifndef CNDT_VK_RENDERER_H
 #define CNDT_VK_RENDERER_H
 
+#include "conduit/assets/mesh.h"
 #include "conduit/config/engineConfig.h"
 #include "conduit/renderer/vertex.h"
 #include "conduit/window/window.h"
