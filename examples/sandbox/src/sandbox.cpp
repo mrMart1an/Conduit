@@ -11,6 +11,7 @@ public:
     std::string appName() const override { return "Sanbox app"; }
 
     void startup() override {
+        m_asset_manager.get<Mesh>("builtin");
 
     }
     

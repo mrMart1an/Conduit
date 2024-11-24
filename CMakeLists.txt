@@ -127,6 +127,7 @@ add_subdirectory("./extern/VulkanMemoryAllocator")
 add_subdirectory("./extern/fmt")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory("./extern/json")
+add_subdirectory("./extern/tinyobjloader")
 add_subdirectory("./extern/glad")
 
 # Find graphics dependency
@@ -156,6 +157,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE spirv-cross-core
     PRIVATE GPUOpen::VulkanMemoryAllocator
     PRIVATE glad
+    PRIVATE tinyobjloader
     
     PUBLIC nlohmann_json::nlohmann_json
     PUBLIC fmt::fmt

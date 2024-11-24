@@ -5,6 +5,7 @@
 
 #include "conduit/assets/assetInfo.h"
 
+#include <utility>
 #include <vector>
 
 namespace cndt {
@@ -13,6 +14,11 @@ namespace cndt {
 class Mesh {
 public:
     Mesh() = default;
+    Mesh(
+        std::vector<Vertex3D> vertices,
+        std::vector<u32> indices
+    ) : m_verticies(std::move(vertices)), m_indices(std::move(indices)) { };
+    
     ~Mesh() = default;
 
 public:

@@ -140,7 +140,7 @@ private:
     u64 m_frame_count;
 
     // TODO temporary asset manager, remove later
-    AssetsManager<Shader> m_asset_manager;
+    AssetsManager<Shader, Mesh> m_asset_manager;
 };
 
 } // namespace cndt::vulkan

@@ -1,6 +1,5 @@
 # Blender 4.1.1
 # www.blender.org
-mtllib untitled.mtl
 o Suzanne
 v 0.437500 0.164062 0.765625
 v -0.437500 0.164062 0.765625
