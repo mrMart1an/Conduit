@@ -112,7 +112,11 @@ void Application::engineShutdown()
 void Application::setupKeyBinding()
 {
     m_event_bus.addCallback<KeyPressEvent>(
-        [&window = m_window, &renderer = m_renderer]
+        [
+        &window = m_window, 
+        &renderer = m_renderer,
+        &asset_manager = m_asset_manager
+        ]
         (const KeyPressEvent* event) {
             // Toggle fullscreen
             if (event->key_code == keycode::KEY_F11) {
@@ -122,6 +126,11 @@ void Application::setupKeyBinding()
             // Toggle v-sync
             if (event->key_code == keycode::KEY_F7) {
                 renderer->toggleVsync();
+            }
+
+            // Reload asset
+            if (event->key_code == keycode::KEY_F5) {
+                asset_manager.updateAssets();
             }
         }
     );

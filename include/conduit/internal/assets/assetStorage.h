@@ -9,12 +9,18 @@
 #include <memory>
 #include <utility>
 
-namespace cndt {
+namespace cndt::internal {
+
+template <typename... AssetTypes>
+class AssetsCache;
 
 // Store the asset and the associated information
 template<typename AssetType>
 class AssetStorage {
-    
+    // Asset cache will be able to update the asset store in the storage
+    template <typename... AssetTypes>
+    friend class AssetsCache;
+
 public:
     AssetStorage(
         AssetInfo<AssetType> asset_info,
@@ -65,20 +71,22 @@ private:
     // Get a reference to the asset info
     AssetInfo<AssetType>& infoRef() { return m_info; }
     
-    // Update the stored asset
+    // Update the stored asset, increment the version number and
+    // set the asset to unavailable if a nullptr is provided
     void updateAsset(
         AssetInfo<AssetType> asset_info,
         std::unique_ptr<AssetType> asset
     ) {
-        if (asset != nullptr) {
-            m_info = asset_info;
-            m_asset = std::move(asset);
+        m_info = asset_info;
+        m_asset = std::move(asset);
 
-            incrementVersion();
+        if (asset != nullptr) {
             makeAvailable();
         } else {
             makeUnavailable();
         }
+            
+        incrementVersion();
     }   
 
     // Increment the asset version 
@@ -102,6 +110,6 @@ private:
     u64 m_version;
 };
 
-} // namespace cndt
+} // namespace cndt::internal
 
 #endif

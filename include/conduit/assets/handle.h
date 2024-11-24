@@ -6,7 +6,6 @@
 #include "conduit/assets/assetInfo.h"
 #include "conduit/internal/assets/assetStorage.h"
 
-#include <algorithm>
 #include <memory>
 
 namespace cndt {
@@ -20,7 +19,7 @@ public:
         m_old_version(0)
     { }
     AssetHandle(
-        std::shared_ptr<AssetStorage<AssetType>> asset_p
+        std::shared_ptr<internal::AssetStorage<AssetType>> asset_p
     ) : 
         m_ptr(std::move(asset_p)), 
         m_old_version(0)
@@ -66,7 +65,7 @@ public:
     
 private:
     // Store a pointer to the asset
-    std::shared_ptr<AssetStorage<AssetType>> m_ptr;
+    std::shared_ptr<internal::AssetStorage<AssetType>> m_ptr;
 
     // Store the last asset version since wasUpdated was called
     u64 m_old_version;
