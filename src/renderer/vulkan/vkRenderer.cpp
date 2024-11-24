@@ -160,7 +160,9 @@ void VkRenderer::initialize(
     ));
 
     // Create the static mesh geometry buffer
-    m_static_mesh_buffer = m_device.createGeometryBuffer<Vertex3D>(128, 128);
+    m_static_mesh_buffer = m_device.createGeometryBuffer<Vertex3D>(
+        10000, 10000
+    );
     m_delete_queue.addDeleter(std::bind(
         &Device::destroyGeometryBuffer<Vertex3D>,
         &m_device,
@@ -169,18 +171,12 @@ void VkRenderer::initialize(
 
     // Load test geometry in the buffer
     // Load test geometry to the geometry buffers
-    std::vector<Vertex3D> vertices = { 
-        {{-0.5, -0.5, 0.}, {0.,1.,0.}, {0., 0.}}, 
-        {{0.5, -0.5, 0.}, {0.,0.,1.}, {0., 0.}}, 
-        {{0.5, 0.5, 0.}, {0.,1.,0.}, {0., 0.}}, 
-        {{-0.5, 0.5, 0.}, {1.,0.,0.}, {0., 0.}}, 
-    };
-    std::vector<u32> indices = { 0, 1, 2, 0, 2, 3 };
+    AssetHandle<Mesh> mesh = m_asset_manager.get<Mesh>("builtin");
 
     m_device.geometryBufferLoad(
         m_static_mesh_buffer,
-        vertices, 
-        indices
+        mesh->getVertexVector(), 
+        mesh->getIndexVector()
     );
 }
 
@@ -317,7 +313,7 @@ void VkRenderer::executePacket(RenderPacket& graph)
     // Issue draw call
     vkCmdDrawIndexed(
         frame_data.main_cmd_buffer.handle(),
-        6,
+        m_static_mesh_buffer.index().size() / sizeof(u32),
         1,
         0, 0, 0
     );
