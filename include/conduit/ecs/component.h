@@ -8,21 +8,21 @@ protected:
     // Represent the storage technique used by the component buffer 
     // to store instance of this component
     //
-    // - Linear:    cache friendly and fast access time 
+    // - Table:     cache friendly and fast access time 
     //              but slow add and remove operation
-    // - Sparse:    non cache friendly and slower access time
+    // - SparseSet: non cache friendly and slower access time
     //              but fast add and removal operation
     enum class StorageType {
-        Linear,
-        Sparse
+        Table,
+        SparceSet
     };
 
 protected:
     // Return the component buffer storage type use for this component
-    // The default storage type is Linear
+    // The default storage type is Table
     StorageType componentStorageType() const 
     { 
-        return StorageType::Linear;
+        return StorageType::Table;
     }
 };
 
