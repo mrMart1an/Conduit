@@ -1,26 +1,20 @@
 #ifndef CNDT_ASSERT_H
 #define CNDT_ASSERT_H
 
-#include "conduit/defines.h"
+#include "conduit/internal/assert.h"
 
-#include <string_view>
-
-namespace cndt::internal {
-
-// Conduit assert function declaration
-void cndt_assert(
-    bool cond,
-    std::string_view cond_str,
-    std::string_view file,
-    i32 line
-);
+namespace cndt {
 
 // Conduit assert macro
+#define CNDT_ASSERT(cond)   \
+    cndt::internal::cndt_assert<#cond, __FILE__, __func__, __LINE__>(cond);
+
+// Conduit debug assert macro
 #ifndef NDEBUG
-    #define CNDT_ASSERT(cond)   \
-        cndt::internal::cndt_assert(cond, #cond, __FILE__, __LINE__);
+    #define CNDT_DEBUG_ASSERT(cond)   \
+        cndt::internal::cndt_assert<#cond, __FILE__, __func__, __LINE__>(cond);
 #else
-    #define CNDT_ASSERT(cond, msg)
+    #define CNDT_DEBUG_ASSERT(cond)
 #endif
 
 } // namespace cndt::internal

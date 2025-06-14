@@ -11,9 +11,7 @@ set(EVENT_SRC
 set(CORE_SRC
     "${BASE_PATH}/core/logging.cpp" 
     "${BASE_PATH}/core/time.cpp" 
-    "${BASE_PATH}/core/assert.cpp" 
     "${BASE_PATH}/core/application.cpp"
-    "${BASE_PATH}/core/appRunner.cpp"
     "${BASE_PATH}/core/deleteQueue.cpp"
 )
 
@@ -101,7 +99,7 @@ set(RENDERER_SRC
 
 # Platform specific code source files
 set(PLATFORM_SRC
-    "${BASE_PATH}/platform/entryPoint.cpp"    
+
 )
 
 # Define the engine_source variable
@@ -112,7 +110,6 @@ set(ENGINE_SRC
     ${CONFIG_SRC}
     ${EVENT_SRC}
     ${WINDOW_SRC}
-    ${RENDERER_SRC}
     ${PLATFORM_SRC}
     
     PARENT_SCOPE

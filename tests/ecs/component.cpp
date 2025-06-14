@@ -1,16 +1,12 @@
 #include <gtest/gtest.h>
 
-#include "conduit/ecs/entity.h"
-#include "conduit/ecs/world.h"
 
-#include <vector>
+// Override the conduit main function at link time
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
 
-//
-//// Override the conduit main function at link time
-//int main(int argc, char **argv) {
-//    testing::InitGoogleTest(&argc, argv);
-//    return RUN_ALL_TESTS();
-//}
 //
 //struct CompTest {
 //    CompTest() : x(0),y(0),z(0) {}; 

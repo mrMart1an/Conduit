@@ -1,6 +1,6 @@
 #include "conduit/internal/core/deleteQueue.h"
 
-namespace cndt {
+namespace cndt::internal {
 
 void DeleteQueue::addDeleter(std::function<void(void)> deleter_fun) 
 {

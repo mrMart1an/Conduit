@@ -4,37 +4,37 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace cndt {
+
 /*
  *
  *      Essential macro definitions
  *
  * */
 
-// Immediately halt execution of the engine
-#define CNDT_ABORT() std::abort()
-
 // Compile time static assertion 
 #define CNDT_STATIC_ASSERT(cond)                      \
     static_assert(cond, "assert fail: " #cond)
 
 // Compile time error 
-#define CNDT_STATIC_ERROR(err)                              \
-    static_assert(false, err)
+#define CNDT_STATIC_ERROR(err) static_assert(false, err)
 
 // Return a integer with all bit set to 0 
 // except the one at the given index starting from 0 
 // for the least significant bit
 // 
 // BIT(0) = 0001;  BIT(1) = 0010  BIT(2) = 0100
-#define CNDT_BIT(x) (1 << x)
+template <typename T>
+constexpr T bit(T x) { return 1 << x; }
+
+// Immediately halt execution of the engine
+static void abort() { std::abort(); }
 
 /*
  *
  *      Conduit types definitions
  *
  * */
-
-namespace cndt {
 
 // 1 bytes (8 bits) unsigned integer type
 typedef uint8_t   u8;
