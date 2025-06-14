@@ -6,15 +6,14 @@
 namespace cndt::internal {
 
 // Conduit assert function declaration
-template 
-<
-    typename T,
+template <typename T>
+void cndt_assert(
+    T cond,
     const char* cond_str,
     const char* file,
     const char* func,
     i32 line
->
-void cndt_assert(T cond) {
+) {
     if (!cond) {
         log::core::fatal(
             "Assert fail: \"{}\"; file: {}; function: {}; line: {}",
