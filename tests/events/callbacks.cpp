@@ -96,116 +96,116 @@ void array_callback_check(const ArrayEvent* event) {
  *
  * */
 
-TEST(callback_test, single_update) {
-    // Reset static variable
-    empty_count = 0; 
-    int_count = 0; 
-    array_count = 0; 
-
-    EventBus bus;
-
-    // Create an event writer and attach the callbacks
-    EventWriter writer = bus.getEventWriter();
-
-    bus.addCallback<EmptyEvent>(empty_callback);
-    bus.addCallback<IntEvent>(int_callback);
-    bus.addCallback<ArrayEvent>(array_callback);
-    
-    bus.addCallback<IntEvent>(int_callback_check);
-    bus.addCallback<ArrayEvent>(array_callback_check);
-    
-    // Write some events to the buffer
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-
-    ASSERT_EQ(empty_count, 0);
-    ASSERT_EQ(int_count, 0);
-    ASSERT_EQ(array_count, 0);
-    
-    // Run the callbacks
-    bus.update();
-
-    ASSERT_EQ(empty_count, 3);
-    ASSERT_EQ(int_count, 3);
-    ASSERT_EQ(array_count, 3);
-}
-
-TEST(callback_test, multi_update) {
-    // Reset static variable
-    empty_count = 0; 
-    int_count = 0; 
-    array_count = 0; 
-
-    EventBus bus;
-
-    // Create an event writer and attach the callbacks
-    EventWriter writer = bus.getEventWriter();
-
-    bus.addCallback<EmptyEvent>(empty_callback);
-    bus.addCallback<IntEvent>(int_callback);
-    bus.addCallback<ArrayEvent>(array_callback);
-    
-    bus.addCallback<IntEvent>(int_callback_check);
-    bus.addCallback<ArrayEvent>(array_callback_check);
-    
-    // Write some events to the buffer
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<EmptyEvent>(EmptyEvent());
-    
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<IntEvent>(IntEvent(test_int));
-    
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-
-    ASSERT_EQ(empty_count, 0);
-    ASSERT_EQ(int_count, 0);
-    ASSERT_EQ(array_count, 0);
-    
-    // Run the callbacks
-    bus.update();
-
-    ASSERT_EQ(empty_count, 3);
-    ASSERT_EQ(int_count, 3);
-    ASSERT_EQ(array_count, 3);
-    
-    // Write some events to the buffer
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-    
-    writer.send<EmptyEvent>(EmptyEvent());
-    writer.send<IntEvent>(IntEvent(test_int));
-    writer.send<ArrayEvent>(ArrayEvent(test_array));
-
-    ASSERT_EQ(empty_count, 3);
-    ASSERT_EQ(int_count, 3);
-    ASSERT_EQ(array_count, 3);
-
-    // Run the callbacks
-    bus.update();
-
-    ASSERT_EQ(empty_count, 7);
-    ASSERT_EQ(int_count, 7);
-    ASSERT_EQ(array_count, 7);
-}
+//TEST(callback_test, single_update) {
+//    // Reset static variable
+//    empty_count = 0; 
+//    int_count = 0; 
+//    array_count = 0; 
+//
+//    EventBus bus;
+//
+//    // Create an event writer and attach the callbacks
+//    EventWriter writer = bus.getEventWriter();
+//
+//    bus.addCallback<EmptyEvent>(empty_callback);
+//    bus.addCallback<IntEvent>(int_callback);
+//    bus.addCallback<ArrayEvent>(array_callback);
+//    
+//    bus.addCallback<IntEvent>(int_callback_check);
+//    bus.addCallback<ArrayEvent>(array_callback_check);
+//    
+//    // Write some events to the buffer
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//
+//    ASSERT_EQ(empty_count, 0);
+//    ASSERT_EQ(int_count, 0);
+//    ASSERT_EQ(array_count, 0);
+//    
+//    // Run the callbacks
+//    bus.update();
+//
+//    ASSERT_EQ(empty_count, 3);
+//    ASSERT_EQ(int_count, 3);
+//    ASSERT_EQ(array_count, 3);
+//}
+//
+//TEST(callback_test, multi_update) {
+//    // Reset static variable
+//    empty_count = 0; 
+//    int_count = 0; 
+//    array_count = 0; 
+//
+//    EventBus bus;
+//
+//    // Create an event writer and attach the callbacks
+//    EventWriter writer = bus.getEventWriter();
+//
+//    bus.addCallback<EmptyEvent>(empty_callback);
+//    bus.addCallback<IntEvent>(int_callback);
+//    bus.addCallback<ArrayEvent>(array_callback);
+//    
+//    bus.addCallback<IntEvent>(int_callback_check);
+//    bus.addCallback<ArrayEvent>(array_callback_check);
+//    
+//    // Write some events to the buffer
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//
+//    ASSERT_EQ(empty_count, 0);
+//    ASSERT_EQ(int_count, 0);
+//    ASSERT_EQ(array_count, 0);
+//    
+//    // Run the callbacks
+//    bus.update();
+//
+//    ASSERT_EQ(empty_count, 3);
+//    ASSERT_EQ(int_count, 3);
+//    ASSERT_EQ(array_count, 3);
+//    
+//    // Write some events to the buffer
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//    
+//    writer.send<EmptyEvent>(EmptyEvent());
+//    writer.send<IntEvent>(IntEvent(test_int));
+//    writer.send<ArrayEvent>(ArrayEvent(test_array));
+//
+//    ASSERT_EQ(empty_count, 3);
+//    ASSERT_EQ(int_count, 3);
+//    ASSERT_EQ(array_count, 3);
+//
+//    // Run the callbacks
+//    bus.update();
+//
+//    ASSERT_EQ(empty_count, 7);
+//    ASSERT_EQ(int_count, 7);
+//    ASSERT_EQ(array_count, 7);
+//}

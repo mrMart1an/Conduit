@@ -35,7 +35,7 @@ VkSurfaceKHR GlfwWindow::getVkSurface(
     if (res != VK_SUCCESS) {
         throw vulkan::SurfaceInitError(
             "Glfw vulkan surface creation failed: {}", 
-            vulkan::vk_error_str(res)
+            VK_ERROR_STR(res)
         );
     }
 

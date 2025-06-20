@@ -3,9 +3,4 @@ out/
 .cache/
 .vs/
 
-run.sh
-runTest.sh
-buildDebug.sh
-buildRelease.sh
-
 Testing/
