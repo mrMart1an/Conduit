@@ -15,32 +15,37 @@ class EntityRegister;
 class Entity {
     friend class internal::EntityRegister;
 
-private:
-    using EntityId = u32;
+public:
+    using EntityIndex = u32;
     using GenerationId = u32;
  
 private:
     // Private constructor callable only by the friend entity register  
     Entity(
-        EntityId entity,
+        EntityIndex entity,
         GenerationId generation
     ) :
-        m_id(entity),
+        m_index(entity),
         m_generation(generation)
     { }
    
 public:
+    // Return the entity index
+    EntityIndex index() const { return m_index; }
+    // Return the generation id
+    EntityIndex gen() const { return m_generation; }
+
     friend bool operator==(const Entity& lhs, const Entity& rhs) 
     { 
         if (lhs.m_generation == rhs.m_generation)
-            return lhs.m_id == rhs.m_id; 
+            return lhs.m_index == rhs.m_index; 
         else
             return false;
     }
     friend bool operator!=(const Entity& lhs, const Entity& rhs) 
     { 
         if (lhs.m_generation == rhs.m_generation)
-            return lhs.m_id != rhs.m_id; 
+            return lhs.m_index != rhs.m_index; 
         else
             return true;
     }
@@ -48,20 +53,20 @@ public:
     friend bool operator<(const Entity& lhs, const Entity& rhs) 
     {
         if (lhs.m_generation == rhs.m_generation)
-            return lhs.m_id < rhs.m_id;
+            return lhs.m_index < rhs.m_index;
         else
             return lhs.m_generation < rhs.m_generation;
     }
     friend bool operator>(const Entity& lhs, const Entity& rhs) 
     {
         if (lhs.m_generation == rhs.m_generation)
-            return lhs.m_id > rhs.m_id;
+            return lhs.m_index > rhs.m_index;
         else
             return lhs.m_generation > rhs.m_generation;
     }
     
 private:
-    EntityId m_id;
+    EntityIndex m_index;
     GenerationId m_generation;
 };
 

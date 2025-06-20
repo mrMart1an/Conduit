@@ -5,7 +5,7 @@
 
 #include <atomic>
 
-namespace cndt::internal {
+namespace cndt::ecs::internal {
 
 // Track components type and component types ids
 class ComponentTypeRegister {
@@ -28,7 +28,7 @@ private:
     static TypeId getNextTypeId() {
         static std::atomic<TypeId> m_last_id(0);
         return m_last_id++;
-    }       
+    }
 };
 
 } // namespace cndt::internal

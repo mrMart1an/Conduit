@@ -24,7 +24,7 @@ public:
 
 private:
     // Store the current largest entity id assigned by the register
-    Entity::EntityId m_largest_entity_id;
+    Entity::EntityIndex m_largest_entity_id;
 
     // Free list of entity ready to be reassigned  
     std::vector<Entity> m_free_list;

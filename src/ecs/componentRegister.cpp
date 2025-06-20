@@ -1,6 +1,6 @@
 #include "conduit/internal/ecs/componentRegister.h"
 
-namespace cndt::internal {
+namespace cndt::ecs::internal {
 
 // Detach all the components from the given entity
 void ComponentRegister::detachAllComponets(Entity entity)

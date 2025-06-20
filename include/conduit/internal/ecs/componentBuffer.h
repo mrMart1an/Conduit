@@ -10,7 +10,7 @@
 #include <shared_mutex>
 #include <vector>
 
-namespace cndt::internal {
+namespace cndt::ecs::internal {
 
 // Generic base Component Buffer class
 class ComponentBufferBase {
@@ -113,7 +113,7 @@ bool ComponentBuffer<CompType>::componentExist(
     if (m_entity_buffer.empty())
         return false;
 
-    if ((upper_bound - 1)->id() == entity.id())
+    if (*(upper_bound - 1) == entity)
         return true;
     
     return false;

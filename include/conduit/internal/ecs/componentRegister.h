@@ -10,7 +10,7 @@
 #include <memory>
 #include <shared_mutex>
 
-namespace cndt::internal {
+namespace cndt::ecs::internal {
 
 class ComponentRegister {
 public:
@@ -42,14 +42,14 @@ private:
     // Add the component type to the register if it doesn't already exist
     template<class CompType>
     void addComponetType();
-    
+
 private:
     std::shared_mutex m_mutex;
-    
+
     // Store generic unique pointer to the components buffers
     using TypeId = ComponentTypeRegister::TypeId;
     using ComponentBufferPtr = std::shared_ptr<ComponentBufferBase>;
-    
+
     std::map<TypeId, ComponentBufferPtr> m_component_buffers;
 };
 
@@ -64,9 +64,9 @@ ComponentRegister::getComponentBuffer()
 
     // Cast the buffer shared pointer to a weak pointer
     std::shared_lock<std::shared_mutex> lock(m_mutex);
-    
+
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    
+
     return std::static_pointer_cast<ComponentBuffer<CompType>>(
         m_component_buffers[type_id]
     );
@@ -80,12 +80,12 @@ void ComponentRegister::attachComponent(Entity entity, Args... args)
 {
     // Create the buffer if it doesn't already exist
     addComponetType<CompType>();
-    
+
     std::shared_lock<std::shared_mutex> lock(m_mutex);
-    
+
     // Get a reference to the component buffer and add the component to it
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    
+
     std::shared_ptr<ComponentBuffer<CompType>> buffer =
         std::static_pointer_cast<ComponentBuffer<CompType>>(
             m_component_buffers[type_id]
@@ -93,7 +93,7 @@ void ComponentRegister::attachComponent(Entity entity, Args... args)
 
     buffer->attachComponent(entity, args...);
 }
-    
+
 // Attach component to the entity,
 // Copy the given component to the buffer
 // Only one component per type can be assigned to an entity
@@ -102,12 +102,12 @@ void ComponentRegister::attachComponent(Entity entity, CompType &component)
 {
     // Create the buffer if it doesn't already exist
     addComponetType<CompType>();
-    
+
     std::shared_lock<std::shared_mutex> lock(m_mutex);
-    
+
     // Get a reference to the component buffer and add the component to it
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    
+
     std::shared_ptr<ComponentBuffer<CompType>> buffer =
         std::static_pointer_cast<ComponentBuffer<CompType>>(
             m_component_buffers[type_id]
@@ -122,13 +122,13 @@ void ComponentRegister::detachComponent(Entity entity)
 {
     // Create the buffer if it doesn't already exist
     addComponetType<CompType>();
-    
+
     std::shared_lock<std::shared_mutex> lock(m_mutex);
-    
+
     // Get a reference to the component buffer 
     // and remove the component from it
     auto type_id = ComponentTypeRegister::getTypeId<CompType>();
-    
+
     std::shared_ptr<ComponentBuffer<CompType>> buffer =
         std::static_pointer_cast<ComponentBuffer<CompType>>(
             m_component_buffers[type_id]
@@ -163,6 +163,6 @@ void ComponentRegister::addComponetType()
     }
 }
 
-}
+} // namespace cndt::ecs::internal
 
 #endif
