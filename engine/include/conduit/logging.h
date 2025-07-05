@@ -46,8 +46,7 @@ inline void setTimeFormatting(std::string time_fmt_str) {
 template <typename... Args>
 inline void trace(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level == 0)
-        getDefaultAppLogger()->trace(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->trace(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
@@ -55,8 +54,7 @@ inline void trace(fmt::format_string<Args...> fmt, Args&&... args)
 template <typename... Args>
 inline void debug(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level <= 1)
-        getDefaultAppLogger()->debug(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->debug(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
@@ -64,8 +62,7 @@ inline void debug(fmt::format_string<Args...> fmt, Args&&... args)
 template <typename... Args>
 inline void info(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level <= 2)
-        getDefaultAppLogger()->info(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->info(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
@@ -73,8 +70,7 @@ inline void info(fmt::format_string<Args...> fmt, Args&&... args)
 template <typename... Args>
 inline void warn(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level <= 3)
-        getDefaultAppLogger()->warn(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->warn(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
@@ -82,8 +78,7 @@ inline void warn(fmt::format_string<Args...> fmt, Args&&... args)
 template <typename... Args>
 inline void error(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level <= 4)
-        getDefaultAppLogger()->error(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->error(fmt, std::forward<Args>(args)...);
 }
 
 // Take a string and format it with the provided arguments
@@ -91,8 +86,7 @@ inline void error(fmt::format_string<Args...> fmt, Args&&... args)
 template <typename... Args>
 inline void fatal(fmt::format_string<Args...> fmt, Args&&... args) 
 {
-    if constexpr (compile_log_level <= 5)
-        getDefaultAppLogger()->fatal(fmt, std::forward<Args>(args)...);
+    getDefaultAppLogger()->fatal(fmt, std::forward<Args>(args)...);
 }
 
 } // namespace app
