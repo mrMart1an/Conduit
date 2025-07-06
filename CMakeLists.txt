@@ -41,6 +41,12 @@ add_subdirectory("./extern/glad")
 add_subdirectory("engine")
 
 # --------
+# Include cmake functions
+# --------
+
+include("./cmake/cndtExecutableFunction.cmake")
+
+# --------
 # Compile the examples
 # --------
 

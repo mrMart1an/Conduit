@@ -1,7 +1,6 @@
 set(APP_NAME "Sandbox")
 
-add_executable(${APP_NAME} "src/sandbox.cpp")
-target_link_libraries(${APP_NAME} LINK_PUBLIC ${ENGINE_NAME})
+cndt_executable(${APP_NAME} "src/sandbox.cpp")
 
 #add_custom_target(copy_shader ALL
 #    COMMAND ${CMAKE_COMMAND} -E copy_directory 
