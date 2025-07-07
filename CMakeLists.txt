@@ -24,14 +24,6 @@ option(BUILD_TESTS "Build the library tests" ON)
 # Add dependency subdirectories
 # --------
 
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-add_subdirectory("./extern/glm")
-add_subdirectory("./extern/glfw")
-add_subdirectory("./extern/SPIRV-Cross")
-add_subdirectory("./extern/VulkanMemoryAllocator")
-add_subdirectory("./extern/fmt")
-add_subdirectory("./extern/json")
-add_subdirectory("./extern/tinyobjloader")
 add_subdirectory("./extern/glad")
 
 # --------

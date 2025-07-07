@@ -2,12 +2,15 @@
 
 # Default arguments
 CLEAN_BUILD=0
-BUILD_DEBUG=0
+BUILD_RELEASE=0
 
 # Use the number of core as the default parallel argument
 BUILD_CORES=$(cat /proc/cpuinfo | grep -c processor)
 
 BUILD_DIR="build"
+
+# Build preset to use
+BUILD_PRESET="vcpkg"
 
 # Find clang executable
 if [ -z "${CLANG_CC}" ]; then
@@ -20,8 +23,8 @@ fi
 # Parse script arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -d|--debug)
-        BUILD_DEBUG=1
+    -r|--release)
+        BUILD_RELEASE=1
         shift
         ;;
     -c|--clean)
@@ -45,16 +48,18 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Build commands arguments
-CONFIG_ARGS=""
+CONFIG_ARGS="--preset ${BUILD_PRESET}"
 BUILD_ARGS=""
 
 # Build in debug mode if requested
-if [ ${BUILD_DEBUG} -eq 1 ]; then
+if [ ${BUILD_RELEASE} -eq 0 ]; then
     CONFIG_ARGS="${CONFIG_ARGS} -DCMAKE_BUILD_TYPE=Debug "
+else
+    CONFIG_ARGS="${CONFIG_ARGS} -DCMAKE_BUILD_TYPE=Release "
 fi 
 
 # Use the given number of core for the build
-BUILD_ARGS="${BUILD_ARGS} --parallel $BUILD_CORES "
+BUILD_ARGS="${BUILD_ARGS} --parallel ${BUILD_CORES}"
 
 # If a clean build is required delete the build folder if it exist
 if [ -d "${BUILD_DIR}" ]; then

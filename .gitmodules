@@ -1,24 +1,3 @@
-[submodule "extern/glm"]
-	path = extern/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "extern/glfw"]
-	path = extern/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "extern/googletest"]
-	path = extern/googletest
-	url = https://github.com/google/googletest.git
-[submodule "extern/SPIRV-Cross"]
-	path = extern/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "extern/json"]
-	path = extern/json
-	url = https://github.com/nlohmann/json.git
-[submodule "extern/fmt"]
-	path = extern/fmt
-	url = https://github.com/fmtlib/fmt
-[submodule "extern/VulkanMemoryAllocator"]
-	path = extern/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "extern/tinyobjloader"]
-	path = extern/tinyobjloader
-	url = https://github.com/tinyobjloader/tinyobjloader.git
+[submodule "extern/vcpkg"]
+	path = extern/vcpkg
+	url = https://github.com/microsoft/vcpkg.git

@@ -15,7 +15,7 @@ BUILD_DIR="build"
 # Parse script arguments
 while [[ $# -gt 0 ]]; do
 case $1 in
-    -d|--debug)
+    -r|--release)
         shift
         ;;
     -c|--clean)

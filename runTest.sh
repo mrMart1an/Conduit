@@ -15,7 +15,7 @@ BUILD_DIR="build"
 # Parse script arguments
 while [[ $# -gt 0 ]]; do
 case $1 in
-    -d|--debug)
+    -r|--release)
         shift
         ;;
     -c|--clean)
@@ -41,6 +41,6 @@ if [ -e ${BUILD_DIR} ]; then
     cd ${BUILD_DIR}
     ctest @a
 else
-    echo "Couldn't find executable file: ${EXE_PATH}"
+    echo "Error during test execution"
     exit 1
 fi

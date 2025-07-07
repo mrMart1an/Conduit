@@ -96,6 +96,16 @@ configure_file(buildConfig.h.in buildConfig.h)
 # Find dependency
 # --------
 
+# Utility
+find_package(fmt CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+
+# 3D libraries
+find_package(glm CONFIG REQUIRED)
+
+# Window handling
+find_package(glfw3 CONFIG REQUIRED)
+
 # Find graphics dependency
 # Vulkan is always necessary for shaders compilation
 find_package(Vulkan REQUIRED)
@@ -123,16 +133,14 @@ target_precompile_headers(${ENGINE_NAME} PUBLIC "pch/cndtPch.h")
 # TODO: Remove vulkan and OpenGL dependency if the backend are disabled
 target_link_libraries(${ENGINE_NAME}
     PRIVATE glfw
+ 
     PRIVATE ${VULKAN_LIB}
     PRIVATE ${OPENGL_LIB}
-    PRIVATE spirv-cross-core
-    PRIVATE GPUOpen::VulkanMemoryAllocator
     PRIVATE glad
-    PRIVATE tinyobjloader
-    
+    PUBLIC glm::glm
+
     PUBLIC nlohmann_json::nlohmann_json
     PUBLIC fmt::fmt
-    PUBLIC glm
 )
 
 target_include_directories(${PROJECT_NAME} 
