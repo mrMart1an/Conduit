@@ -10,12 +10,14 @@ if [ ${E_CODE} -ne 0 ]; then
     exit ${E_CODE}
 fi
 
-BUILD_DIR="build"
+BUILD_BASE_DIR="build"
+BUILD_DIR="${BUILD_BASE_DIR}/Debug"
 
 # Parse script arguments
 while [[ $# -gt 0 ]]; do
 case $1 in
     -r|--release)
+        BUILD_DIR="${BUILD_BASE_DIR}/Release"
         shift
         ;;
     -c|--clean)

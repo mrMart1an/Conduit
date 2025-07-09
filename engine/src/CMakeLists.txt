@@ -38,8 +38,6 @@ set(ECS_SRC
 # Engine window source code
 set(WINDOW_SRC
     "${BASE_PATH}/window/glfw/glfwWindow.cpp"
-    "${BASE_PATH}/window/glfw/glfwVulkan.cpp"
-    "${BASE_PATH}/window/glfw/glfwOpenGL.cpp"
     "${BASE_PATH}/window/glfw/glfwCallbacks.cpp"
 )
 

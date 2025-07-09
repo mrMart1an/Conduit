@@ -3,4 +3,5 @@ out/
 .cache/
 .vs/
 
-Testing/
+CMakeUserPresets.json
+.env
