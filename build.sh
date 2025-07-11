@@ -104,7 +104,7 @@ if [ ${E_CODE} -ne 0 ]; then
 fi
 
 # Build commands arguments
-CONFIG_ARGS="--preset ${BUILD_PRESET}"
+CONFIG_ARGS="-G Ninja --preset ${BUILD_PRESET}"
 BUILD_ARGS=""
 
 # Use the given number of core for the build

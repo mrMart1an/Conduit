@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.11)
 
 set(ENGINE_NAME "Conduit")
 
@@ -21,22 +21,28 @@ option(BUILD_EXAMPLES "Build the library examples" ON)
 option(BUILD_TESTS "Build the library tests" ON)
 
 # --------
+# Include cmake functions
+# --------
+
+include("./cmake/cndtExecutableFunction.cmake")
+
+# --------
 # Add dependency subdirectories
 # --------
 
 add_subdirectory("./extern/glad")
 
 # --------
+# Compile engine tools
+# --------
+
+add_subdirectory("tools")
+
+# --------
 # Compile engine static library
 # --------
 
 add_subdirectory("engine")
-
-# --------
-# Include cmake functions
-# --------
-
-include("./cmake/cndtExecutableFunction.cmake")
 
 # --------
 # Compile the examples
