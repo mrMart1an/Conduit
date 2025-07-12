@@ -1,9 +1,8 @@
 #include <exception>
 #include <iostream>
 
-#include <argparse/argparse.hpp>
 #include <clang-c/Index.h>
-#include <clang-c/CXCompilationDatabase.h>
+#include <ostream>
 
 #include "argparser.h"
 #include "astParser.h"
@@ -16,11 +15,18 @@ std::ostream& operator<<(std::ostream& stream, const CXString& str)
   return stream;
 }
 
-void clb(CXCursor c, CXCursor parent, CXClientData client_data)
-{
-    std::cout << "Cursor '" << clang_getCursorSpelling(c) << "' of kind '"
-        << clang_getCursorKindSpelling(clang_getCursorKind(c)) << "'\n";
-}
+class MyParser : public ASTParser {
+public:
+    void nodeCallback(CXCursor node, CXCursor parent) override {
+        std::cout 
+            << "Cursor '" 
+            << clang_getCursorSpelling(node) 
+            << "' of kind '"
+            << clang_getCursorKindSpelling(clang_getCursorKind(node)) 
+            << "'" 
+            << std::endl;
+    }
+};
 
 int main(int argc, char *argv[]) {
     Args args;
@@ -36,9 +42,9 @@ int main(int argc, char *argv[]) {
 
     try {
         SourceLoader loader(args);
-        ASTParser parser(loader);
+        MyParser parser;
 
-        parser.execute<void*>(clb, nullptr);
+        parser.parse(loader);
 
     } catch (const std::exception& err) {
         std::cerr << err.what() << std::endl;

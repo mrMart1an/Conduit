@@ -1,1 +1,1 @@
-add_subdirectory("componentsParser")
+add_subdirectory("magmaParser")

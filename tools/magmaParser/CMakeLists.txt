@@ -1,4 +1,4 @@
-set(TOOL_NAME "componentsParser")
+set(TOOL_NAME "magma-parser")
 
 # Find dependency
 find_package(Clang REQUIRED)
@@ -11,6 +11,7 @@ set(SOURCE_FILES
     "${SOURCE_DIR}/main.cpp"
     "${SOURCE_DIR}/argparser.cpp"
     "${SOURCE_DIR}/sourceLoader.cpp"
+    "${SOURCE_DIR}/astParser.cpp"
 )
 
 add_executable(${TOOL_NAME} ${SOURCE_FILES})
